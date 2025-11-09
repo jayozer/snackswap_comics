@@ -1,0 +1,50 @@
+[project]
+name = "snackswap-comics"
+version = "0.1.0"
+description = "SnackSwap Comics - Turn snacks into delightful dental health comics"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.6",
+    "pillow>=10.2.0",
+    "pillow-heif>=0.15.0",
+    "google-generativeai>=0.3.2",
+    "qdrant-client>=1.7.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "httpx>=0.26.0",
+    "python-dotenv>=1.0.0",
+    "numpy>=1.26.0",
+    "opencv-python-headless>=4.9.0",
+    "aiofiles>=23.2.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.12.0",
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

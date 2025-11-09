@@ -1,0 +1,154 @@
+"""Scoring and retrieval endpoints."""
+
+import logging
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, Depends
+
+from app.core.config import get_settings, Settings
+from app.models import ScoreRetrieveRequest, ScoreRetrieveResponse, ScoredItem
+from app.services.gemini_service import GeminiService
+from app.services.qdrant_service import QdrantService
+from app.services.scoring_service import ScoringService
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
+
+
+def get_gemini_service(settings: Annotated[Settings, Depends(get_settings)]) -> GeminiService:
+    """Dependency for Gemini service."""
+    return GeminiService(settings)
+
+
+def get_qdrant_service(settings: Annotated[Settings, Depends(get_settings)]) -> QdrantService:
+    """Dependency for Qdrant service."""
+    return QdrantService(settings)
+
+
+def get_scoring_service() -> ScoringService:
+    """Dependency for scoring service."""
+    return ScoringService()
+
+
+@router.post("/retrieve", response_model=ScoreRetrieveResponse)
+async def score_retrieve(
+    request: ScoreRetrieveRequest,
+    gemini_service: GeminiService = Depends(get_gemini_service),
+    qdrant_service: QdrantService = Depends(get_qdrant_service),
+    scoring_service: ScoringService = Depends(get_scoring_service),
+) -> ScoreRetrieveResponse:
+    """
+    Score detected items and retrieve relevant facts and swaps.
+
+    Steps:
+    1. For each detected item, search Qdrant for matching snacks
+    2. Calculate dental risk scores
+    3. Retrieve age-appropriate facts
+    4. Find taste-aligned swaps that respect allergies
+
+    Args:
+        request: Score retrieval request with items, age, allergies
+        gemini_service: Gemini service for embeddings
+        qdrant_service: Qdrant service for vector search
+        scoring_service: Scoring service for risk calculation
+
+    Returns:
+        Scored items with facts and swaps
+    """
+    try:
+        age_band = scoring_service.get_age_band(request.age)
+        scored_items = []
+        all_facts = []
+        all_swaps = []
+
+        # Process each detected item
+        for item in request.items:
+            # Generate query embedding
+            query_text = f"brand={item.brand_guess or 'generic'}, type={item.category}, name={item.name}"
+            query_embedding = await gemini_service.generate_query_embedding(query_text)
+
+            # Search for matching snacks
+            snack_results = qdrant_service.search_snacks(query_embedding, limit=3)
+
+            if not snack_results:
+                logger.warning(f"No matching snacks found for: {item.name}")
+                continue
+
+            # Match item to best snack
+            matched_snack = scoring_service.match_snack_to_payload(item, snack_results)
+
+            if not matched_snack:
+                continue
+
+            # Calculate dental risk
+            risk_score = scoring_service.calculate_dental_risk(matched_snack)
+
+            scored_items.append(
+                ScoredItem(
+                    snack_id=matched_snack["snack_id"],
+                    name=matched_snack["name"],
+                    category=matched_snack["category"],
+                    dental_risk_score=risk_score,
+                    confidence=matched_snack["match_confidence"],
+                )
+            )
+
+            # Get relevant facts
+            fact_query = f"dental health, {item.category}, sugar, acidity"
+            fact_embedding = await gemini_service.generate_query_embedding(fact_query)
+
+            fact_results = qdrant_service.search_facts(
+                fact_embedding,
+                age_band=age_band,
+                limit=4,
+            )
+
+            for fact in fact_results:
+                fact_data = dict(fact.payload)
+                fact_data["score"] = fact.score
+                all_facts.append(fact_data)
+
+            # Find swaps
+            taste_cluster = matched_snack.get("taste_cluster", "neutral")
+            swap_query = f"{taste_cluster}, healthy alternative, {item.category}"
+            swap_embedding = await gemini_service.generate_query_embedding(swap_query)
+
+            swap_results = qdrant_service.search_swaps(
+                swap_embedding,
+                taste_cluster=taste_cluster,
+                allergies=request.allergies,
+                age_band=age_band,
+                limit=8,
+            )
+
+            # Convert to dicts and rank
+            swap_candidates = [dict(swap.payload) for swap in swap_results]
+            ranked_swaps = scoring_service.rank_swaps(
+                matched_snack,
+                swap_candidates,
+                age_band,
+                request.allergies,
+            )
+
+            all_swaps.extend(ranked_swaps[:3])  # Top 3 per item
+
+        # Deduplicate facts and swaps by ID
+        unique_facts = {f["fact_id"]: f for f in all_facts}.values()
+        unique_swaps = {s["swap_id"]: s for s in all_swaps}.values()
+
+        logger.info(
+            f"Retrieved {len(scored_items)} items, "
+            f"{len(unique_facts)} facts, "
+            f"{len(unique_swaps)} swaps"
+        )
+
+        return ScoreRetrieveResponse(
+            scored_items=scored_items,
+            facts=list(unique_facts),
+            swaps=list(unique_swaps),
+        )
+
+    except Exception as e:
+        logger.error(f"Error in score_retrieve: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve data: {str(e)}")
