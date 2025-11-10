@@ -225,7 +225,13 @@ Make it delightful!"""
             if response_text.endswith("```"):
                 response_text = response_text[:-3]
 
-            result = json.loads(response_text.strip())
+            # Try to parse JSON - log raw response on failure
+            try:
+                result = json.loads(response_text.strip())
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse Gemini response as JSON: {e}")
+                logger.error(f"Raw response (first 1000 chars): {response_text[:1000]}")
+                raise ValueError(f"Gemini returned invalid JSON: {e}")
 
             logger.info(f"Composed script with {len(result.get('panels', []))} panels")
             return result

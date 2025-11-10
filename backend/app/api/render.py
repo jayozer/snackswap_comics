@@ -8,6 +8,9 @@ from fastapi import APIRouter, HTTPException, Depends
 from app.core.config import get_settings, Settings
 from app.models import RenderComicRequest, RenderComicResponse
 from app.api.script import scripts_store
+from app.services.render_service import RenderService
+from app.services.nanobana_service import NanoBananaService
+from app.services.freepik_service import FreepikService
 
 logger = logging.getLogger(__name__)
 
@@ -22,44 +25,47 @@ async def render_comic(
     """
     Render a comic from a script.
 
-    This endpoint would integrate with:
-    - Nano-Banana for character rendering
-    - Freepik API for panel composition
-    - PIL/Pillow for final assembly
-
-    For MVP, this returns placeholder URIs.
+    This endpoint integrates with:
+    - Nano-Banana (Gemini 2.5 Flash Image) for comic image generation
+    - Freepik API for comic assets (optional enhancement)
+    - PIL/Pillow for composition and export formats
 
     Args:
         request: Render request with script_id
         settings: Application settings
 
     Returns:
-        URIs to rendered comic assets
+        URIs to rendered comic assets in multiple formats
     """
     # Get script
     if request.script_id not in scripts_store:
         raise HTTPException(status_code=404, detail=f"Script not found: {request.script_id}")
 
-    script_data = scripts_store[request.script_id]
+    stored_data = scripts_store[request.script_id]
+    # Extract the actual script result (which contains panels, caption, etc.)
+    script_data = stored_data.get("script_result", stored_data)
 
     try:
-        # TODO: Implement actual rendering
-        # 1. Extract character visual prompts from script
-        # 2. Generate character images with Nano-Banana (or DALL-E/Imagen)
-        # 3. Fetch Freepik assets (frames, bubbles, backgrounds)
-        # 4. Compose panels with PIL/Pillow
-        # 5. Generate multiple layouts (square, portrait, reel cover)
-        # 6. Save to storage and return URIs
+        logger.info(f"Rendering comic for script {request.script_id}")
 
-        # For now, return placeholder URIs
-        content_id = f"snackswap_{request.script_id[:8]}"
+        # Initialize services
+        nanobana_service = NanoBananaService(settings)
+        freepik_service = FreepikService(settings)
+        render_service = RenderService(settings, nanobana_service, freepik_service)
 
-        logger.info(f"Rendering comic for script {request.script_id} (placeholder)")
+        # Render comic with all formats
+        result = await render_service.render_comic(
+            script=script_data,
+            script_id=request.script_id,
+            use_freepik=settings.enable_maps,  # Use existing feature flag or add new one
+        )
+
+        logger.info(f"Comic rendered successfully: {request.script_id}")
 
         return RenderComicResponse(
-            comic_square_uri=f"/storage/renders/{content_id}_square.png",
-            comic_portrait_uri=f"/storage/renders/{content_id}_portrait.png",
-            reel_cover_uri=f"/storage/renders/{content_id}_reel.png",
+            comic_square_uri=result["comic_square_uri"],
+            comic_portrait_uri=result["comic_portrait_uri"],
+            reel_cover_uri=result["reel_cover_uri"],
         )
 
     except Exception as e:
