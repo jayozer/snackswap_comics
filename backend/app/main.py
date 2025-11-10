@@ -62,31 +62,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include API routes first
+app.include_router(api_router, prefix="/api")
+
+# Add health check endpoint
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy"}
+
 # Mount static files for storage
 try:
     app.mount("/storage", StaticFiles(directory=settings.storage_path), name="storage")
 except Exception as e:
     logger.warning(f"Could not mount storage directory: {e}")
 
-# Include API routes
-app.include_router(api_router, prefix="/api")
-
-
-@app.get("/")
-async def root():
-    """Root endpoint."""
-    return {
-        "name": "SnackSwap Comics API",
-        "version": "0.1.0",
-        "status": "running",
-        "docs": "/docs",
-    }
-
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy"}
+# Mount frontend static files (must be last to not conflict with API routes)
+try:
+    from pathlib import Path
+    frontend_path = Path(__file__).parent.parent.parent / "frontend"
+    if frontend_path.exists():
+        app.mount("/", StaticFiles(directory=str(frontend_path), html=True), name="frontend")
+        logger.info(f"Mounted frontend at {frontend_path}")
+except Exception as e:
+    logger.warning(f"Could not mount frontend directory: {e}")
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ Populates Qdrant collections with sample snacks, facts, swaps, and styles.
 
 import asyncio
 import sys
+import uuid
 from pathlib import Path
 
 # Add backend to path
@@ -123,7 +124,7 @@ async def seed_snacks(qdrant_service: QdrantService, api_key: str):
 
         points.append(
             models.PointStruct(
-                id=snack["snack_id"],
+                id=str(uuid.uuid5(uuid.NAMESPACE_DNS, snack["snack_id"])),
                 vector=embedding,
                 payload=snack,
             )
@@ -196,7 +197,7 @@ async def seed_facts(qdrant_service: QdrantService, api_key: str):
 
         points.append(
             models.PointStruct(
-                id=fact["fact_id"],
+                id=str(uuid.uuid5(uuid.NAMESPACE_DNS, fact["fact_id"])),
                 vector=embedding,
                 payload=fact,
             )
@@ -292,7 +293,7 @@ async def seed_swaps(qdrant_service: QdrantService, api_key: str):
 
         points.append(
             models.PointStruct(
-                id=swap["swap_id"],
+                id=str(uuid.uuid5(uuid.NAMESPACE_DNS, swap["swap_id"])),
                 vector=embedding,
                 payload=swap,
             )
@@ -342,7 +343,7 @@ async def seed_styles(qdrant_service: QdrantService, api_key: str):
 
         points.append(
             models.PointStruct(
-                id=style["style_id"],
+                id=str(uuid.uuid5(uuid.NAMESPACE_DNS, style["style_id"])),
                 vector=embedding,
                 payload=style,
             )
