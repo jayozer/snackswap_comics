@@ -1,5 +1,5 @@
 // SnackSwap Comics - Frontend Application
-const API_BASE = 'http://localhost:8002/api';
+const API_BASE = 'http://localhost:8000/api';
 
 // State
 let currentPhotoId = null;
@@ -289,7 +289,7 @@ function displayResults(detectionData, scoreData, scriptData, renderData) {
 
     // Comic image (use square format by default)
     const comicImage = document.getElementById('comicImage');
-    const baseUrl = 'http://localhost:8002';
+    const baseUrl = 'http://localhost:8000';
     comicImage.src = `${baseUrl}${renderData.comic_square_uri}?t=${Date.now()}`;
 
     // Download buttons
@@ -307,7 +307,7 @@ function setupDownloadButton(buttonId, uri, filename) {
     const button = document.getElementById(buttonId);
     button.onclick = async () => {
         try {
-            const response = await fetch(`http://localhost:8002${uri}`);
+            const response = await fetch(`http://localhost:8000${uri}`);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');

@@ -252,3 +252,7 @@ Implement comic rendering using Nano-Banana (Gemini 2.5 Flash Image) and Freepik
 - [ ] End-to-end test passes with gummy bears image
 - [ ] Documentation is complete
 - [ ] Code is production-ready
+
+
+**Issues to fix:**
+- [ ]The bubbles do not have correct text. need to add text with comic sans and replace it. It has to be an overlay
