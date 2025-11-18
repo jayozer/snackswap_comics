@@ -144,64 +144,114 @@ Set needs_confirmation to true if any item has confidence < 0.7."""
         facts_context = json.dumps(facts, indent=2)
         swaps_context = json.dumps(swaps, indent=2)
 
-        prompt = f"""You are a children's content writer creating a 4-panel comic about dental health.
+        prompt = f"""You are a comedy writer for kids creating HILARIOUS 4-panel dental health comics.
 
-TARGET AUDIENCE: Age {age} ({age_band} years old), tone should be {tone}
+TARGET AUDIENCE: Age {age} ({age_band} years old), tone: {tone} and FUNNY!
 
-SNACKS IN THE PHOTO:
+🎭 RECURRING CHARACTER - CAPTAIN SPARKLE:
+Captain Sparkle is a superhero tooth who appears in EVERY comic. Personality: Enthusiastic, slightly dramatic, loves puns. Always wears a tiny superhero cape. Catchphrase: "Sparkle power!" Expression changes based on situation (excited, shocked, worried, triumphant).
+
+SNACKS IN PHOTO (they become animated characters):
 {snacks_context}
 
-APPROVED FACTS (use these exact facts, cite with fact_id):
+DENTAL FACTS (integrate into jokes, cite fact_id in citation_ids):
 {facts_context}
 
-SUGGESTED SWAPS:
+HEALTHIER SWAPS (make them sound awesome):
 {swaps_context}
 
-CREATE A 4-PANEL COMIC with these beats:
+🎬 PANEL STRUCTURE (Comedy-First):
 
-PANEL 1 - ROLL CALL: Introduce the food characters with fun personalities. Make them come alive!
+PANEL 1 - THE HOOK (Funny Introduction)
+- Snack introduces itself with a PUN or funny trait
+- Captain Sparkle appears with excited expression
+- Set up the comedic situation
+- Include at least ONE wordplay or visual gag
 
-PANEL 2 - THE DEBATE: Characters discuss their effect on teeth. Use AT LEAST ONE fact from the fact pack (cite fact_id). Keep it playful, not scary.
+PANEL 2 - ESCALATION (The Problem Revealed)
+- Captain Sparkle discovers something about the snack (cite a fact here)
+- Snack reacts DRAMATICALLY (shocked, worried, or over-confident)
+- Use exaggeration for comedy (if sticky, make it SUPER sticky)
+- Include a surprising prop or visual element
 
-PANEL 3 - MYTH FLIP: Address a common misconception or surprise twist. Use AT LEAST ONE more fact from the fact pack.
+PANEL 3 - THE TWIST (Role Reversal or Surprise)
+- Unexpected moment! (e.g., snack admits truth, Captain Sparkle has idea)
+- Another fact revealed in funny way (cite fact_id)
+- Character expressions should be extreme (gasp!, idea!, worried!)
+- Include callback to Panel 1 or running gag
 
-PANEL 4 - THE SWAP: Present the healthier alternatives in a positive, exciting way. No shaming!
+PANEL 4 - THE PUNCHLINE (Happy Resolution)
+- Introduce swap character with funny personality
+- Captain Sparkle triumphant pose: "Sparkle power!"
+- End with a joke that ties to the beginning
+- Positive, no shaming - make swap sound COOL
 
-RULES:
-- Use ONLY facts from the provided fact pack - cite with fact_id in citation_ids
-- Keep dialogue to 2-3 short lines per panel
-- Make characters friendly and expressive (happy, worried, excited, surprised)
-- No scolding or making kids feel bad about their choices
-- Emphasize that timing matters (e.g., "I'm okay if you brush after!")
-- Make swaps sound delicious and fun, not boring
+🎨 COMEDY TECHNIQUES (Use ALL of these):
+1. PUNS & WORDPLAY: Character names, dialogue, situations
+2. VISUAL GAGS: Props (tiny capes, party hats, magnifying glass), exaggerated expressions
+3. CHARACTER COMEDY: Distinct personalities (nervous snack, know-it-all tooth, cheerful swap)
+4. SURPRISE MOMENTS: Unexpected reactions, plot twists, dramatic reveals
 
-Return JSON with this structure:
+⚠️ CRITICAL RULES FOR FACT CITATIONS:
+- citation_ids field = ONLY fact IDs like ["F001", "F003"]
+- dialogue field = ONLY what characters SAY - NEVER include "F001" or fact IDs in dialogue
+- The dialogue should naturally incorporate the fact's content WITHOUT mentioning the ID
+- WRONG: "I stick to teeth [F001]"
+- RIGHT: dialogue: ["I stick to teeth for hours!"], citation_ids: ["F001"]
+
+📝 OTHER RULES:
+- Every panel needs a LAUGH MOMENT (joke, pun, visual gag, surprise)
+- Keep dialogue VERY SHORT: Maximum 2-3 brief lines per panel
+- CRITICAL TEXT LIMITS: Each dialogue line must be under 40 characters, total per panel under 100 characters
+- Shorter is better - aim for punchy, concise jokes that kids can read quickly
+- Expressions: happy, shocked, worried, excited, triumphant, scheming
+- Props add comedy: superhero capes, detective hats, party decorations, microphones
+- NO scolding or guilt - keep it light and fun!
+
+EXAMPLE PANEL (showing humor + citations done RIGHT):
+
 {{
-  "panels": [
+  "panel_number": 2,
+  "title": "The Sticky Situation",
+  "dialogue": [
+    "I throw PARTIES for bacteria! They absolutely LOVE me!",
+    "*GASP* You mean sticky candies stay on teeth for HOURS?!",
+    "Yep! It's like an all-night rave for tiny party animals!"
+  ],
+  "citation_ids": ["F002"],  // Fact about stickiness - ID here, NOT in dialogue
+  "characters": [
     {{
-      "panel_number": 1,
-      "title": "Meet the Squad!",
-      "dialogue": ["Hi! I'm Captain Crunch!", "And I'm Berry the Wise!"],
-      "citation_ids": [],
-      "characters": [
-        {{
-          "name": "Captain Crunch",
-          "item_id": "snack_id_here",
-          "expression": "happy",
-          "position": "left",
-          "props": ["superhero cape"]
-        }}
-      ],
-      "visual_prompt": "Two animated snack characters with friendly faces...",
-      "background": "simple"
+      "name": "Gummy Gary",
+      "item_id": "candy_gummy",
+      "expression": "proud",
+      "position": "left",
+      "props": ["party hat", "confetti"]
+    }},
+    {{
+      "name": "Captain Sparkle",
+      "item_id": "recurring_tooth",
+      "expression": "shocked",
+      "position": "right",
+      "props": ["superhero cape"]
     }}
   ],
-  "summary_caption": "When Captain Crunch met Berry, they learned that timing is everything for happy teeth!",
-  "alt_text": "A 4-panel comic showing...",
-  "hashtags": ["SnackSwapComics", "DentalHealth", "HealthyKids"]
+  "visual_prompt": "Gummy bear character wearing party hat with tiny bacteria having a party. Tooth superhero looking shocked with wide eyes and open mouth.",
+  "background": "simple with subtle party decorations"
 }}
 
-Make it delightful!"""
+📋 REQUIRED JSON OUTPUT STRUCTURE:
+
+Return your response as valid JSON with this EXACT structure:
+
+{{
+  "panels": [
+    // Array of 4 panels, each following the structure shown above
+  ],
+  "summary_caption": "A catchy one-liner that captures the comic's main joke or lesson (under 100 chars)",
+  "alt_text": "Accessibility description for screen readers: describe the comic's story and visual elements (1-2 sentences)"
+}}
+
+Make it HILARIOUS while teaching dental health!"""
 
         try:
             model = genai.GenerativeModel(self.settings.gemini_writer_model)
@@ -232,6 +282,46 @@ Make it delightful!"""
                 logger.error(f"Failed to parse Gemini response as JSON: {e}")
                 logger.error(f"Raw response (first 1000 chars): {response_text[:1000]}")
                 raise ValueError(f"Gemini returned invalid JSON: {e}")
+
+            # Safety filter: Remove any fact IDs that slipped into dialogue
+            import re
+            fact_id_pattern = re.compile(r'\[?F\d{3,4}\]?|\(F\d{3,4}\)')
+
+            for panel in result.get('panels', []):
+                if 'dialogue' in panel:
+                    cleaned_dialogue = []
+                    for line in panel['dialogue']:
+                        # Remove fact IDs from dialogue
+                        cleaned_line = fact_id_pattern.sub('', line).strip()
+                        # Remove extra spaces
+                        cleaned_line = re.sub(r'\s+', ' ', cleaned_line)
+                        cleaned_dialogue.append(cleaned_line)
+                    panel['dialogue'] = cleaned_dialogue
+
+            # Character limit validation: Truncate lines that are too long
+            MAX_LINE_LENGTH = 45  # chars per line
+            MAX_PANEL_TOTAL = 110  # total chars per panel
+
+            for panel in result.get('panels', []):
+                if 'dialogue' in panel:
+                    validated_dialogue = []
+                    panel_total = 0
+
+                    for line in panel['dialogue']:
+                        # Truncate individual line if too long
+                        if len(line) > MAX_LINE_LENGTH:
+                            logger.warning(f"Truncating dialogue line from {len(line)} to {MAX_LINE_LENGTH} chars: {line[:30]}...")
+                            line = line[:MAX_LINE_LENGTH-3] + "..."
+
+                        # Check total panel character count
+                        if panel_total + len(line) > MAX_PANEL_TOTAL:
+                            logger.warning(f"Panel exceeds character limit, stopping at {panel_total} chars")
+                            break
+
+                        validated_dialogue.append(line)
+                        panel_total += len(line)
+
+                    panel['dialogue'] = validated_dialogue
 
             logger.info(f"Composed script with {len(result.get('panels', []))} panels")
             return result

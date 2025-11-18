@@ -57,6 +57,9 @@ class Settings(BaseSettings):
     gemini_writer_model: str = Field(
         "gemini-2.0-flash-exp", description="Gemini model for script writing"
     )
+    gemini_image_model: str = Field(
+        "gemini-2.5-flash-image", description="Gemini model for image generation (Nano-Banana)"
+    )
     gemini_temperature: float = Field(0.7, description="Gemini generation temperature")
     gemini_max_tokens: int = Field(2048, description="Maximum tokens for generation")
 

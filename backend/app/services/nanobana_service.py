@@ -1,14 +1,16 @@
 """
-Nano-Banana (Gemini 2.5 Flash Image) service for comic image generation.
+Image generation service for comic creation.
+Supports both Imagen 4.0 (2K resolution) and Nano-Banana (1K resolution).
+Uses the official google-genai SDK for image generation.
 """
 
-import base64
 import logging
+import mimetypes
 from pathlib import Path
 from typing import Any
 
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from google import genai
+from google.genai import types
 
 from app.core.config import Settings
 
@@ -16,22 +18,17 @@ logger = logging.getLogger(__name__)
 
 
 class NanoBananaService:
-    """Service for generating comic images using Gemini 2.5 Flash Image (Nano-Banana)."""
+    """Service for generating comic images using Google's image generation models."""
 
     def __init__(self, settings: Settings):
-        """Initialize Nano-Banana service."""
+        """Initialize image generation service with the google-genai SDK."""
         self.settings = settings
-        genai.configure(api_key=settings.gemini_api_key)
+        self.client = genai.Client(api_key=settings.gemini_api_key)
 
-        # Safety settings - keep permissive for food/dental content
-        self.safety_settings = {
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-        }
-
-        logger.info("Initialized Nano-Banana service")
+        # Determine which model is being used
+        self.is_imagen = "imagen" in settings.gemini_image_model.lower()
+        model_name = "Imagen 4.0" if self.is_imagen else "Nano-Banana"
+        logger.info(f"Initialized image generation service with {model_name} ({settings.gemini_image_model})")
 
     def build_comic_prompt(self, script: dict[str, Any]) -> str:
         """
@@ -65,11 +62,21 @@ class NanoBananaService:
         prompt_parts = [
             "Create a 4-panel comic strip in a 2x2 grid layout. Comic book illustration style, vibrant colors, friendly and appealing to children aged 6-8.",
             "",
-            "IMPORTANT LAYOUT RULES:",
+            "CRITICAL SPEECH BUBBLE RULES:",
+            "- Place ALL speech bubbles in the TOP 15-20% of each panel (measured from the top edge)",
+            "- Bubbles must be EXTRA LARGE white ovals with bold black outlines (3-4px thick)",
+            "- BUBBLE SIZE IS CRITICAL: Each bubble should occupy 70-80% of the panel width",
+            "- At 2048x2048 resolution, bubbles should be approximately 700-800 pixels wide × 180-220 pixels tall",
+            "- Prioritize bubble size over decorative elements - bubbles are essential for text overlay",
+            "- Each bubble should be EMPTY inside - completely blank with NO text whatsoever",
+            "- Bubbles should be horizontally centered or slightly left/right based on speaker",
+            "- Multiple bubbles in one panel should be side-by-side, not stacked",
+            "- Leave the bottom 75-80% of panel completely FREE for character artwork",
+            "",
+            "LAYOUT RULES:",
             "- Must be exactly 2 rows and 2 columns (2x2 grid)",
             "- Clear panel borders with thin black lines",
-            "- Leave space at top of each panel for speech bubbles",
-            "- All text must be fully visible within panel boundaries",
+            "- All visual elements must be fully visible within panel boundaries",
             "- No cropped or cut-off elements",
             "",
             "CHARACTER CONSISTENCY:",
@@ -115,11 +122,21 @@ class NanoBananaService:
             prompt_parts.append(f"Scene: {visual_prompt}")
             prompt_parts.append(f"Background: {background}")
 
-            # Add dialogue as speech bubble instructions
+            # Note about speech bubbles - emphasize they should be EMPTY and PRECISELY positioned
             if dialogue:
-                prompt_parts.append(f"Speech bubbles (top of panel, clearly visible):")
-                for j, line in enumerate(dialogue, 1):
-                    prompt_parts.append(f"  {j}. \"{line}\"")
+                num_bubbles = len(dialogue)
+                if num_bubbles == 1:
+                    bubble_layout = "one large centered bubble in the TOP 15% of panel"
+                elif num_bubbles == 2:
+                    bubble_layout = "two side-by-side bubbles in the TOP 15-18% of panel"
+                else:
+                    bubble_layout = f"{num_bubbles} side-by-side bubbles in the TOP 15-20% of panel"
+
+                prompt_parts.append(
+                    f"Speech Bubbles: {bubble_layout}. "
+                    f"IMPORTANT: Bubbles must be EMPTY white ovals with black outlines. "
+                    f"NO text inside - leave them completely blank for text overlay later."
+                )
 
             prompt_parts.append("")
 
@@ -130,7 +147,7 @@ class NanoBananaService:
             "- Cartoon/comic book style with bold outlines",
             "- Bright, appealing colors suitable for children",
             "- Friendly, non-threatening character designs",
-            "- Clear readable text in speech bubbles",
+            "- Empty white speech bubbles with no text (text will be added later as an overlay)",
             "- Professional comic book layout",
             "- Each character maintains exact same appearance across all panels",
         ])
@@ -153,6 +170,7 @@ class NanoBananaService:
             "chips_classic": "A friendly potato chip character. Golden-yellow, wavy crispy shape. Cartoon eyes and smile on the chip surface. Slightly curled edges, textured surface showing the crunchiness.",
             "soda_orange": "An orange soda bottle or can character. Orange colored, cylindrical shape with condensation droplets. Happy face on the label. Fizzy bubbles visible around it.",
             "candy_chocolate": "A chocolate bar character. Brown rectangular shape with segmented squares. Glossy chocolate surface. Friendly smiling face, small arms and legs.",
+            "recurring_tooth": "Captain Sparkle - A superhero tooth character. Bright white, shiny tooth shape with sparkles around it. Big expressive eyes, enthusiastic smile. Wears a tiny red superhero cape. Very animated expressions (excited, shocked, triumphant, worried). Small arms and legs. Always energetic and dramatic pose.",
         }
 
         return descriptions.get(
@@ -164,13 +182,15 @@ class NanoBananaService:
         self,
         script: dict[str, Any],
         output_path: str | Path,
+        image_size: str = "2K",
     ) -> Path:
         """
-        Generate a 4-panel comic image using Nano-Banana (Gemini 2.5 Flash Image).
+        Generate a 4-panel comic image using Imagen 4.0 or Nano-Banana.
 
         Args:
             script: Comic script with panels and characters
             output_path: Path where to save the generated image
+            image_size: Image size ("1K" or "2K" for Imagen; "256", "512", "1K" for Nano-Banana)
 
         Returns:
             Path to the generated image
@@ -183,58 +203,112 @@ class NanoBananaService:
             # Build comprehensive prompt
             prompt = self.build_comic_prompt(script)
 
-            logger.info("Generating comic image with Nano-Banana")
+            model_name = "Imagen 4.0" if self.is_imagen else "Nano-Banana"
+            logger.info(f"Generating comic image with {model_name} (size: {image_size})")
             logger.debug(f"Prompt: {prompt[:500]}...")  # Log first 500 chars
 
-            # Use Gemini 2.5 Flash Image model (Nano-Banana)
-            model = genai.GenerativeModel("models/gemini-2.5-flash-image")
-
-            # Generate image
-            response = model.generate_content(
-                prompt,
-                generation_config={
-                    "temperature": 0.8,  # Balanced creativity
-                    "max_output_tokens": 4096,
-                },
-                safety_settings=self.safety_settings,
-            )
-
-            # Check if response has image data
-            if not response.parts:
-                raise ValueError("Nano-Banana returned no content. Check API quota or safety filters.")
-
-            # Extract image data (Gemini returns base64 encoded image)
-            # Note: The actual response format may vary, adjust based on API response
-            image_data = None
-            for part in response.parts:
-                if hasattr(part, 'inline_data') and part.inline_data:
-                    image_data = part.inline_data.data
-                    break
-                elif hasattr(part, 'text') and part.text.startswith('data:image'):
-                    # Handle base64 data URL
-                    image_data = part.text.split(',')[1]
-                    break
-
-            if not image_data:
-                # Fallback: Try to get from response candidate
-                logger.warning("Could not extract image from parts, trying alternative method")
-                raise ValueError(
-                    "Nano-Banana did not return image data. "
-                    "The model may not support image generation or quota exceeded."
-                )
-
-            # Decode and save image
             output_path = Path(output_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            if isinstance(image_data, str):
-                image_data = base64.b64decode(image_data)
+            if self.is_imagen:
+                # Use Imagen 4.0 API
+                response = self.client.models.generate_images(
+                    model=self.settings.gemini_image_model,
+                    prompt=prompt,
+                    config=types.GenerateImagesConfig(
+                        number_of_images=1,
+                        image_size=image_size,
+                    )
+                )
 
-            with open(output_path, 'wb') as f:
-                f.write(image_data)
+                # Imagen returns PIL Image objects directly
+                if not response.generated_images:
+                    raise ValueError("Imagen 4.0 did not return any images")
 
-            logger.info(f"Comic image generated successfully: {output_path}")
-            return output_path
+                # Get the first generated image
+                generated_image = response.generated_images[0]
+                pil_image = generated_image.image
+
+                # Save as PNG (PNG doesn't support quality parameter)
+                final_path = output_path.with_suffix(".png") if not output_path.suffix else output_path
+                pil_image.save(final_path, "PNG")
+
+                logger.info(f"Comic image saved to: {final_path}")
+                return final_path
+
+            else:
+                # Use Nano-Banana API (streaming)
+                contents = [
+                    types.Content(
+                        role="user",
+                        parts=[
+                            types.Part.from_text(text=prompt),
+                        ],
+                    ),
+                ]
+
+                generate_content_config = types.GenerateContentConfig(
+                    response_modalities=[
+                        "IMAGE",
+                        "TEXT",
+                    ],
+                    image_config=types.ImageConfig(
+                        image_size=image_size,
+                    ),
+                )
+
+                file_saved = False
+
+                # Stream response chunks
+                for chunk in self.client.models.generate_content_stream(
+                    model=self.settings.gemini_image_model,
+                    contents=contents,
+                    config=generate_content_config,
+                ):
+                    # Check if chunk has content
+                    if (
+                        chunk.candidates is None
+                        or chunk.candidates[0].content is None
+                        or chunk.candidates[0].content.parts is None
+                    ):
+                        continue
+
+                    # Check for image data
+                    part = chunk.candidates[0].content.parts[0]
+                    if part.inline_data and part.inline_data.data:
+                        inline_data = part.inline_data
+                        data_buffer = inline_data.data
+
+                        # Determine file extension from mime type
+                        file_extension = mimetypes.guess_extension(inline_data.mime_type)
+                        if not file_extension:
+                            file_extension = ".png"  # Default to PNG
+
+                        # Save the image
+                        if output_path.suffix:
+                            final_path = output_path
+                        else:
+                            final_path = output_path.with_suffix(file_extension)
+
+                        with open(final_path, "wb") as f:
+                            f.write(data_buffer)
+
+                        logger.info(f"Comic image saved to: {final_path}")
+                        file_saved = True
+                        output_path = final_path
+                        break  # We only need the first image
+
+                    elif part.text:
+                        # Log any text responses (might be explanations or errors)
+                        logger.info(f"Nano-Banana text response: {part.text}")
+
+                if not file_saved:
+                    raise ValueError(
+                        "Nano-Banana did not return image data. "
+                        "The model may not support image generation or quota exceeded."
+                    )
+
+                return output_path
 
         except Exception as e:
             logger.error(f"Error generating comic image: {e}")
@@ -246,6 +320,7 @@ class NanoBananaService:
         character_description: str,
         expression: str = "happy",
         output_path: str | Path = None,
+        image_size: str = "512",
     ) -> Path:
         """
         Generate a single character image (useful for testing or character sheets).
@@ -255,6 +330,7 @@ class NanoBananaService:
             character_description: Visual description
             expression: Character expression
             output_path: Where to save the image
+            image_size: Image size ("256", "512", "1K")
 
         Returns:
             Path to generated image
@@ -271,18 +347,63 @@ class NanoBananaService:
         """
 
         try:
-            model = genai.GenerativeModel("gemini-2.5-flash")
-            response = model.generate_content(
-                prompt,
-                generation_config={"temperature": 0.8},
-                safety_settings=self.safety_settings,
+            contents = [
+                types.Content(
+                    role="user",
+                    parts=[
+                        types.Part.from_text(text=prompt),
+                    ],
+                ),
+            ]
+
+            generate_content_config = types.GenerateContentConfig(
+                response_modalities=["IMAGE"],
+                image_config=types.ImageConfig(
+                    image_size=image_size,
+                ),
             )
 
-            # Save logic similar to generate_comic_image
-            # ... (implementation similar to above)
+            if output_path is None:
+                output_path = Path(f"character_{character_name}.png")
+            else:
+                output_path = Path(output_path)
 
-            logger.info(f"Character image generated: {character_name}")
-            return Path(output_path) if output_path else Path("character.png")
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            file_saved = False
+
+            for chunk in self.client.models.generate_content_stream(
+                model=self.settings.gemini_image_model,
+                contents=contents,
+                config=generate_content_config,
+            ):
+                if (
+                    chunk.candidates is None
+                    or chunk.candidates[0].content is None
+                    or chunk.candidates[0].content.parts is None
+                ):
+                    continue
+
+                part = chunk.candidates[0].content.parts[0]
+                if part.inline_data and part.inline_data.data:
+                    inline_data = part.inline_data
+                    data_buffer = inline_data.data
+
+                    file_extension = mimetypes.guess_extension(inline_data.mime_type) or ".png"
+                    if not output_path.suffix:
+                        output_path = output_path.with_suffix(file_extension)
+
+                    with open(output_path, "wb") as f:
+                        f.write(data_buffer)
+
+                    logger.info(f"Character image saved: {output_path}")
+                    file_saved = True
+                    break
+
+            if not file_saved:
+                raise ValueError("Failed to generate character image")
+
+            return output_path
 
         except Exception as e:
             logger.error(f"Error generating character image: {e}")
