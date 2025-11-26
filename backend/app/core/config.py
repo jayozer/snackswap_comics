@@ -50,18 +50,18 @@ class Settings(BaseSettings):
     max_upload_size_mb: int = Field(10, description="Maximum upload size in MB")
     content_retention_days: int = Field(30, description="Content retention period in days")
 
-    # Model Configuration
+    # Model Configuration (using new google.genai SDK - no models/ prefix)
     gemini_vision_model: str = Field(
-        "gemini-2.0-flash-exp", description="Gemini model for vision tasks"
+        "gemini-2.5-flash", description="Gemini model for vision tasks"
     )
     gemini_writer_model: str = Field(
-        "gemini-2.0-flash-exp", description="Gemini model for script writing"
+        "gemini-2.5-pro", description="Gemini model for script writing"
     )
     gemini_image_model: str = Field(
-        "gemini-2.5-flash-image", description="Gemini model for image generation (Nano-Banana)"
+        "gemini-3-pro-image-preview", description="Gemini model for image generation (Nano-Banana Pro)"
     )
     gemini_temperature: float = Field(0.7, description="Gemini generation temperature")
-    gemini_max_tokens: int = Field(2048, description="Maximum tokens for generation")
+    gemini_max_tokens: int = Field(8192, description="Maximum tokens for generation")
 
     # Feature Flags
     enable_admin_approval: bool = Field(False, description="Require admin approval before download")

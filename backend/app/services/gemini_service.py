@@ -3,12 +3,15 @@ Gemini AI service for SnackSwap Comics.
 Handles vision detection, script composition, and embeddings.
 """
 
+import base64
 import json
 import logging
+import mimetypes
 from typing import Any
+from pathlib import Path
 
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from google import genai
+from google.genai import types
 
 from app.core.config import Settings
 from app.models import DetectedItem, Panel
@@ -17,22 +20,14 @@ logger = logging.getLogger(__name__)
 
 
 class GeminiService:
-    """Service for interacting with Google Gemini AI."""
+    """Service for interacting with Google Gemini AI using the new google.genai SDK."""
 
     def __init__(self, settings: Settings):
-        """Initialize Gemini service."""
+        """Initialize Gemini service with the new SDK."""
         self.settings = settings
-        genai.configure(api_key=settings.gemini_api_key)
+        self.client = genai.Client(api_key=settings.gemini_api_key)
 
-        # Safety settings - keep permissive for food/dental content
-        self.safety_settings = {
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-        }
-
-        logger.info("Initialized Gemini service")
+        logger.info("Initialized Gemini service with new google.genai SDK")
 
     async def detect_items(self, image_path: str) -> list[DetectedItem]:
         """
@@ -72,18 +67,53 @@ Return your response as a JSON object with this structure:
 Set needs_confirmation to true if any item has confidence < 0.7."""
 
         try:
-            # Upload image
-            uploaded_file = genai.upload_file(image_path)
+            # Read image file and encode as base64
+            image_path_obj = Path(image_path)
+            with open(image_path_obj, "rb") as f:
+                image_data = f.read()
 
-            # Generate response
-            model = genai.GenerativeModel(self.settings.gemini_vision_model)
-            response = model.generate_content(
-                [prompt, uploaded_file],
-                generation_config={
-                    "temperature": 0.3,  # Lower for factual detection
-                    "max_output_tokens": 1024,
-                },
-                safety_settings=self.safety_settings,
+            # Determine mime type
+            mime_type, _ = mimetypes.guess_type(str(image_path_obj))
+            if not mime_type:
+                mime_type = "image/jpeg"  # Default to JPEG
+
+            # Generate response using new SDK with inline data
+            response = self.client.models.generate_content(
+                model=self.settings.gemini_vision_model,
+                contents=[
+                    types.Content(
+                        role="user",
+                        parts=[
+                            types.Part.from_text(text=prompt),
+                            types.Part.from_bytes(
+                                data=image_data,
+                                mime_type=mime_type
+                            ),
+                        ],
+                    ),
+                ],
+                config=types.GenerateContentConfig(
+                    temperature=0.3,  # Lower for factual detection
+                    max_output_tokens=1024,
+                    safety_settings=[
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_HARASSMENT",
+                            threshold="BLOCK_NONE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_HATE_SPEECH",
+                            threshold="BLOCK_NONE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                            threshold="BLOCK_NONE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                            threshold="BLOCK_NONE"
+                        ),
+                    ],
+                ),
             )
 
             # Parse JSON response
@@ -254,14 +284,36 @@ Return your response as valid JSON with this EXACT structure:
 Make it HILARIOUS while teaching dental health!"""
 
         try:
-            model = genai.GenerativeModel(self.settings.gemini_writer_model)
-            response = model.generate_content(
-                prompt,
-                generation_config={
-                    "temperature": self.settings.gemini_temperature,
-                    "max_output_tokens": self.settings.gemini_max_tokens,
-                },
-                safety_settings=self.safety_settings,
+            response = self.client.models.generate_content(
+                model=self.settings.gemini_writer_model,
+                contents=[
+                    types.Content(
+                        role="user",
+                        parts=[types.Part.from_text(text=prompt)],
+                    ),
+                ],
+                config=types.GenerateContentConfig(
+                    temperature=self.settings.gemini_temperature,
+                    max_output_tokens=self.settings.gemini_max_tokens,
+                    safety_settings=[
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_HARASSMENT",
+                            threshold="BLOCK_NONE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_HATE_SPEECH",
+                            threshold="BLOCK_NONE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                            threshold="BLOCK_NONE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                            threshold="BLOCK_NONE"
+                        ),
+                    ],
+                ),
             )
 
             # Parse JSON response
@@ -341,13 +393,20 @@ Make it HILARIOUS while teaching dental health!"""
             Embedding vector
         """
         try:
-            result = genai.embed_content(
-                model="models/text-embedding-004",
-                content=text,
-                task_type="retrieval_document",
+            response = self.client.models.embed_content(
+                model="text-embedding-004",
+                contents=[
+                    types.Content(
+                        role="user",
+                        parts=[types.Part.from_text(text=text)],
+                    ),
+                ],
+                config=types.EmbedContentConfig(
+                    task_type="RETRIEVAL_DOCUMENT",
+                ),
             )
 
-            return result["embedding"]
+            return response.embeddings[0].values
 
         except Exception as e:
             logger.error(f"Error generating embedding: {e}")
@@ -364,13 +423,20 @@ Make it HILARIOUS while teaching dental health!"""
             Embedding vector
         """
         try:
-            result = genai.embed_content(
-                model="models/text-embedding-004",
-                content=text,
-                task_type="retrieval_query",
+            response = self.client.models.embed_content(
+                model="text-embedding-004",
+                contents=[
+                    types.Content(
+                        role="user",
+                        parts=[types.Part.from_text(text=text)],
+                    ),
+                ],
+                config=types.EmbedContentConfig(
+                    task_type="RETRIEVAL_QUERY",
+                ),
             )
 
-            return result["embedding"]
+            return response.embeddings[0].values
 
         except Exception as e:
             logger.error(f"Error generating query embedding: {e}")

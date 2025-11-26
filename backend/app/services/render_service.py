@@ -411,14 +411,20 @@ class RenderService:
             panel_cv = cv2.cvtColor(np.array(panel), cv2.COLOR_RGB2BGR)
             gray = cv2.cvtColor(panel_cv, cv2.COLOR_BGR2GRAY)
 
-            # Find white regions (speech bubbles) - threshold at 230 for bright white
-            _, binary = cv2.threshold(gray, 230, 255, cv2.THRESH_BINARY)
+            # Find white/light regions (speech bubbles)
+            # Lower threshold from 230 to 210 for more tolerance with off-white bubbles
+            _, binary = cv2.threshold(gray, 210, 255, cv2.THRESH_BINARY)
+
+            # Apply morphological operations to clean up bubble detection
+            kernel = np.ones((5, 5), np.uint8)
+            binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)  # Fill small holes
+            binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)   # Remove noise
 
             # Find contours of white regions
             contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            # Scan top 40% of panel for bubble contours
-            scan_height = int(panel_height * 0.4)
+            # Scan top 35% of panel for bubble contours (more focused region)
+            scan_height = int(panel_height * 0.35)
             best_contour = None
             best_area = 0
 
@@ -426,8 +432,11 @@ class RenderService:
                 x, y, w, h = cv2.boundingRect(contour)
 
                 # Check if contour is in top region and meets minimum size requirements
-                # Scaled for 2K images (Imagen 4.0 resolution)
-                if y < scan_height and w > 100 and h > 40:  # Minimum bubble size for 2K (1024x1024 panels)
+                # Adjusted minimum sizes for various image resolutions
+                min_w = max(50, int(panel_width * 0.15))  # At least 15% of panel width
+                min_h = max(25, int(panel_height * 0.05))  # At least 5% of panel height
+
+                if y < scan_height and w > min_w and h > min_h:
                     area = w * h
                     # Prefer larger contours (likely the main bubble)
                     if area > best_area:
@@ -442,7 +451,7 @@ class RenderService:
                 x2 = panel_x + x + w
                 y2 = panel_y + y + h
 
-                logger.debug(f"Detected bubble boundaries: ({x1},{y1}) to ({x2},{y2}), size: {w}x{h}")
+                logger.info(f"OpenCV detected bubble: ({x1},{y1}) to ({x2},{y2}), size: {w}x{h}")
                 return (x1, y1, x2, y2)
 
             logger.debug("No bubble boundaries detected with OpenCV")
@@ -454,6 +463,41 @@ class RenderService:
         except Exception as e:
             logger.warning(f"Bubble boundary detection failed: {e}")
             return None
+
+    def _get_expected_bubble_region(
+        self,
+        panel_x: int,
+        panel_y: int,
+        panel_width: int,
+        panel_height: int,
+    ) -> tuple[int, int, int, int]:
+        """
+        Get expected bubble region based on prompt instructions.
+
+        The AI is instructed to place speech bubbles in the TOP 15-20% of each panel.
+        This provides a reliable fallback when detection fails.
+
+        Args:
+            panel_x: Panel X position
+            panel_y: Panel Y position
+            panel_width: Panel width
+            panel_height: Panel height
+
+        Returns:
+            (x1, y1, x2, y2) bounding box for expected bubble region
+        """
+        # Bubbles should be in top 15-25% of panel with horizontal margins
+        margin_x = int(panel_width * 0.08)  # 8% margin on each side
+        bubble_y_start = panel_y + int(panel_height * 0.03)  # Start 3% from top
+        bubble_y_end = panel_y + int(panel_height * 0.22)  # End at 22% from top
+
+        x1 = panel_x + margin_x
+        y1 = bubble_y_start
+        x2 = panel_x + panel_width - margin_x
+        y2 = bubble_y_end
+
+        logger.debug(f"Expected bubble region: ({x1},{y1}) to ({x2},{y2})")
+        return (x1, y1, x2, y2)
 
     async def _detect_bubbles_with_vision(
         self,
@@ -473,11 +517,19 @@ class RenderService:
             or None if detection fails
         """
         try:
-            import google.generativeai as genai
+            from google import genai
+            from google.genai import types
             import json
+            import mimetypes
 
-            # Upload image to Gemini
-            uploaded_file = genai.upload_file(str(image_path))
+            # Read image file
+            with open(image_path, "rb") as f:
+                image_data = f.read()
+
+            # Determine mime type
+            mime_type, _ = mimetypes.guess_type(str(image_path))
+            if not mime_type:
+                mime_type = "image/png"
 
             # Create vision prompt
             prompt = """Analyze this 4-panel comic image arranged in a 2x2 grid.
@@ -509,14 +561,28 @@ Rules:
 - Ignore small decorative elements
 - Return ONLY valid JSON, no other text"""
 
-            # Generate response using vision model
-            model = genai.GenerativeModel(self.settings.gemini_vision_model)
-            response = model.generate_content(
-                [prompt, uploaded_file],
-                generation_config={
-                    "temperature": 0.1,  # Low for factual detection
-                    "max_output_tokens": 1024,
-                },
+            # Initialize client with new SDK
+            client = genai.Client(api_key=self.settings.gemini_api_key)
+
+            # Generate response using vision model with inline data
+            response = client.models.generate_content(
+                model=self.settings.gemini_vision_model,
+                contents=[
+                    types.Content(
+                        role="user",
+                        parts=[
+                            types.Part.from_text(text=prompt),
+                            types.Part.from_bytes(
+                                data=image_data,
+                                mime_type=mime_type
+                            ),
+                        ],
+                    ),
+                ],
+                config=types.GenerateContentConfig(
+                    temperature=0.1,  # Low for factual detection
+                    max_output_tokens=1024,
+                ),
             )
 
             # Parse JSON response
@@ -621,10 +687,10 @@ Rules:
         """
         Add text overlay to comic image (for Nano-Banana generated images with empty bubbles).
 
-        Uses three-tier bubble detection:
+        Uses three-tier bubble detection with RELIABLE fallback:
         1. Gemini Vision (AI-powered, most reliable)
-        2. OpenCV contour detection (algorithmic fallback)
-        3. Center-point detection (final fallback)
+        2. OpenCV contour detection (algorithmic)
+        3. Fixed-position fallback (based on prompt instructions - ALWAYS works)
 
         Args:
             base_image_path: Path to base comic image
@@ -638,36 +704,22 @@ Rules:
             img = Image.open(base_image_path)
             draw = ImageDraw.Draw(img)
 
-            # Load Comic Sans font (or fallback)
-            try:
-                # Try to find Comic Sans on the system
-                font_size = 24
-                font = ImageFont.truetype("Comic Sans MS", font_size)
-            except:
-                try:
-                    # macOS fallback
-                    font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Comic Sans MS.ttf", 24)
-                except:
-                    try:
-                        # Linux fallback
-                        font = ImageFont.truetype("/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf", 24)
-                    except:
-                        logger.warning("Comic Sans not found, using default font")
-                        font = ImageFont.load_default()
-
             # Get image dimensions
             img_width, img_height = img.size
+            logger.info(f"Processing comic image: {img_width}x{img_height}")
 
             # Assuming 2x2 grid layout
             panel_width = img_width // 2
             panel_height = img_height // 2
 
             # Try Gemini Vision bubble detection FIRST (detects all bubbles at once)
-            vision_bubbles = await self._detect_bubbles_with_vision(base_image_path)
-            if vision_bubbles:
-                logger.info(f"Using Gemini Vision detection for {len(vision_bubbles)} panels")
-            else:
-                logger.info("Gemini Vision detection unavailable, will use OpenCV fallback")
+            vision_bubbles = None
+            try:
+                vision_bubbles = await self._detect_bubbles_with_vision(base_image_path)
+                if vision_bubbles:
+                    logger.info(f"Gemini Vision detected bubbles in {len(vision_bubbles)} panels")
+            except Exception as e:
+                logger.warning(f"Gemini Vision detection failed: {e}")
 
             panels = script.get("panels", [])
 
@@ -677,6 +729,7 @@ Rules:
 
                 dialogue = panel.get("dialogue", [])
                 if not dialogue:
+                    logger.debug(f"Panel {i+1}: No dialogue, skipping")
                     continue
 
                 # Calculate panel position
@@ -685,10 +738,12 @@ Rules:
                 panel_x = col * panel_width
                 panel_y = row * panel_height
 
+                logger.info(f"Panel {i+1}: Position ({panel_x}, {panel_y}), Size {panel_width}x{panel_height}")
+
                 # Combine all dialogue into single text block for optimal sizing
                 full_dialogue = " ".join(dialogue)
 
-                # Three-tier bubble detection: Vision → OpenCV → Center-point
+                # Three-tier bubble detection: Vision → OpenCV → Fixed-Position
                 bubble_bbox = None
                 detection_method = None
 
@@ -696,7 +751,7 @@ Rules:
                 if vision_bubbles and i in vision_bubbles:
                     bubble_bbox = vision_bubbles[i]
                     detection_method = "Vision"
-                    logger.debug(f"Panel {i+1}: Using Gemini Vision detection")
+                    logger.info(f"Panel {i+1}: Using Gemini Vision detection")
 
                 # 2. Fallback to OpenCV if Vision didn't detect this panel
                 if not bubble_bbox:
@@ -705,64 +760,49 @@ Rules:
                     )
                     if bubble_bbox:
                         detection_method = "OpenCV"
-                        logger.debug(f"Panel {i+1}: Using OpenCV detection")
+                        logger.info(f"Panel {i+1}: Using OpenCV detection")
 
-                if bubble_bbox:
-                    # Use detected bubble boundaries
-                    x1, y1, x2, y2 = bubble_bbox
-                    bubble_width = x2 - x1
-                    bubble_height = y2 - y1
-
-                    # Calculate optimal font size and wrapping for this bubble
-                    font_size, wrapped_lines = self._fit_text_to_bubble(
-                        full_dialogue,
-                        bubble_width,
-                        bubble_height,
-                        max_font_size=32,  # Scaled for 2K images
-                        min_font_size=16   # Scaled for 2K images
+                # 3. CRITICAL: Use fixed-position fallback based on prompt instructions
+                # The AI is instructed to place bubbles in the TOP 15-20% of each panel
+                if not bubble_bbox:
+                    bubble_bbox = self._get_expected_bubble_region(
+                        panel_x, panel_y, panel_width, panel_height
                     )
+                    detection_method = "Fixed-Position"
+                    logger.info(f"Panel {i+1}: Using Fixed-Position fallback (top of panel)")
 
-                    # Load font at optimal size
+                # Now we ALWAYS have a bubble_bbox
+                x1, y1, x2, y2 = bubble_bbox
+                bubble_width = x2 - x1
+                bubble_height = y2 - y1
+
+                logger.info(f"Panel {i+1}: Bubble region ({x1},{y1}) to ({x2},{y2}), size {bubble_width}x{bubble_height}")
+
+                # Calculate optimal font size and wrapping for this bubble
+                font_size, wrapped_lines = self._fit_text_to_bubble(
+                    full_dialogue,
+                    bubble_width,
+                    bubble_height,
+                    max_font_size=28,  # Slightly smaller for better fit
+                    min_font_size=14   # Minimum readable size
+                )
+
+                # Load font at optimal size
+                try:
+                    font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Comic Sans MS.ttf", font_size)
+                except:
                     try:
-                        font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Comic Sans MS.ttf", font_size)
+                        font = ImageFont.truetype("/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf", font_size)
                     except:
+                        logger.warning(f"Comic Sans not found, using default font")
                         font = ImageFont.load_default()
 
-                    # Position text in bubble center
-                    line_height = font_size + 4
-                    total_text_height = len(wrapped_lines) * line_height
-                    text_start_y = y1 + (bubble_height - total_text_height) // 2
+                # Position text in bubble center
+                line_height = font_size + 4
+                total_text_height = len(wrapped_lines) * line_height
+                text_start_y = y1 + (bubble_height - total_text_height) // 2
 
-                    logger.debug(f"Panel {i+1}: Using {detection_method} boundaries with font size {font_size}, {len(wrapped_lines)} lines")
-
-                else:
-                    # 3. Final fallback: use old center-point detection
-                    detection_method = "Center-point"
-                    detected_center = self._detect_bubble_position(
-                        img, panel_x, panel_y, panel_width, panel_height
-                    )
-
-                    if detected_center:
-                        bubble_center_x, bubble_center_y = detected_center
-                        text_start_y = bubble_center_y - 20
-                    else:
-                        text_start_y = panel_y + int(panel_height * 0.15)
-
-                    # Use safe defaults for fallback
-                    font_size = 22  # Slightly smaller for safety
-                    try:
-                        font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Comic Sans MS.ttf", font_size)
-                    except:
-                        font = ImageFont.load_default()
-
-                    # Use safe width estimate for wrapping
-                    max_width = int(panel_width * 0.8)
-                    wrapped_lines = self._wrap_text(full_dialogue, font, max_width)
-                    wrapped_lines = wrapped_lines[:3]  # Limit to 3 lines
-
-                    line_height = font_size + 4
-
-                    logger.debug(f"Panel {i+1}: Using {detection_method} fallback positioning")
+                logger.info(f"Panel {i+1}: {detection_method} - font {font_size}px, {len(wrapped_lines)} lines, text_y={text_start_y}")
 
                 # Draw the wrapped lines
                 for k, wrapped_line in enumerate(wrapped_lines):
@@ -770,14 +810,8 @@ Rules:
                     bbox = draw.textbbox((0, 0), wrapped_line, font=font)
                     text_width = bbox[2] - bbox[0]
 
-                    # Center text horizontally
-                    if bubble_bbox:
-                        # Center within bubble
-                        text_x = x1 + (bubble_width - text_width) // 2
-                    else:
-                        # Center in panel
-                        text_x = panel_x + (panel_width - text_width) // 2
-
+                    # Center text horizontally within bubble
+                    text_x = x1 + (bubble_width - text_width) // 2
                     actual_text_y = text_start_y + (k * line_height)
 
                     # Draw text with white outline for readability
@@ -791,14 +825,16 @@ Rules:
                     # Draw main text
                     draw.text((text_x, actual_text_y), wrapped_line, font=font, fill=text_color)
 
+                    logger.debug(f"Panel {i+1}: Drew line {k+1} at ({text_x}, {actual_text_y}): '{wrapped_line[:30]}...'")
+
             # Save the result
             img.save(output_path, 'PNG', quality=95)
-            logger.info(f"Text overlay added: {output_path}")
+            logger.info(f"Text overlay complete: {output_path}")
 
             return output_path
 
         except Exception as e:
-            logger.error(f"Error adding text overlay: {e}")
+            logger.error(f"Error adding text overlay: {e}", exc_info=True)
             # If overlay fails, return the original image
             return base_image_path
 
