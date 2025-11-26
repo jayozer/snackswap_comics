@@ -11,8 +11,9 @@ SnackSwap Comics is an AI-powered progressive web app that transforms photos of 
 - **Backend**: Python 3.11+ with FastAPI
 - **Package Management**: `uv` (required - not pip)
 - **AI Models**:
-  - Google Gemini Flash (via `google-generativeai`) - Vision detection and script generation
-  - Gemini 2.5 Flash Image / Nano-Banana (via `google-genai`) - Comic image generation
+  - Google Gemini 2.5 Flash (via `google-genai`) - Vision detection
+  - Google Gemini 2.5 Pro (via `google-genai`) - Script generation
+  - Gemini 3 Pro Image / Nano-Banana Pro (via `google-genai`) - Comic image generation
 - **Vector Database**: Qdrant for semantic search and fact retrieval
 - **Image Processing**: Pillow + pillow-heif for HEIC/EXIF handling
 - **Frontend**: Next.js/React PWA (planned - not yet implemented)

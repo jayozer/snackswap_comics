@@ -12,7 +12,8 @@ from pathlib import Path
 backend_path = Path(__file__).parent.parent.parent / "backend"
 sys.path.insert(0, str(backend_path))
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from qdrant_client.http import models
 
 from app.core.config import get_settings
@@ -20,14 +21,23 @@ from app.services.qdrant_service import QdrantService
 
 
 async def generate_embedding(text: str, api_key: str) -> list[float]:
-    """Generate embedding for text."""
-    genai.configure(api_key=api_key)
-    result = genai.embed_content(
-        model="models/text-embedding-004",
-        content=text,
-        task_type="retrieval_document",
+    """Generate embedding for text using the new google.genai SDK."""
+    client = genai.Client(api_key=api_key)
+
+    response = client.models.embed_content(
+        model="text-embedding-004",
+        contents=[
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=text)],
+            ),
+        ],
+        config=types.EmbedContentConfig(
+            task_type="RETRIEVAL_DOCUMENT",
+        ),
     )
-    return result["embedding"]
+
+    return response.embeddings[0].values
 
 
 async def seed_snacks(qdrant_service: QdrantService, api_key: str):
