@@ -35,7 +35,7 @@ class QdrantService:
         logger.info(f"Initialized Qdrant client at {settings.qdrant_url}")
 
     async def ensure_collections(self) -> None:
-        """Ensure all required collections exist."""
+        """Ensure all required collections exist with proper indexes."""
         collections = [
             (self.SNACKS_COLLECTION, 768),  # Gemini embedding size
             (self.FACTS_COLLECTION, 768),
@@ -58,6 +58,52 @@ class QdrantService:
                         distance=models.Distance.COSINE,
                     ),
                 )
+
+        # Ensure payload indexes exist for filtered fields (required by Qdrant Cloud)
+        await self._ensure_payload_indexes()
+
+    async def _ensure_payload_indexes(self) -> None:
+        """
+        Create payload indexes for fields used in filters.
+
+        Qdrant Cloud requires explicit indexes for filtered queries.
+        This creates indexes idempotently (skips if already exists).
+        """
+        # Define indexes needed for each collection
+        indexes_config = {
+            self.FACTS_COLLECTION: [
+                ("clinic_approved", models.PayloadSchemaType.BOOL),
+                ("age_band", models.PayloadSchemaType.KEYWORD),
+            ],
+            self.STYLES_COLLECTION: [
+                ("is_default", models.PayloadSchemaType.BOOL),
+            ],
+            self.SWAPS_COLLECTION: [
+                ("taste_cluster", models.PayloadSchemaType.KEYWORD),
+                ("allergy_tags", models.PayloadSchemaType.KEYWORD),
+            ],
+            self.SNACKS_COLLECTION: [
+                ("category", models.PayloadSchemaType.KEYWORD),
+            ],
+        }
+
+        for collection_name, indexes in indexes_config.items():
+            for field_name, field_type in indexes:
+                try:
+                    self.client.create_payload_index(
+                        collection_name=collection_name,
+                        field_name=field_name,
+                        field_schema=field_type,
+                    )
+                    logger.info(f"Created index {field_name} on {collection_name}")
+                except UnexpectedResponse as e:
+                    # Index might already exist - that's fine
+                    if "already exists" in str(e).lower():
+                        logger.debug(f"Index {field_name} already exists on {collection_name}")
+                    else:
+                        logger.warning(f"Failed to create index {field_name} on {collection_name}: {e}")
+                except Exception as e:
+                    logger.warning(f"Failed to create index {field_name} on {collection_name}: {e}")
 
     def search_snacks(
         self,
