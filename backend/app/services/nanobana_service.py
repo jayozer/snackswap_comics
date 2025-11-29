@@ -62,16 +62,14 @@ class NanoBananaService:
         prompt_parts = [
             "Create a 4-panel comic strip in a 2x2 grid layout. Comic book illustration style, vibrant colors, friendly and appealing to children aged 6-8.",
             "",
-            "CRITICAL SPEECH BUBBLE RULES:",
-            "- Place ALL speech bubbles in the TOP 15-20% of each panel (measured from the top edge)",
-            "- Bubbles must be EXTRA LARGE white ovals with bold black outlines (3-4px thick)",
-            "- BUBBLE SIZE IS CRITICAL: Each bubble should occupy 70-80% of the panel width",
-            "- At 2048x2048 resolution, bubbles should be approximately 700-800 pixels wide × 180-220 pixels tall",
-            "- Prioritize bubble size over decorative elements - bubbles are essential for text overlay",
-            "- Each bubble should be EMPTY inside - completely blank with NO text whatsoever",
-            "- Bubbles should be horizontally centered or slightly left/right based on speaker",
-            "- Multiple bubbles in one panel should be side-by-side, not stacked",
-            "- Leave the bottom 75-80% of panel completely FREE for character artwork",
+            "CRITICAL RULES - MUST FOLLOW:",
+            "- DO NOT draw any speech bubbles anywhere in the image",
+            "- DO NOT include any text, words, letters, or typography anywhere",
+            "- DO NOT write any labels, signs, or captions",
+            "- Leave the TOP 25% of each panel as PLAIN BACKGROUND COLOR (sky, wall, etc.)",
+            "- Draw all characters in the BOTTOM 75% of each panel ONLY",
+            "- The top area must be completely empty - no objects, no decorations",
+            "- Text and speech bubbles will be added as post-processing overlay",
             "",
             "LAYOUT RULES:",
             "- Must be exactly 2 rows and 2 columns (2x2 grid)",
@@ -121,23 +119,7 @@ class NanoBananaService:
 
             prompt_parts.append(f"Scene: {visual_prompt}")
             prompt_parts.append(f"Background: {background}")
-
-            # Note about speech bubbles - emphasize they should be EMPTY and PRECISELY positioned
-            if dialogue:
-                num_bubbles = len(dialogue)
-                if num_bubbles == 1:
-                    bubble_layout = "one large centered bubble in the TOP 15% of panel"
-                elif num_bubbles == 2:
-                    bubble_layout = "two side-by-side bubbles in the TOP 15-18% of panel"
-                else:
-                    bubble_layout = f"{num_bubbles} side-by-side bubbles in the TOP 15-20% of panel"
-
-                prompt_parts.append(
-                    f"Speech Bubbles: {bubble_layout}. "
-                    f"IMPORTANT: Bubbles must be EMPTY white ovals with black outlines. "
-                    f"NO text inside - leave them completely blank for text overlay later."
-                )
-
+            # Note: Speech bubbles will be drawn by PIL post-processing, not by the AI
             prompt_parts.append("")
 
         # Add final styling notes
@@ -147,7 +129,7 @@ class NanoBananaService:
             "- Cartoon/comic book style with bold outlines",
             "- Bright, appealing colors suitable for children",
             "- Friendly, non-threatening character designs",
-            "- Empty white speech bubbles with no text (text will be added later as an overlay)",
+            "- NO speech bubbles or text - leave top 25% of each panel empty/plain",
             "- Professional comic book layout",
             "- Each character maintains exact same appearance across all panels",
         ])
@@ -227,11 +209,13 @@ class NanoBananaService:
 
                 # Get the first generated image
                 generated_image = response.generated_images[0]
-                pil_image = generated_image.image
 
-                # Save as PNG (PNG doesn't support quality parameter)
+                # Save as PNG
                 final_path = output_path.with_suffix(".png") if not output_path.suffix else output_path
-                pil_image.save(final_path, "PNG")
+
+                # The image object from Imagen 4.0 has a save() method with different signature
+                # It takes only the path, not format argument
+                generated_image.image.save(final_path)
 
                 logger.info(f"Comic image saved to: {final_path}")
                 return final_path

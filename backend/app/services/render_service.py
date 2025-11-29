@@ -431,12 +431,17 @@ class RenderService:
             for contour in contours:
                 x, y, w, h = cv2.boundingRect(contour)
 
-                # Check if contour is in top region and meets minimum size requirements
-                # Adjusted minimum sizes for various image resolutions
+                # Check if contour is in top region and meets size requirements
                 min_w = max(50, int(panel_width * 0.15))  # At least 15% of panel width
                 min_h = max(25, int(panel_height * 0.05))  # At least 5% of panel height
 
-                if y < scan_height and w > min_w and h > min_h:
+                # CRITICAL: Add maximum size limits - bubbles shouldn't be too large
+                # Reject if detected region is too big (likely detected background, not bubble)
+                max_w = int(panel_width * 0.85)   # Max 85% of panel width
+                max_h = int(panel_height * 0.30)  # Max 30% of panel height (bubbles are at top)
+
+                # Must START in top region AND be reasonably sized
+                if y < scan_height and w > min_w and h > min_h and w < max_w and h < max_h:
                     area = w * h
                     # Prefer larger contours (likely the main bubble)
                     if area > best_area:
@@ -474,8 +479,8 @@ class RenderService:
         """
         Get expected bubble region based on prompt instructions.
 
-        The AI is instructed to place speech bubbles in the TOP 15-20% of each panel.
-        This provides a reliable fallback when detection fails.
+        The AI is instructed to leave the TOP 25% of each panel empty for bubbles.
+        PIL will draw bubbles in this region.
 
         Args:
             panel_x: Panel X position
@@ -486,10 +491,10 @@ class RenderService:
         Returns:
             (x1, y1, x2, y2) bounding box for expected bubble region
         """
-        # Bubbles should be in top 15-25% of panel with horizontal margins
+        # Bubbles should be in top 20% of panel with horizontal margins
         margin_x = int(panel_width * 0.08)  # 8% margin on each side
         bubble_y_start = panel_y + int(panel_height * 0.03)  # Start 3% from top
-        bubble_y_end = panel_y + int(panel_height * 0.22)  # End at 22% from top
+        bubble_y_end = panel_y + int(panel_height * 0.20)  # End at 20% from top
 
         x1 = panel_x + margin_x
         y1 = bubble_y_start
@@ -498,6 +503,66 @@ class RenderService:
 
         logger.debug(f"Expected bubble region: ({x1},{y1}) to ({x2},{y2})")
         return (x1, y1, x2, y2)
+
+    def _draw_speech_bubble(
+        self,
+        draw: ImageDraw.ImageDraw,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        tail_direction: str = "center",
+    ) -> None:
+        """
+        Draw a speech bubble with tail pointing toward characters.
+
+        Since AI can't reliably create empty bubbles, PIL draws them directly.
+        This ensures consistent, clean bubbles without garbled AI text.
+
+        Args:
+            draw: PIL ImageDraw object
+            x: Bubble top-left X coordinate
+            y: Bubble top-left Y coordinate
+            width: Bubble width
+            height: Bubble height
+            tail_direction: Direction of tail ("left", "center", "right")
+        """
+        # Draw main bubble ellipse - white fill with black outline
+        draw.ellipse(
+            [x, y, x + width, y + height],
+            fill="white",
+            outline="black",
+            width=3
+        )
+
+        # Calculate tail position based on direction
+        if tail_direction == "left":
+            tail_x = x + width // 4
+        elif tail_direction == "right":
+            tail_x = x + 3 * width // 4
+        else:  # center
+            tail_x = x + width // 2
+
+        # Draw tail triangle pointing down toward characters
+        # The tail connects the bubble to the characters below
+        tail_base_y = y + height - 8  # Slightly inside bubble for overlap
+        tail_tip_y = y + height + int(height * 0.25)  # 25% below bubble
+
+        tail_points = [
+            (tail_x - 12, tail_base_y),  # Left point of tail base
+            (tail_x + 12, tail_base_y),  # Right point of tail base
+            (tail_x, tail_tip_y),        # Tip of tail pointing down
+        ]
+
+        # Draw tail with same styling as bubble
+        draw.polygon(tail_points, fill="white", outline="black", width=2)
+
+        # Cover the outline where tail meets bubble (clean connection)
+        draw.line(
+            [(tail_x - 10, tail_base_y), (tail_x + 10, tail_base_y)],
+            fill="white",
+            width=5
+        )
 
     async def _detect_bubbles_with_vision(
         self,
@@ -685,20 +750,23 @@ Rules:
         output_path: Path,
     ) -> Path:
         """
-        Add text overlay to comic image (for Nano-Banana generated images with empty bubbles).
+        Add speech bubbles and text overlay to comic image.
 
-        Uses three-tier bubble detection with RELIABLE fallback:
-        1. Gemini Vision (AI-powered, most reliable)
-        2. OpenCV contour detection (algorithmic)
-        3. Fixed-position fallback (based on prompt instructions - ALWAYS works)
+        Since AI cannot reliably create empty bubbles (generates garbled text),
+        PIL now draws the bubbles directly in a fixed position (top 20% of each panel).
+
+        This approach:
+        1. Calculates fixed bubble position in top 20% of panel
+        2. Draws clean speech bubble with tail
+        3. Adds text centered inside the bubble
 
         Args:
-            base_image_path: Path to base comic image
+            base_image_path: Path to base comic image (from AI - no bubbles)
             script: Comic script with dialogue
             output_path: Where to save the result
 
         Returns:
-            Path to image with text overlay
+            Path to image with bubbles and text
         """
         try:
             img = Image.open(base_image_path)
@@ -712,16 +780,8 @@ Rules:
             panel_width = img_width // 2
             panel_height = img_height // 2
 
-            # Try Gemini Vision bubble detection FIRST (detects all bubbles at once)
-            vision_bubbles = None
-            try:
-                vision_bubbles = await self._detect_bubbles_with_vision(base_image_path)
-                if vision_bubbles:
-                    logger.info(f"Gemini Vision detected bubbles in {len(vision_bubbles)} panels")
-            except Exception as e:
-                logger.warning(f"Gemini Vision detection failed: {e}")
-
             panels = script.get("panels", [])
+            logger.info(f"Script has {len(panels)} panels - PIL will draw bubbles")
 
             for i, panel in enumerate(panels):
                 if i >= 4:  # Only 4 panels
@@ -729,7 +789,7 @@ Rules:
 
                 dialogue = panel.get("dialogue", [])
                 if not dialogue:
-                    logger.debug(f"Panel {i+1}: No dialogue, skipping")
+                    logger.info(f"Panel {i+1}: NO DIALOGUE - skipping bubble")
                     continue
 
                 # Calculate panel position
@@ -740,51 +800,30 @@ Rules:
 
                 logger.info(f"Panel {i+1}: Position ({panel_x}, {panel_y}), Size {panel_width}x{panel_height}")
 
-                # Combine all dialogue into single text block for optimal sizing
-                full_dialogue = " ".join(dialogue)
-
-                # Three-tier bubble detection: Vision → OpenCV → Fixed-Position
-                bubble_bbox = None
-                detection_method = None
-
-                # 1. Try Gemini Vision detection first (if available)
-                if vision_bubbles and i in vision_bubbles:
-                    bubble_bbox = vision_bubbles[i]
-                    detection_method = "Vision"
-                    logger.info(f"Panel {i+1}: Using Gemini Vision detection")
-
-                # 2. Fallback to OpenCV if Vision didn't detect this panel
-                if not bubble_bbox:
-                    bubble_bbox = self._detect_bubble_boundaries(
-                        img, panel_x, panel_y, panel_width, panel_height
-                    )
-                    if bubble_bbox:
-                        detection_method = "OpenCV"
-                        logger.info(f"Panel {i+1}: Using OpenCV detection")
-
-                # 3. CRITICAL: Use fixed-position fallback based on prompt instructions
-                # The AI is instructed to place bubbles in the TOP 15-20% of each panel
-                if not bubble_bbox:
-                    bubble_bbox = self._get_expected_bubble_region(
-                        panel_x, panel_y, panel_width, panel_height
-                    )
-                    detection_method = "Fixed-Position"
-                    logger.info(f"Panel {i+1}: Using Fixed-Position fallback (top of panel)")
-
-                # Now we ALWAYS have a bubble_bbox
-                x1, y1, x2, y2 = bubble_bbox
+                # Get bubble region (top 20% of panel)
+                x1, y1, x2, y2 = self._get_expected_bubble_region(
+                    panel_x, panel_y, panel_width, panel_height
+                )
                 bubble_width = x2 - x1
                 bubble_height = y2 - y1
 
-                logger.info(f"Panel {i+1}: Bubble region ({x1},{y1}) to ({x2},{y2}), size {bubble_width}x{bubble_height}")
+                # DRAW the speech bubble (PIL draws it, not AI)
+                # Tail direction based on panel position (left panels point left, right panels point right)
+                tail_dir = "left" if col == 0 else "right"
+                self._draw_speech_bubble(draw, x1, y1, bubble_width, bubble_height, tail_dir)
+
+                logger.info(f"Panel {i+1}: Drew bubble at ({x1},{y1}) size {bubble_width}x{bubble_height}")
+
+                # Combine all dialogue into single text block
+                full_dialogue = " ".join(dialogue)
 
                 # Calculate optimal font size and wrapping for this bubble
                 font_size, wrapped_lines = self._fit_text_to_bubble(
                     full_dialogue,
                     bubble_width,
                     bubble_height,
-                    max_font_size=28,  # Slightly smaller for better fit
-                    min_font_size=14   # Minimum readable size
+                    max_font_size=28,
+                    min_font_size=14
                 )
 
                 # Load font at optimal size
@@ -802,7 +841,7 @@ Rules:
                 total_text_height = len(wrapped_lines) * line_height
                 text_start_y = y1 + (bubble_height - total_text_height) // 2
 
-                logger.info(f"Panel {i+1}: {detection_method} - font {font_size}px, {len(wrapped_lines)} lines, text_y={text_start_y}")
+                logger.info(f"Panel {i+1}: font {font_size}px, {len(wrapped_lines)} lines")
 
                 # Draw the wrapped lines
                 for k, wrapped_line in enumerate(wrapped_lines):
@@ -814,18 +853,10 @@ Rules:
                     text_x = x1 + (bubble_width - text_width) // 2
                     actual_text_y = text_start_y + (k * line_height)
 
-                    # Draw text with white outline for readability
-                    outline_color = "white"
-                    text_color = "black"
+                    # Draw black text on white bubble (no outline needed)
+                    draw.text((text_x, actual_text_y), wrapped_line, font=font, fill="black")
 
-                    # Draw outline (8-point stroke for better visibility)
-                    for dx, dy in [(-1,-1), (-1,1), (1,-1), (1,1), (-2,0), (2,0), (0,-2), (0,2)]:
-                        draw.text((text_x+dx, actual_text_y+dy), wrapped_line, font=font, fill=outline_color)
-
-                    # Draw main text
-                    draw.text((text_x, actual_text_y), wrapped_line, font=font, fill=text_color)
-
-                    logger.debug(f"Panel {i+1}: Drew line {k+1} at ({text_x}, {actual_text_y}): '{wrapped_line[:30]}...'")
+                    logger.debug(f"Panel {i+1}: Drew line {k+1} at ({text_x}, {actual_text_y})")
 
             # Save the result
             img.save(output_path, 'PNG', quality=95)
