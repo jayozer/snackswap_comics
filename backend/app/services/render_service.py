@@ -38,6 +38,31 @@ class RenderService:
 
         logger.info("Initialized render service")
 
+    def _svg_to_png(self, svg_path: Path, width: int, height: int) -> Image.Image:
+        """
+        Convert SVG to PIL Image at specified size.
+
+        Uses CairoSVG for high-quality vector-to-raster conversion.
+        Essential for Freepik assets which are SVG vectors.
+
+        Args:
+            svg_path: Path to SVG file
+            width: Target width in pixels
+            height: Target height in pixels
+
+        Returns:
+            PIL Image in RGBA mode
+        """
+        import cairosvg
+        from io import BytesIO
+
+        png_data = cairosvg.svg2png(
+            url=str(svg_path),
+            output_width=width,
+            output_height=height,
+        )
+        return Image.open(BytesIO(png_data)).convert("RGBA")
+
     async def render_comic(
         self,
         script: dict[str, Any],
@@ -77,7 +102,11 @@ class RenderService:
             if use_freepik and self.settings.freepik_api_key:
                 try:
                     logger.info("Enhancing comic with Freepik assets")
-                    base_comic_path = await self._enhance_with_freepik(base_comic_path, script)
+                    enhanced_path = await self._enhance_with_freepik(base_comic_path, script)
+                    # Re-apply text overlay on top of Freepik bubbles
+                    final_output = self.renders_path / f"{content_id}_final.png"
+                    base_comic_path = await self._add_text_overlay(enhanced_path, script, final_output)
+                    logger.info(f"Freepik enhancement with text overlay complete: {base_comic_path}")
                 except Exception as e:
                     logger.warning(f"Freepik enhancement failed: {e}. Using base comic.")
 
@@ -898,7 +927,12 @@ Rules:
         script: dict[str, Any],
     ) -> Path:
         """
-        Enhance comic with Freepik assets (speech bubbles, frames, etc.).
+        Enhance comic with Freepik assets (speech bubbles, frames, backgrounds).
+
+        Layering order (bottom to top):
+        1. Base comic image (characters from Nano-Banana)
+        2. Comic frames (panel borders)
+        3. Speech bubbles (professional vectors)
 
         Args:
             base_image_path: Path to base comic image
@@ -907,10 +941,78 @@ Rules:
         Returns:
             Path to enhanced image
         """
-        # TODO: Implement Freepik enhancement
-        # For now, just return the base image
-        logger.info("Freepik enhancement not yet implemented, using base image")
-        return base_image_path
+        try:
+            img = Image.open(base_image_path).convert("RGBA")
+            img_width, img_height = img.size
+            panel_width = img_width // 2
+            panel_height = img_height // 2
+
+            logger.info(f"Enhancing {img_width}x{img_height} comic with Freepik assets")
+
+            # Fetch assets in parallel (cached after first download)
+            import asyncio
+            bubble_paths, frame_paths = await asyncio.gather(
+                self.freepik.get_speech_bubbles(style="comic", limit=1),
+                self.freepik.get_comic_frames(limit=1),
+            )
+
+            # Convert SVG bubble to PNG at appropriate size
+            bubble_img = None
+            if bubble_paths:
+                try:
+                    bubble_img = self._svg_to_png(
+                        bubble_paths[0],
+                        width=int(panel_width * 0.75),
+                        height=int(panel_height * 0.16),
+                    )
+                    logger.info(f"Loaded speech bubble: {bubble_img.size}")
+                except Exception as e:
+                    logger.warning(f"Failed to convert bubble SVG: {e}")
+
+            # Convert SVG frame to PNG
+            frame_img = None
+            if frame_paths:
+                try:
+                    frame_img = self._svg_to_png(
+                        frame_paths[0],
+                        width=panel_width,
+                        height=panel_height,
+                    )
+                    logger.info(f"Loaded comic frame: {frame_img.size}")
+                except Exception as e:
+                    logger.warning(f"Failed to convert frame SVG: {e}")
+
+            # Apply to each panel
+            panels = script.get("panels", [])
+            for i, panel in enumerate(panels):
+                if i >= 4:
+                    break
+
+                row, col = i // 2, i % 2
+                panel_x = col * panel_width
+                panel_y = row * panel_height
+
+                # Apply frame border (alpha composite)
+                if frame_img:
+                    frame_copy = frame_img.copy()
+                    img.paste(frame_copy, (panel_x, panel_y), frame_copy)
+
+                # Apply speech bubble if panel has dialogue
+                if bubble_img and panel.get("dialogue"):
+                    bubble_x = panel_x + int(panel_width * 0.12)
+                    bubble_y = panel_y + int(panel_height * 0.02)
+                    img.paste(bubble_img, (bubble_x, bubble_y), bubble_img)
+
+            # Save enhanced image
+            output_path = self.renders_path / f"{base_image_path.stem}_enhanced.png"
+            img.save(output_path, "PNG", quality=95)
+            logger.info(f"Freepik enhancement saved: {output_path}")
+
+            return output_path
+
+        except Exception as e:
+            logger.error(f"Freepik enhancement failed: {e}", exc_info=True)
+            return base_image_path
 
     async def _generate_export_formats(
         self,
