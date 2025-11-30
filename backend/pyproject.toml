@@ -19,6 +19,7 @@ dependencies = [
     "numpy>=1.26.0",
     "opencv-python-headless>=4.9.0",
     "aiofiles>=23.2.1",
+    "cairosvg>=2.7.0",  # SVG to PNG conversion for Freepik assets
 ]
 
 [project.optional-dependencies]

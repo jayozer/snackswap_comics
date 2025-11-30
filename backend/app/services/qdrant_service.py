@@ -3,6 +3,7 @@ Qdrant vector database service for SnackSwap Comics.
 Manages connections to Qdrant and operations on collections.
 """
 
+import asyncio
 import logging
 from typing import Any
 
@@ -35,7 +36,7 @@ class QdrantService:
         logger.info(f"Initialized Qdrant client at {settings.qdrant_url}")
 
     async def ensure_collections(self) -> None:
-        """Ensure all required collections exist."""
+        """Ensure all required collections exist with proper indexes."""
         collections = [
             (self.SNACKS_COLLECTION, 768),  # Gemini embedding size
             (self.FACTS_COLLECTION, 768),
@@ -59,7 +60,53 @@ class QdrantService:
                     ),
                 )
 
-    def search_snacks(
+        # Ensure payload indexes exist for filtered fields (required by Qdrant Cloud)
+        await self._ensure_payload_indexes()
+
+    async def _ensure_payload_indexes(self) -> None:
+        """
+        Create payload indexes for fields used in filters.
+
+        Qdrant Cloud requires explicit indexes for filtered queries.
+        This creates indexes idempotently (skips if already exists).
+        """
+        # Define indexes needed for each collection
+        indexes_config = {
+            self.FACTS_COLLECTION: [
+                ("clinic_approved", models.PayloadSchemaType.BOOL),
+                ("age_band", models.PayloadSchemaType.KEYWORD),
+            ],
+            self.STYLES_COLLECTION: [
+                ("is_default", models.PayloadSchemaType.BOOL),
+            ],
+            self.SWAPS_COLLECTION: [
+                ("taste_cluster", models.PayloadSchemaType.KEYWORD),
+                ("allergy_tags", models.PayloadSchemaType.KEYWORD),
+            ],
+            self.SNACKS_COLLECTION: [
+                ("category", models.PayloadSchemaType.KEYWORD),
+            ],
+        }
+
+        for collection_name, indexes in indexes_config.items():
+            for field_name, field_type in indexes:
+                try:
+                    self.client.create_payload_index(
+                        collection_name=collection_name,
+                        field_name=field_name,
+                        field_schema=field_type,
+                    )
+                    logger.info(f"Created index {field_name} on {collection_name}")
+                except UnexpectedResponse as e:
+                    # Index might already exist - that's fine
+                    if "already exists" in str(e).lower():
+                        logger.debug(f"Index {field_name} already exists on {collection_name}")
+                    else:
+                        logger.warning(f"Failed to create index {field_name} on {collection_name}: {e}")
+                except Exception as e:
+                    logger.warning(f"Failed to create index {field_name} on {collection_name}: {e}")
+
+    async def search_snacks(
         self,
         query_vector: list[float],
         limit: int = 8,
@@ -80,7 +127,9 @@ class QdrantService:
         if filters:
             query_filter = self._build_filter(filters)
 
-        results = self.client.search(
+        # Use asyncio.to_thread to avoid blocking the event loop
+        results = await asyncio.to_thread(
+            self.client.search,
             collection_name=self.SNACKS_COLLECTION,
             query_vector=query_vector,
             limit=limit,
@@ -90,7 +139,7 @@ class QdrantService:
 
         return results
 
-    def search_facts(
+    async def search_facts(
         self,
         query_vector: list[float],
         age_band: str,
@@ -109,33 +158,36 @@ class QdrantService:
         Returns:
             List of scored points (facts)
         """
-        filters = {}
-        if clinic_approved_only:
-            filters["clinic_approved"] = True
+        # Build filter conditions
+        must_conditions = [
+            models.Filter(
+                should=[
+                    models.FieldCondition(
+                        key="age_band",
+                        match=models.MatchValue(value=age_band),
+                    ),
+                    models.FieldCondition(
+                        key="age_band",
+                        match=models.MatchValue(value="all"),
+                    ),
+                ]
+            ),
+        ]
 
-        # Age band filter (matches specific band or "all")
-        query_filter = models.Filter(
-            must=[
+        # Only add clinic_approved filter if requested (fixes ignored parameter bug)
+        if clinic_approved_only:
+            must_conditions.append(
                 models.FieldCondition(
                     key="clinic_approved",
                     match=models.MatchValue(value=True),
-                ),
-                models.Filter(
-                    should=[
-                        models.FieldCondition(
-                            key="age_band",
-                            match=models.MatchValue(value=age_band),
-                        ),
-                        models.FieldCondition(
-                            key="age_band",
-                            match=models.MatchValue(value="all"),
-                        ),
-                    ]
-                ),
-            ]
-        )
+                )
+            )
 
-        results = self.client.search(
+        query_filter = models.Filter(must=must_conditions)
+
+        # Use asyncio.to_thread to avoid blocking the event loop
+        results = await asyncio.to_thread(
+            self.client.search,
             collection_name=self.FACTS_COLLECTION,
             query_vector=query_vector,
             limit=limit,
@@ -145,7 +197,7 @@ class QdrantService:
 
         return results
 
-    def search_swaps(
+    async def search_swaps(
         self,
         query_vector: list[float],
         taste_cluster: str | None = None,
@@ -195,7 +247,9 @@ class QdrantService:
         if must_conditions:
             query_filter = models.Filter(must=must_conditions)
 
-        results = self.client.search(
+        # Use asyncio.to_thread to avoid blocking the event loop
+        results = await asyncio.to_thread(
+            self.client.search,
             collection_name=self.SWAPS_COLLECTION,
             query_vector=query_vector,
             limit=limit,
