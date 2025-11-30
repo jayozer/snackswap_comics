@@ -45,19 +45,25 @@ async def render_comic(
     # Extract the actual script result (which contains panels, caption, etc.)
     script_data = stored_data.get("script_result", stored_data)
 
+    freepik_service = None
     try:
         logger.info(f"Rendering comic for script {request.script_id}")
 
         # Initialize services
         nanobana_service = NanoBananaService(settings)
-        freepik_service = FreepikService(settings)
+
+        # Only create FreepikService if API key is configured
+        use_freepik = bool(settings.freepik_api_key)
+        if use_freepik:
+            freepik_service = FreepikService(settings)
+
         render_service = RenderService(settings, nanobana_service, freepik_service)
 
         # Render comic with all formats
         result = await render_service.render_comic(
             script=script_data,
             script_id=request.script_id,
-            use_freepik=settings.enable_maps,  # Use existing feature flag or add new one
+            use_freepik=use_freepik,
         )
 
         logger.info(f"Comic rendered successfully: {request.script_id}")
@@ -71,3 +77,7 @@ async def render_comic(
     except Exception as e:
         logger.error(f"Error rendering comic: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to render comic: {str(e)}")
+    finally:
+        # Clean up HTTP client to prevent connection leaks
+        if freepik_service is not None:
+            await freepik_service.close()

@@ -3,6 +3,7 @@ Gemini AI service for SnackSwap Comics.
 Handles vision detection, script composition, and embeddings.
 """
 
+import asyncio
 import base64
 import json
 import logging
@@ -78,7 +79,9 @@ Set needs_confirmation to true if any item has confidence < 0.7."""
                 mime_type = "image/jpeg"  # Default to JPEG
 
             # Generate response using new SDK with inline data
-            response = self.client.models.generate_content(
+            # Use asyncio.to_thread to avoid blocking the event loop
+            response = await asyncio.to_thread(
+                self.client.models.generate_content,
                 model=self.settings.gemini_vision_model,
                 contents=[
                     types.Content(
@@ -284,7 +287,9 @@ Return your response as valid JSON with this EXACT structure:
 Make it HILARIOUS while teaching dental health!"""
 
         try:
-            response = self.client.models.generate_content(
+            # Use asyncio.to_thread to avoid blocking the event loop
+            response = await asyncio.to_thread(
+                self.client.models.generate_content,
                 model=self.settings.gemini_writer_model,
                 contents=[
                     types.Content(
@@ -393,7 +398,9 @@ Make it HILARIOUS while teaching dental health!"""
             Embedding vector
         """
         try:
-            response = self.client.models.embed_content(
+            # Use asyncio.to_thread to avoid blocking the event loop
+            response = await asyncio.to_thread(
+                self.client.models.embed_content,
                 model="text-embedding-004",
                 contents=[
                     types.Content(
@@ -423,7 +430,9 @@ Make it HILARIOUS while teaching dental health!"""
             Embedding vector
         """
         try:
-            response = self.client.models.embed_content(
+            # Use asyncio.to_thread to avoid blocking the event loop
+            response = await asyncio.to_thread(
+                self.client.models.embed_content,
                 model="text-embedding-004",
                 contents=[
                     types.Content(

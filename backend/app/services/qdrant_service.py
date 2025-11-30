@@ -3,6 +3,7 @@ Qdrant vector database service for SnackSwap Comics.
 Manages connections to Qdrant and operations on collections.
 """
 
+import asyncio
 import logging
 from typing import Any
 
@@ -105,7 +106,7 @@ class QdrantService:
                 except Exception as e:
                     logger.warning(f"Failed to create index {field_name} on {collection_name}: {e}")
 
-    def search_snacks(
+    async def search_snacks(
         self,
         query_vector: list[float],
         limit: int = 8,
@@ -126,7 +127,9 @@ class QdrantService:
         if filters:
             query_filter = self._build_filter(filters)
 
-        results = self.client.search(
+        # Use asyncio.to_thread to avoid blocking the event loop
+        results = await asyncio.to_thread(
+            self.client.search,
             collection_name=self.SNACKS_COLLECTION,
             query_vector=query_vector,
             limit=limit,
@@ -136,7 +139,7 @@ class QdrantService:
 
         return results
 
-    def search_facts(
+    async def search_facts(
         self,
         query_vector: list[float],
         age_band: str,
@@ -155,33 +158,36 @@ class QdrantService:
         Returns:
             List of scored points (facts)
         """
-        filters = {}
-        if clinic_approved_only:
-            filters["clinic_approved"] = True
+        # Build filter conditions
+        must_conditions = [
+            models.Filter(
+                should=[
+                    models.FieldCondition(
+                        key="age_band",
+                        match=models.MatchValue(value=age_band),
+                    ),
+                    models.FieldCondition(
+                        key="age_band",
+                        match=models.MatchValue(value="all"),
+                    ),
+                ]
+            ),
+        ]
 
-        # Age band filter (matches specific band or "all")
-        query_filter = models.Filter(
-            must=[
+        # Only add clinic_approved filter if requested (fixes ignored parameter bug)
+        if clinic_approved_only:
+            must_conditions.append(
                 models.FieldCondition(
                     key="clinic_approved",
                     match=models.MatchValue(value=True),
-                ),
-                models.Filter(
-                    should=[
-                        models.FieldCondition(
-                            key="age_band",
-                            match=models.MatchValue(value=age_band),
-                        ),
-                        models.FieldCondition(
-                            key="age_band",
-                            match=models.MatchValue(value="all"),
-                        ),
-                    ]
-                ),
-            ]
-        )
+                )
+            )
 
-        results = self.client.search(
+        query_filter = models.Filter(must=must_conditions)
+
+        # Use asyncio.to_thread to avoid blocking the event loop
+        results = await asyncio.to_thread(
+            self.client.search,
             collection_name=self.FACTS_COLLECTION,
             query_vector=query_vector,
             limit=limit,
@@ -191,7 +197,7 @@ class QdrantService:
 
         return results
 
-    def search_swaps(
+    async def search_swaps(
         self,
         query_vector: list[float],
         taste_cluster: str | None = None,
@@ -241,7 +247,9 @@ class QdrantService:
         if must_conditions:
             query_filter = models.Filter(must=must_conditions)
 
-        results = self.client.search(
+        # Use asyncio.to_thread to avoid blocking the event loop
+        results = await asyncio.to_thread(
+            self.client.search,
             collection_name=self.SWAPS_COLLECTION,
             query_vector=query_vector,
             limit=limit,

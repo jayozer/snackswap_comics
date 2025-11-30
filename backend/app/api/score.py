@@ -69,7 +69,7 @@ async def score_retrieve(
             query_embedding = await gemini_service.generate_query_embedding(query_text)
 
             # Search for matching snacks
-            snack_results = qdrant_service.search_snacks(query_embedding, limit=3)
+            snack_results = await qdrant_service.search_snacks(query_embedding, limit=3)
 
             if not snack_results:
                 logger.warning(f"No matching snacks found for: {item.name}")
@@ -98,7 +98,7 @@ async def score_retrieve(
             fact_query = f"dental health, {item.category}, sugar, acidity"
             fact_embedding = await gemini_service.generate_query_embedding(fact_query)
 
-            fact_results = qdrant_service.search_facts(
+            fact_results = await qdrant_service.search_facts(
                 fact_embedding,
                 age_band=age_band,
                 limit=4,
@@ -114,7 +114,7 @@ async def score_retrieve(
             swap_query = f"{taste_cluster}, healthy alternative, {item.category}"
             swap_embedding = await gemini_service.generate_query_embedding(swap_query)
 
-            swap_results = qdrant_service.search_swaps(
+            swap_results = await qdrant_service.search_swaps(
                 swap_embedding,
                 taste_cluster=taste_cluster,
                 allergies=request.allergies,
