@@ -92,11 +92,17 @@ generateBtn.addEventListener('click', async () => {
         // Step 2: Detect items
         setStepActive('step2');
         const detectionData = await detectItems(currentPhotoId);
+        if (!detectionData.items || detectionData.items.length === 0) {
+            throw new Error('No snacks detected in this image. Try another photo with visible food items!');
+        }
         setStepComplete('step2');
 
         // Step 3: Score and retrieve
         setStepActive('step3');
         const scoreData = await scoreAndRetrieve(detectionData.items, age);
+        if (!scoreData.scored_items || scoreData.scored_items.length === 0) {
+            throw new Error('Could not find this snack in our database. Try a different snack photo!');
+        }
         setStepComplete('step3');
 
         // Step 4: Compose script
@@ -248,19 +254,23 @@ function hideResults() {
 }
 
 function displayResults(detectionData, scoreData, scriptData, renderData) {
-    // Detection info
+    // Detection info (with defensive check)
     const detectionInfo = document.getElementById('detectionInfo');
-    const item = detectionData.items[0];
-    detectionInfo.innerHTML = `
-        <h4>${item.name}</h4>
-        <p><strong>Category:</strong> ${item.category}</p>
-        <p><strong>Confidence:</strong> ${(item.confidence * 100).toFixed(1)}%</p>
-    `;
+    const item = detectionData.items?.[0];
+    if (item) {
+        detectionInfo.innerHTML = `
+            <h4>${item.name}</h4>
+            <p><strong>Category:</strong> ${item.category}</p>
+            <p><strong>Confidence:</strong> ${(item.confidence * 100).toFixed(1)}%</p>
+        `;
+    } else {
+        detectionInfo.innerHTML = `<p>No items detected</p>`;
+    }
 
-    // Risk score
+    // Risk score (with defensive check)
     const riskScore = document.getElementById('riskScore');
-    const scoredItem = scoreData.scored_items[0];
-    const score = scoredItem.dental_risk_score;
+    const scoredItem = scoreData.scored_items?.[0];
+    const score = scoredItem?.dental_risk_score ?? 0;
     let riskClass = 'risk-low';
     let riskLabel = 'Low Risk';
 
