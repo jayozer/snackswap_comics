@@ -7,14 +7,22 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Comic book palette
-        'comic-cyan': '#00D4FF',
-        'comic-magenta': '#FF3366',
-        'comic-yellow': '#FFE135',
-        'comic-coral': '#FF6B6B',
-        'comic-mint': '#4ECDC4',
-        'comic-navy': '#1A1A2E',
-        'comic-cream': '#FFF8E7',
+        'poppy': {
+          DEFAULT: '#FF6B6B',
+          teal: '#4ECDC4',
+          yellow: '#FFD93D',
+          navy: '#2C3E50',
+          cream: '#F7F9FC',
+        },
+        'comic': { // Keeping back-compat for now, mapping to new
+          cyan: '#4ECDC4',
+          magenta: '#FF6B6B',
+          yellow: '#FFD93D',
+          coral: '#FF6B6B',
+          mint: '#4ECDC4',
+          navy: '#2C3E50',
+          cream: '#F7F9FC',
+        },
         'comic-bubble': '#FFFFFF',
       },
       fontFamily: {

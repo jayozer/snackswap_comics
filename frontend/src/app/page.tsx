@@ -166,25 +166,25 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen pb-20">
+    <main className="min-h-screen pb-20 bg-gradient-to-br from-poppy-cream to-white">
       <Header />
 
-      <div className="container mx-auto px-4 max-w-2xl">
-        {/* Mascot with speech bubble */}
-        <div className="flex items-start gap-4 mb-8 mt-6">
+      <div className="container mx-auto px-4 max-w-4xl pt-12">
+        {/* Mascot & Greeting - Centered Hero */}
+        <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-12">
           <ToothMascot state={state} />
           <motion.div
-            className="speech-bubble flex-1"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            className="speech-bubble max-w-xs md:max-w-md shadow-lg"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             key={state}
           >
-            <p className="font-comic text-lg">
-              {state === 'idle' && "Hey there! Snap a pic of your snack and I'll turn it into a comic!"}
-              {state === 'uploading' && "Ooh, let me take a look at that snack..."}
-              {state === 'scanning' && "Using my super tooth vision to analyze this..."}
-              {state === 'results' && "Wow! Check out what I found! Ready to see your comic?"}
-              {state === 'comic' && "TA-DA! Your very own snack comic! Share it with friends!"}
+            <p className="font-bold text-lg text-poppy-navy">
+              {state === 'idle' && "Hi! I'm Poppy Tooth! Show me your snack and I'll tell you if it's tooth-friendly!"}
+              {state === 'uploading' && "Ooh, uploading! Hang tight..."}
+              {state === 'scanning' && "Let me take a closer look with my super specs..."}
+              {state === 'results' && "Done! I've got the scoop on your snack!"}
+              {state === 'comic' && "Check out this comic I made just for you!"}
             </p>
           </motion.div>
         </div>
@@ -193,90 +193,100 @@ export default function Home() {
         <AnimatePresence>
           {error && (
             <motion.div
-              className="comic-border bg-comic-coral text-white p-4 mb-6"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-red-50 text-red-600 p-4 mb-6 rounded-2xl border-2 border-red-100 flex items-center gap-4 shadow-sm"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
             >
-              <p className="font-bold flex items-center gap-2">
-                <span className="text-2xl">💥</span>
-                OOPS! {error}
-              </p>
-              <button
-                onClick={handleReset}
-                className="mt-3 underline font-bold"
+              <span className="text-2xl">🙊</span>
+              <div>
+                <p className="font-bold">Oops!</p>
+                <p>{error}</p>
+                <button
+                  onClick={handleReset}
+                  className="mt-1 underline font-bold hover:text-red-800"
+                >
+                  Try again
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Content Card */}
+        <div className="poppy-card p-6 md:p-10 relative overflow-hidden transition-all duration-300">
+          <AnimatePresence mode="wait">
+            {(state === 'idle' || state === 'uploading') && (
+              <motion.div
+                key="upload"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-8"
               >
-                Try again
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <UploadZone
+                  onFileSelect={handleFileSelect}
+                  previewUrl={previewUrl}
+                  isUploading={state === 'uploading'}
+                />
 
-        {/* Main content based on state */}
-        <AnimatePresence mode="wait">
-          {(state === 'idle' || state === 'uploading') && (
-            <motion.div
-              key="upload"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <UploadZone
-                onFileSelect={handleFileSelect}
-                previewUrl={previewUrl}
-                isUploading={state === 'uploading'}
-              />
+                <div className="flex justify-center">
+                  <AgeSelector age={age} onAgeChange={setAge} />
+                </div>
+              </motion.div>
+            )}
 
-              <AgeSelector age={age} onAgeChange={setAge} />
-            </motion.div>
-          )}
+            {state === 'scanning' && (
+              <motion.div
+                key="scanning"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <ScanningOverlay
+                  previewUrl={previewUrl}
+                  currentStep={currentStep}
+                  steps={steps}
+                />
+              </motion.div>
+            )}
 
-          {state === 'scanning' && (
-            <motion.div
-              key="scanning"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <ScanningOverlay
-                previewUrl={previewUrl}
-                currentStep={currentStep}
-                steps={steps}
-              />
-            </motion.div>
-          )}
+            {state === 'results' && (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <ResultsPanel
+                  scoredItems={scoredItems}
+                  facts={facts}
+                  swaps={swaps}
+                  onViewComic={viewComic}
+                  onReset={handleReset}
+                />
+              </motion.div>
+            )}
 
-          {state === 'results' && (
-            <motion.div
-              key="results"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <ResultsPanel
-                scoredItems={scoredItems}
-                facts={facts}
-                swaps={swaps}
-                onViewComic={viewComic}
-                onReset={handleReset}
-              />
-            </motion.div>
-          )}
+            {state === 'comic' && comicData && (
+              <motion.div
+                key="comic"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <ComicDisplay
+                  comicData={comicData}
+                  onReset={handleReset}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-          {state === 'comic' && comicData && (
-            <motion.div
-              key="comic"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <ComicDisplay
-                comicData={comicData}
-                onReset={handleReset}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <p className="text-center text-poppy-navy/50 text-sm mt-8 font-semibold">
+          Powered by Gemini Vision & Qdrant • © 2025 Poppy Kids Dental
+        </p>
       </div>
     </main>
   );

@@ -4,71 +4,25 @@ import { motion } from 'framer-motion';
 
 export default function Header() {
   return (
-    <header className="relative overflow-hidden">
-      {/* Zigzag top border */}
-      <div className="zigzag-divider" />
-
-      {/* Main header */}
-      <div className="bg-comic-navy py-6 px-4">
+    <header className="sticky top-0 z-50 bg-poppy-cream/80 backdrop-blur-md border-b-2 border-poppy-teal/20">
+      <div className="container mx-auto px-4 max-w-5xl h-16 flex justify-between items-center">
         <motion.div
-          className="container mx-auto text-center"
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ type: 'spring', bounce: 0.5 }}
+          className="flex items-center gap-3"
+          whileHover={{ scale: 1.02 }}
         >
-          {/* Logo text with starburst effect */}
-          <div className="relative inline-block">
-            <motion.h1
-              className="font-display text-5xl md:text-6xl text-comic-yellow action-word"
-              style={{
-                textShadow: `
-                  3px 3px 0 var(--comic-coral),
-                  6px 6px 0 var(--comic-magenta)
-                `,
-              }}
-              animate={{
-                rotate: [-1, 1, -1],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            >
-              SnackSwap
-            </motion.h1>
-
-            {/* Decorative sparkles */}
-            <motion.span
-              className="absolute -top-2 -right-4 text-2xl"
-              animate={{ scale: [1, 1.2, 1], rotate: [0, 15, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              ✨
-            </motion.span>
-            <motion.span
-              className="absolute -bottom-1 -left-4 text-xl"
-              animate={{ scale: [1, 1.3, 1], rotate: [0, -15, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, delay: 0.3 }}
-            >
-              ⭐
-            </motion.span>
+          <div className="w-10 h-10 bg-poppy-red rounded-full flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white">
+            P
           </div>
-
-          {/* Subtitle */}
-          <motion.p
-            className="font-comic text-comic-cream text-lg mt-2 opacity-90"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.9 }}
-            transition={{ delay: 0.3 }}
-          >
-            Turn snacks into dental health comics!
-          </motion.p>
+          <h1 className="text-2xl font-black tracking-tight text-poppy-navy">
+            SnackSwap <span className="text-poppy-red">Comics</span>
+          </h1>
         </motion.div>
-      </div>
 
-      {/* Zigzag bottom border */}
-      <div className="zigzag-divider transform rotate-180" />
+        <div className="hidden sm:flex items-center gap-6 font-bold text-sm text-poppy-navy/70">
+          <a href="#" className="hover:text-poppy-red transition-colors">How it Works</a>
+          <a href="https://www.poppykidsdental.com" target="_blank" className="hover:text-poppy-red transition-colors">Poppy Kids Dental</a>
+        </div>
+      </div>
     </header>
   );
 }
