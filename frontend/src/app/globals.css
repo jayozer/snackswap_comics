@@ -1,0 +1,284 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800&family=Comic+Neue:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --comic-cyan: #00D4FF;
+  --comic-magenta: #FF3366;
+  --comic-yellow: #FFE135;
+  --comic-coral: #FF6B6B;
+  --comic-mint: #4ECDC4;
+  --comic-navy: #1A1A2E;
+  --comic-cream: #FFF8E7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Nunito', system-ui, sans-serif;
+  background-color: var(--comic-cream);
+  color: var(--comic-navy);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Halftone background pattern */
+.halftone-bg {
+  background-image:
+    radial-gradient(circle at 25% 25%, var(--comic-cyan) 2%, transparent 2%),
+    radial-gradient(circle at 75% 75%, var(--comic-magenta) 1.5%, transparent 1.5%);
+  background-size: 20px 20px;
+  background-color: var(--comic-cream);
+}
+
+/* Comic panel border style */
+.comic-border {
+  border: 4px solid var(--comic-navy);
+  border-radius: 16px;
+  box-shadow: 6px 6px 0px 0px var(--comic-navy);
+}
+
+/* Speech bubble styles */
+.speech-bubble {
+  position: relative;
+  background: white;
+  border: 3px solid var(--comic-navy);
+  border-radius: 20px;
+  padding: 16px 20px;
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 30px;
+  border: 10px solid transparent;
+  border-top-color: var(--comic-navy);
+}
+
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 33px;
+  border: 7px solid transparent;
+  border-top-color: white;
+  z-index: 1;
+}
+
+/* Action words */
+.action-word {
+  font-family: 'Bangers', Impact, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  -webkit-text-stroke: 2px var(--comic-navy);
+  paint-order: stroke fill;
+}
+
+/* Starburst effect */
+.starburst {
+  position: relative;
+  display: inline-block;
+}
+
+.starburst::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: conic-gradient(
+    from 0deg,
+    var(--comic-yellow) 0deg 30deg,
+    var(--comic-coral) 30deg 60deg,
+    var(--comic-yellow) 60deg 90deg,
+    var(--comic-coral) 90deg 120deg,
+    var(--comic-yellow) 120deg 150deg,
+    var(--comic-coral) 150deg 180deg,
+    var(--comic-yellow) 180deg 210deg,
+    var(--comic-coral) 210deg 240deg,
+    var(--comic-yellow) 240deg 270deg,
+    var(--comic-coral) 270deg 300deg,
+    var(--comic-yellow) 300deg 330deg,
+    var(--comic-coral) 330deg 360deg
+  );
+  clip-path: polygon(
+    50% 0%, 61% 35%, 98% 35%, 68% 57%,
+    79% 91%, 50% 70%, 21% 91%, 32% 57%,
+    2% 35%, 39% 35%
+  );
+  z-index: -1;
+  animation: spin 20s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Comic button */
+.comic-btn {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 1px;
+  padding: 16px 32px;
+  border: 4px solid var(--comic-navy);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0px 0px var(--comic-navy);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.comic-btn:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px var(--comic-navy);
+}
+
+.comic-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0px 0px 0px 0px var(--comic-navy);
+}
+
+/* Risk meter styles */
+.risk-meter {
+  height: 24px;
+  border: 3px solid var(--comic-navy);
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(
+    to right,
+    var(--comic-mint) 0%,
+    var(--comic-yellow) 50%,
+    var(--comic-coral) 100%
+  );
+}
+
+.risk-meter-fill {
+  height: 100%;
+  background: var(--comic-navy);
+  opacity: 0.3;
+  transition: width 0.5s ease-out;
+}
+
+/* Panel reveal animation */
+@keyframes panelReveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.panel-reveal {
+  animation: panelReveal 0.6s ease-out forwards;
+}
+
+/* Scan line effect */
+.scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--comic-cyan),
+    var(--comic-magenta),
+    transparent
+  );
+  animation: scanMove 2s ease-in-out infinite;
+}
+
+@keyframes scanMove {
+  0%, 100% { top: 0; opacity: 1; }
+  50% { top: calc(100% - 4px); opacity: 0.5; }
+}
+
+/* POW/ZAP burst animation */
+.pow-burst {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 3rem;
+  color: var(--comic-yellow);
+  -webkit-text-stroke: 3px var(--comic-navy);
+  animation: powPulse 0.5s ease-out;
+}
+
+@keyframes powPulse {
+  0% { transform: scale(0) rotate(-10deg); }
+  50% { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Tooth character mascot float */
+.tooth-float {
+  animation: toothBob 3s ease-in-out infinite;
+}
+
+@keyframes toothBob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+/* Loading dots */
+.loading-dots span {
+  animation: dotPulse 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* Card hover effect */
+.comic-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.comic-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0px 0px var(--comic-navy);
+}
+
+/* Zigzag divider */
+.zigzag-divider {
+  height: 20px;
+  background: linear-gradient(135deg, var(--comic-cream) 25%, transparent 25%) -20px 0,
+    linear-gradient(225deg, var(--comic-cream) 25%, transparent 25%) -20px 0,
+    linear-gradient(315deg, var(--comic-cream) 25%, transparent 25%),
+    linear-gradient(45deg, var(--comic-cream) 25%, transparent 25%);
+  background-size: 40px 40px;
+  background-color: var(--comic-navy);
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 640px) {
+  .action-word {
+    -webkit-text-stroke: 1.5px var(--comic-navy);
+  }
+
+  .comic-border {
+    border-width: 3px;
+    box-shadow: 4px 4px 0px 0px var(--comic-navy);
+  }
+
+  .comic-btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-width: 3px;
+    box-shadow: 3px 3px 0px 0px var(--comic-navy);
+  }
+}

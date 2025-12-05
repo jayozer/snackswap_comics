@@ -1,0 +1,19 @@
+{
+  "name": "SnackSwap Comics",
+  "short_name": "SnackSwap",
+  "description": "Transform snacks into fun dental health comics for kids!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF8E7",
+  "theme_color": "#1A1A2E",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["kids", "education", "health"]
+}
