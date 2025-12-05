@@ -78,63 +78,63 @@ export default function UploadZone({ onFileSelect, previewUrl, isUploading }: Up
           />
           {isUploading && (
             <motion.div
-              className="absolute inset-0 bg-comic-navy/50 rounded-lg flex items-center justify-center"
+              className="absolute inset-0 bg-brand-dark/50 rounded-lg flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
               <div className="loading-dots flex gap-2">
-                <span className="w-4 h-4 bg-comic-yellow rounded-full" />
-                <span className="w-4 h-4 bg-comic-coral rounded-full" />
-                <span className="w-4 h-4 bg-comic-cyan rounded-full" />
+                <span className="w-4 h-4 bg-brand-green rounded-full" />
+                <span className="w-4 h-4 bg-brand-orange rounded-full" />
+                <span className="w-4 h-4 bg-brand-blue rounded-full" />
               </div>
             </motion.div>
           )}
         </div>
       ) : (
         <div className="text-center py-8">
-          {/* Camera icon with comic style */}
+          {/* Camera icon with refined style */}
           <motion.div
             className="inline-block mb-4"
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
           >
             <div className="relative">
-              <div className="w-24 h-20 bg-comic-navy rounded-xl flex items-center justify-center">
-                <div className="w-12 h-12 bg-comic-cyan rounded-full border-4 border-white" />
+              <div className="w-24 h-20 bg-brand-dark rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-brand-blue rounded-full border-4 border-white" />
               </div>
               {/* Flash */}
               <motion.div
-                className="absolute -top-2 -right-2 w-6 h-6 bg-comic-yellow rounded-full"
-                animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
-                transition={{ duration: 1, repeat: Infinity }}
+                className="absolute -top-2 -right-2 w-6 h-6 bg-brand-green rounded-full"
+                animate={{ scale: [1, 1.15, 1], opacity: [0.8, 1, 0.8] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
               />
             </div>
           </motion.div>
 
-          <h3 className="font-display text-2xl text-comic-navy mb-2">
+          <h3 className="font-display text-2xl text-brand-dark mb-2">
             SNAP YOUR SNACK!
           </h3>
-          <p className="font-comic text-gray-600 mb-4">
+          <p className="font-comic text-brand-mid mb-4">
             Tap to take a photo or drag & drop an image
           </p>
 
           {/* Visual cue arrows */}
-          <div className="flex justify-center gap-4 text-comic-coral opacity-60">
+          <div className="flex justify-center gap-4 text-brand-orange opacity-60">
             <motion.span
-              animate={{ y: [0, 5, 0] }}
-              transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: 0 }}
             >
               ↓
             </motion.span>
             <motion.span
-              animate={{ y: [0, 5, 0] }}
-              transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }}
             >
               ↓
             </motion.span>
             <motion.span
-              animate={{ y: [0, 5, 0] }}
-              transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
             >
               ↓
             </motion.span>

@@ -1,17 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800&family=Comic+Neue:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Comic+Neue:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Poppy Kids Palette */
-  --poppy-teal: #4ECDC4;
-  --poppy-red: #FF6B6B;
-  --poppy-yellow: #FFD93D;
-  --poppy-dark-teal: #1A535C;
-  --poppy-navy: #2C3E50;
-  --poppy-cream: #F7F9FC;
+  /* Anthropic Brand Palette */
+  --brand-dark: #141413;
+  --brand-light: #faf9f5;
+  --brand-mid: #b0aea5;
+  --brand-subtle: #e8e6dc;
+  --brand-orange: #d97757;
+  --brand-blue: #6a9bcc;
+  --brand-green: #788c5d;
+  --brand-white: #FFFFFF;
+
+  /* Legacy aliases */
+  --poppy-teal: #6a9bcc;
+  --poppy-red: #d97757;
+  --poppy-yellow: #788c5d;
+  --poppy-dark-teal: #141413;
+  --poppy-navy: #141413;
+  --poppy-cream: #faf9f5;
   --poppy-white: #FFFFFF;
 }
 
@@ -24,55 +34,62 @@ html {
 }
 
 body {
-  font-family: 'Nunito', system-ui, sans-serif;
-  background-color: var(--poppy-cream);
-  color: var(--poppy-navy);
+  font-family: 'Lora', Georgia, serif;
+  background-color: var(--brand-light);
+  color: var(--brand-dark);
   min-height: 100vh;
   overflow-x: hidden;
-  background-image: radial-gradient(rgba(78, 205, 196, 0.2) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(106, 155, 204, 0.15) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* Rounded, friendly containers */
+/* Main content card - modernized */
 .poppy-card {
-  background: var(--poppy-white);
-  border-radius: 24px;
-  box-shadow: 0 10px 25px -5px rgba(44, 62, 80, 0.1), 0 8px 10px -6px rgba(44, 62, 80, 0.1);
-  border: 4px solid white;
+  background: var(--brand-white);
+  border-radius: 28px;
+  box-shadow:
+    0 12px 32px -8px rgba(20, 20, 19, 0.08),
+    0 4px 8px -2px rgba(20, 20, 19, 0.04);
+  border: 1px solid var(--brand-subtle);
 }
 
-/* Soft Pop Border */
+/* Comic Border - modernized */
 .comic-border {
-  border: 3px solid var(--poppy-white);
-  border-radius: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid var(--brand-subtle);
+  border-radius: 20px;
+  box-shadow:
+    0 4px 12px -2px rgba(20, 20, 19, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   background: white;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .comic-border:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 24px -4px rgba(20, 20, 19, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-/* Speech bubble styles */
+/* Speech bubble styles - modernized */
 .speech-bubble {
   position: relative;
-  background: var(--poppy-white);
-  border-radius: 20px;
-  padding: 16px 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 2px solid var(--poppy-teal);
+  background: var(--brand-white);
+  border-radius: 24px;
+  padding: 20px 28px;
+  box-shadow: 0 8px 24px rgba(20, 20, 19, 0.06), 0 2px 8px rgba(20, 20, 19, 0.04);
+  border: 2px solid var(--brand-subtle);
+  border-left: 4px solid var(--brand-blue);
 }
 
 .speech-bubble::after {
   content: '';
   position: absolute;
-  bottom: -10px;
+  bottom: -12px;
   left: 24px;
-  border-width: 10px 10px 0;
+  border-width: 12px 8px 0;
   border-style: solid;
-  border-color: var(--poppy-teal) transparent;
+  border-color: var(--brand-subtle) transparent;
   display: block;
   width: 0;
 }
@@ -80,51 +97,51 @@ body {
 .speech-bubble::before {
   content: '';
   position: absolute;
-  bottom: -6px;
-  left: 27px;
-  border-width: 8px 8px 0;
+  bottom: -8px;
+  left: 26px;
+  border-width: 10px 6px 0;
   border-style: solid;
-  border-color: var(--poppy-white) transparent;
+  border-color: var(--brand-white) transparent;
   display: block;
   width: 0;
   z-index: 1;
 }
 
-/* Action words - softer now */
+/* Action words - modernized */
 .action-word {
-  font-family: 'Bangers', Impact, sans-serif;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--poppy-red);
-  text-shadow: 2px 2px 0px var(--poppy-navy);
+  letter-spacing: 2px;
+  color: var(--brand-orange);
+  text-shadow: 1px 1px 0px rgba(20, 20, 19, 0.2);
 }
 
-/* Primary Button */
+/* Primary Button - modernized */
 .comic-btn {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 800;
-  font-size: 1.1rem;
-  padding: 14px 28px;
-  background-color: var(--poppy-red);
+  font-family: 'Poppins', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 14px 32px;
+  background-color: var(--brand-orange);
   color: white;
   border: none;
   border-radius: 50px;
-  box-shadow: 0 4px 0px 0px #D84343;
-  /* Darker red shade */
-  transition: all 0.15s ease;
+  box-shadow: 0 3px 0px 0px #b8614a, 0 4px 12px rgba(217, 119, 87, 0.25);
+  transition: all 0.2s ease;
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .comic-btn:hover {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0px 0px #D84343;
+  transform: translateY(1px);
+  box-shadow: 0 2px 0px 0px #b8614a, 0 2px 8px rgba(217, 119, 87, 0.2);
 }
 
 .comic-btn:active {
-  transform: translateY(4px);
-  box-shadow: 0 0px 0px 0px #D84343;
+  transform: translateY(3px);
+  box-shadow: 0 0px 0px 0px #b8614a, 0 1px 4px rgba(217, 119, 87, 0.15);
 }
 
 /* Risk meter styles */
@@ -132,27 +149,25 @@ body {
   height: 20px;
   border-radius: 10px;
   overflow: hidden;
-  background: #E2E8F0;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--brand-subtle);
+  box-shadow: inset 0 2px 4px rgba(20, 20, 19, 0.05);
 }
 
 .risk-meter-fill {
   height: 100%;
   border-radius: 10px;
-  background: linear-gradient(90deg, var(--poppy-teal), var(--poppy-yellow), var(--poppy-red));
+  background: linear-gradient(90deg, var(--brand-green), var(--brand-blue), var(--brand-orange));
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Animations */
+/* Animations - subtle, refined motion */
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0);
   }
-
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-6px);
   }
 }
 

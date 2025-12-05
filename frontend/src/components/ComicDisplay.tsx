@@ -27,7 +27,7 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
   ];
 
   const currentFormat = formats.find(f => f.key === selectedFormat);
-  const imageUrl = currentFormat?.uri ? `/api${currentFormat.uri}` : null;
+  const imageUrl = currentFormat?.uri || null;
 
   const handleDownload = async () => {
     if (!imageUrl) return;
@@ -75,18 +75,18 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
         className="text-center"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ type: 'spring', bounce: 0.6 }}
+        transition={{ type: 'spring', bounce: 0.5 }}
       >
         <motion.h2
-          className="font-display text-5xl text-comic-magenta action-word inline-block relative"
+          className="font-display text-5xl text-brand-orange action-word inline-block relative"
           style={{
             textShadow: `
-              3px 3px 0 var(--comic-yellow),
-              6px 6px 0 var(--comic-cyan)
+              3px 3px 0 var(--brand-green),
+              6px 6px 0 var(--brand-blue)
             `,
           }}
-          animate={{ rotate: [-2, 2, -2] }}
-          transition={{ duration: 0.5, repeat: 3 }}
+          animate={{ rotate: [-1, 1, -1] }}
+          transition={{ duration: 0.6, repeat: 2 }}
         >
           TA-DA!
           {/* Sparkles */}
@@ -120,11 +120,11 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
             onClick={() => setSelectedFormat(format.key)}
             disabled={!format.uri}
             className={`
-              px-4 py-2 rounded-full font-comic text-sm border-3 border-comic-navy
+              px-4 py-2 rounded-full font-comic text-sm border-3 border-brand-dark
               transition-all
               ${selectedFormat === format.key
-                ? 'bg-comic-cyan shadow-comic'
-                : 'bg-white hover:bg-gray-100'
+                ? 'bg-brand-blue text-white shadow-comic'
+                : 'bg-white hover:bg-brand-subtle'
               }
               ${!format.uri ? 'opacity-40 cursor-not-allowed' : ''}
             `}
@@ -181,7 +181,7 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
         <button
           onClick={handleDownload}
           disabled={!imageUrl || isDownloading}
-          className="comic-btn w-full bg-comic-mint text-comic-navy disabled:opacity-50"
+          className="comic-btn w-full bg-brand-green text-white disabled:opacity-50"
         >
           <span className="flex items-center justify-center gap-2">
             <span>{isDownloading ? '⏳' : '📥'}</span>
@@ -194,7 +194,7 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
           <button
             onClick={handleShare}
             disabled={!imageUrl}
-            className="comic-btn w-full bg-comic-magenta text-white disabled:opacity-50"
+            className="comic-btn w-full bg-brand-orange text-white disabled:opacity-50"
           >
             <span className="flex items-center justify-center gap-2">
               <span>🚀</span> SHARE WITH FRIENDS!
@@ -205,7 +205,7 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
         {/* Try again button */}
         <button
           onClick={onReset}
-          className="comic-btn w-full bg-white text-comic-navy"
+          className="comic-btn w-full bg-white text-brand-dark"
         >
           <span className="flex items-center justify-center gap-2">
             <span>📸</span> MAKE ANOTHER COMIC
@@ -220,7 +220,7 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
       >
-        <p className="font-comic text-sm text-gray-500">
+        <p className="font-comic text-sm text-brand-mid">
           Remember to brush twice a day! 🦷✨
         </p>
       </motion.div>

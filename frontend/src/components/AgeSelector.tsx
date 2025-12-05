@@ -26,10 +26,10 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
       <div className="flex items-center gap-3 mb-4">
         <span className="text-3xl">{currentGroup.emoji}</span>
         <div>
-          <h3 className="font-display text-xl text-comic-navy">
+          <h3 className="font-display text-xl text-brand-dark">
             HOW OLD ARE YOU?
           </h3>
-          <p className="font-comic text-sm text-gray-500">
+          <p className="font-comic text-sm text-brand-mid">
             We'll make the comic just right for you!
           </p>
         </div>
@@ -38,9 +38,9 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
       {/* Age slider */}
       <div className="relative mt-4">
         {/* Track background */}
-        <div className="h-4 bg-gray-200 rounded-full border-2 border-comic-navy overflow-hidden">
+        <div className="h-4 bg-brand-subtle rounded-full border-2 border-brand-dark overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-comic-mint via-comic-yellow to-comic-coral"
+            className="h-full bg-gradient-to-r from-brand-green via-brand-blue to-brand-orange"
             style={{ width: `${((age - 3) / 9) * 100}%` }}
             layout
           />
@@ -58,7 +58,7 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
 
         {/* Thumb indicator */}
         <motion.div
-          className="absolute top-1/2 -translate-y-1/2 w-10 h-10 bg-comic-yellow border-3 border-comic-navy rounded-full flex items-center justify-center font-display text-lg shadow-comic pointer-events-none"
+          className="absolute top-1/2 -translate-y-1/2 w-10 h-10 bg-brand-green border-3 border-brand-dark rounded-full flex items-center justify-center font-display text-lg text-white shadow-comic pointer-events-none"
           style={{ left: `calc(${((age - 3) / 9) * 100}% - 20px)` }}
           layout
           whileHover={{ scale: 1.1 }}
@@ -68,7 +68,7 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
       </div>
 
       {/* Age labels */}
-      <div className="flex justify-between mt-3 text-sm font-comic text-gray-500">
+      <div className="flex justify-between mt-3 text-sm font-comic text-brand-mid">
         <span>3</span>
         <span>6</span>
         <span>9</span>
@@ -84,11 +84,11 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
               key={group.label}
               onClick={() => onAgeChange(Math.floor((group.min + group.max) / 2))}
               className={`
-                px-4 py-2 rounded-full font-comic text-sm border-2 border-comic-navy
+                px-4 py-2 rounded-full font-comic text-sm border-2 border-brand-dark
                 transition-colors
                 ${isActive
-                  ? 'bg-comic-cyan text-comic-navy shadow-comic'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
+                  ? 'bg-brand-blue text-white shadow-comic'
+                  : 'bg-white text-brand-mid hover:bg-brand-subtle'
                 }
               `}
               whileHover={{ scale: 1.05 }}

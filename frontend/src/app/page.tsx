@@ -128,10 +128,10 @@ export default function Home() {
       if (!scriptRes.ok) throw new Error('Failed to write script');
       const scriptData = await scriptRes.json();
 
-      // Step 5: Render comic
+      // Step 5: Render comic (call backend directly to avoid proxy timeout)
       setCurrentStep(4);
 
-      const renderRes = await fetch('/api/render/comic', {
+      const renderRes = await fetch('http://localhost:8000/api/render/comic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ script_id: scriptData.script_id }),
@@ -166,7 +166,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen pb-20 bg-gradient-to-br from-poppy-cream to-white">
+    <main className="min-h-screen pb-20 bg-gradient-to-br from-brand-light to-white">
       <Header />
 
       <div className="container mx-auto px-4 max-w-4xl pt-12">
@@ -179,7 +179,7 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1 }}
             key={state}
           >
-            <p className="font-bold text-lg text-poppy-navy">
+            <p className="font-bold text-lg text-brand-dark">
               {state === 'idle' && "Hi! I'm Poppy Tooth! Show me your snack and I'll tell you if it's tooth-friendly!"}
               {state === 'uploading' && "Ooh, uploading! Hang tight..."}
               {state === 'scanning' && "Let me take a closer look with my super specs..."}
@@ -284,7 +284,7 @@ export default function Home() {
           </AnimatePresence>
         </div>
 
-        <p className="text-center text-poppy-navy/50 text-sm mt-8 font-semibold">
+        <p className="text-center text-brand-mid text-sm mt-8 font-body">
           Powered by Gemini Vision & Qdrant • © 2025 Poppy Kids Dental
         </p>
       </div>

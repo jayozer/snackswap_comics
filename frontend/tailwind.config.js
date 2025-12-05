@@ -7,70 +7,70 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'poppy': {
-          DEFAULT: '#FF6B6B',
-          teal: '#4ECDC4',
-          yellow: '#FFD93D',
-          navy: '#2C3E50',
-          cream: '#F7F9FC',
+        // Anthropic Brand Colors
+        'brand': {
+          dark: '#141413',
+          light: '#faf9f5',
+          mid: '#b0aea5',
+          subtle: '#e8e6dc',
+          orange: '#d97757',
+          blue: '#6a9bcc',
+          green: '#788c5d',
         },
-        'comic': { // Keeping back-compat for now, mapping to new
-          cyan: '#4ECDC4',
-          magenta: '#FF6B6B',
-          yellow: '#FFD93D',
-          coral: '#FF6B6B',
-          mint: '#4ECDC4',
-          navy: '#2C3E50',
-          cream: '#F7F9FC',
+        // Legacy aliases for gradual migration
+        'poppy': {
+          DEFAULT: '#d97757',
+          teal: '#6a9bcc',
+          yellow: '#788c5d',
+          navy: '#141413',
+          cream: '#faf9f5',
+        },
+        'comic': {
+          cyan: '#6a9bcc',
+          magenta: '#d97757',
+          yellow: '#788c5d',
+          coral: '#d97757',
+          mint: '#6a9bcc',
+          navy: '#141413',
+          cream: '#faf9f5',
         },
         'comic-bubble': '#FFFFFF',
       },
       fontFamily: {
-        'display': ['Bangers', 'Impact', 'system-ui'],
-        'body': ['Nunito', 'system-ui', 'sans-serif'],
+        'display': ['Poppins', 'Arial', 'system-ui', 'sans-serif'],
+        'body': ['Lora', 'Georgia', 'serif'],
         'comic': ['Comic Neue', 'Comic Sans MS', 'cursive'],
       },
       boxShadow: {
-        'comic': '4px 4px 0px 0px #1A1A2E',
-        'comic-lg': '6px 6px 0px 0px #1A1A2E',
-        'comic-xl': '8px 8px 0px 0px #1A1A2E',
-        'bubble': '3px 3px 0px 0px rgba(0,0,0,0.2)',
+        'comic': '4px 4px 0px 0px #141413',
+        'comic-lg': '6px 6px 0px 0px #141413',
+        'comic-xl': '8px 8px 0px 0px #141413',
+        'bubble': '3px 3px 0px 0px rgba(0,0,0,0.15)',
       },
       animation: {
-        'bounce-slow': 'bounce 2s infinite',
-        'wiggle': 'wiggle 0.5s ease-in-out infinite',
         'pop': 'pop 0.3s ease-out',
         'float': 'float 3s ease-in-out infinite',
         'scan': 'scan 2s ease-in-out infinite',
-        'burst': 'burst 0.6s ease-out forwards',
       },
       keyframes: {
-        wiggle: {
-          '0%, 100%': { transform: 'rotate(-3deg)' },
-          '50%': { transform: 'rotate(3deg)' },
-        },
         pop: {
           '0%': { transform: 'scale(0)', opacity: '0' },
-          '80%': { transform: 'scale(1.1)' },
+          '80%': { transform: 'scale(1.05)' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
+          '50%': { transform: 'translateY(-6px)' },
         },
         scan: {
           '0%, 100%': { transform: 'translateY(0)', opacity: '1' },
           '50%': { transform: 'translateY(100%)', opacity: '0.5' },
         },
-        burst: {
-          '0%': { transform: 'scale(0) rotate(0deg)', opacity: '1' },
-          '100%': { transform: 'scale(1.5) rotate(15deg)', opacity: '0' },
-        },
       },
       backgroundImage: {
-        'halftone': 'radial-gradient(circle, #1A1A2E 1px, transparent 1px)',
+        'halftone': 'radial-gradient(circle, #141413 1px, transparent 1px)',
         'dots': 'radial-gradient(circle, currentColor 2px, transparent 2px)',
-        'comic-burst': 'conic-gradient(from 0deg, #FFE135 0deg, #FF6B6B 60deg, #FFE135 120deg, #FF6B6B 180deg, #FFE135 240deg, #FF6B6B 300deg, #FFE135 360deg)',
+        'comic-burst': 'conic-gradient(from 0deg, #788c5d 0deg, #d97757 60deg, #788c5d 120deg, #d97757 180deg, #788c5d 240deg, #d97757 300deg, #788c5d 360deg)',
       },
     },
   },

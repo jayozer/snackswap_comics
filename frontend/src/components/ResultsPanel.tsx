@@ -26,9 +26,9 @@ export default function ResultsPanel({
   onReset,
 }: ResultsPanelProps) {
   const getRiskLevel = (score: number) => {
-    if (score >= 70) return { label: 'HIGH RISK', color: 'comic-coral', emoji: '🚨' };
-    if (score >= 40) return { label: 'MEDIUM RISK', color: 'comic-yellow', emoji: '⚠️' };
-    return { label: 'LOW RISK', color: 'comic-mint', emoji: '✨' };
+    if (score >= 70) return { label: 'HIGH RISK', color: 'brand-orange', emoji: '🚨' };
+    if (score >= 40) return { label: 'MEDIUM RISK', color: 'brand-blue', emoji: '⚠️' };
+    return { label: 'LOW RISK', color: 'brand-green', emoji: '✨' };
   };
 
   const avgRisk = scoredItems.length > 0
@@ -61,7 +61,7 @@ export default function ResultsPanel({
           <h2 className={`font-display text-4xl text-${riskLevel.color} action-word mb-2`}>
             {riskLevel.label}
           </h2>
-          <div className="font-comic text-lg text-comic-navy">
+          <div className="font-comic text-lg text-brand-dark">
             Dental Risk Score: <span className="font-bold">{Math.round(avgRisk)}/100</span>
           </div>
         </motion.div>
@@ -84,7 +84,7 @@ export default function ResultsPanel({
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h3 className="font-display text-xl text-comic-navy mb-4 flex items-center gap-2">
+        <h3 className="font-display text-xl text-brand-dark mb-4 flex items-center gap-2">
           <span>🍿</span> DETECTED SNACKS
         </h3>
 
@@ -94,15 +94,15 @@ export default function ResultsPanel({
             return (
               <motion.div
                 key={item.snack_id}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border-2 border-gray-200"
+                className="flex items-center gap-3 p-3 bg-brand-subtle/50 rounded-xl border-2 border-brand-subtle"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + index * 0.1 }}
               >
                 <span className="text-2xl">{itemRisk.emoji}</span>
                 <div className="flex-1">
-                  <p className="font-bold text-comic-navy">{item.name}</p>
-                  <p className="text-sm text-gray-500 font-comic">{item.category}</p>
+                  <p className="font-bold text-brand-dark">{item.name}</p>
+                  <p className="text-sm text-brand-mid font-comic">{item.category}</p>
                 </div>
                 <div className={`px-3 py-1 rounded-full bg-${itemRisk.color}/20 border-2 border-${itemRisk.color}`}>
                   <span className="font-display text-sm">{Math.round(item.dental_risk_score)}</span>
@@ -116,12 +116,12 @@ export default function ResultsPanel({
       {/* Dental facts */}
       {facts.length > 0 && (
         <motion.div
-          className="comic-border bg-comic-cyan/10 p-5"
+          className="comic-border bg-brand-blue/10 p-5"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <h3 className="font-display text-xl text-comic-navy mb-4 flex items-center gap-2">
+          <h3 className="font-display text-xl text-brand-dark mb-4 flex items-center gap-2">
             <span>🦷</span> TOOTH FACTS
           </h3>
 
@@ -144,12 +144,12 @@ export default function ResultsPanel({
       {/* Swap suggestions */}
       {swaps.length > 0 && (
         <motion.div
-          className="comic-border bg-comic-mint/10 p-5"
+          className="comic-border bg-brand-green/10 p-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
         >
-          <h3 className="font-display text-xl text-comic-navy mb-4 flex items-center gap-2">
+          <h3 className="font-display text-xl text-brand-dark mb-4 flex items-center gap-2">
             <span>🔄</span> SWAP IDEAS
           </h3>
 
@@ -157,15 +157,15 @@ export default function ResultsPanel({
             {swaps.slice(0, 2).map((swap, index) => (
               <motion.div
                 key={index}
-                className="flex items-center gap-3 p-3 bg-white rounded-xl border-2 border-comic-mint"
+                className="flex items-center gap-3 p-3 bg-white rounded-xl border-2 border-brand-green"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8 + index * 0.1 }}
               >
                 <span className="text-2xl">✨</span>
                 <div>
-                  <p className="font-bold text-comic-navy">{swap.name || swap.swap_name}</p>
-                  <p className="text-sm text-gray-500 font-comic">
+                  <p className="font-bold text-brand-dark">{swap.name || swap.swap_name}</p>
+                  <p className="text-sm text-brand-mid font-comic">
                     {swap.reason || 'A tooth-friendly alternative!'}
                   </p>
                 </div>
@@ -184,7 +184,7 @@ export default function ResultsPanel({
       >
         <button
           onClick={onViewComic}
-          className="comic-btn w-full bg-comic-yellow text-comic-navy"
+          className="comic-btn w-full bg-brand-green text-white"
         >
           <span className="flex items-center justify-center gap-2">
             <span>🎨</span> SEE MY COMIC!
@@ -193,7 +193,7 @@ export default function ResultsPanel({
 
         <button
           onClick={onReset}
-          className="comic-btn w-full bg-white text-comic-navy"
+          className="comic-btn w-full bg-white text-brand-dark"
         >
           <span className="flex items-center justify-center gap-2">
             <span>📸</span> TRY ANOTHER SNACK

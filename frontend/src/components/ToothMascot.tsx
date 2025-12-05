@@ -27,7 +27,7 @@ export default function ToothMascot({ state }: ToothMascotProps) {
         transition={{ type: 'spring', bounce: 0.3 }}
       >
         {/* Glow effect */}
-        <div className="absolute inset-0 bg-poppy-yellow/20 rounded-full blur-xl" />
+        <div className="absolute inset-0 bg-brand-green/20 rounded-full blur-xl" />
 
         <img
           src={imageSrc}
