@@ -1,1 +1,25 @@
+# Environment
 backend/.env
+.env
+.env.local
+
+# Backend storage (user uploads, renders)
+backend/storage/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# Frontend build
+frontend/.next/
+frontend/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
