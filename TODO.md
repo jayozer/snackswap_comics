@@ -1,11 +1,20 @@
 # SnackSwap Comics - Implementation Status
 
-> **Last Updated**: 2025-11-29
-> **Status**: MVP Complete
+> **Last Updated**: 2025-12-05
+> **Status**: MVP Complete + Brand Update
 
 ---
 
 ## Completed Features
+
+### Phase 4: Anthropic Brand Update
+- [x] Update Tailwind config with Anthropic brand colors
+- [x] Update CSS variables in globals.css
+- [x] Modernize comic elements (speech bubbles, borders, buttons)
+- [x] Update all components with new color scheme
+- [x] Fix ScanningOverlay brand colors
+- [x] Fix socket hang up error (direct backend call for render)
+- [x] Add /storage proxy rewrite for comic images
 
 ### Phase 1: Backend - Comic Rendering Service
 
@@ -111,6 +120,28 @@
 ---
 
 ## Backlog
+
+### UI/UX Improvements
+- [ ] **Export Format Buttons**: Update Square, Story, Reel buttons to be more dynamic and mobile-suitable
+- [ ] **"How it Works" Section**: Add clear instructions/tutorial for users
+- [ ] **Header Branding**:
+  - [ ] Update "Poppy Kids Dental" to "Poppy Kids Pediatric Dentistry" with logo
+  - [ ] Add link to business website when clicking the logo
+- [ ] **App Branding**:
+  - [ ] Design better logo for SnackSwap Comics
+  - [ ] Consider new app name (brainstorm options)
+
+### Freepik Updates
+- [ ] Investigate Freepik API integration issues (see logs below)
+- [ ] Fix speech bubble asset fetching
+- [ ] Fix comic frame asset fetching
+- [ ] Add fallback assets when Freepik API fails
+
+**Freepik Error Logs:**
+```
+WARNING - Freepik enhancement failed: [error details]
+```
+*Note: Currently falling back to PIL-rendered bubbles when Freepik fails*
 
 ### v1.1 Features
 - [ ] Animated comics (video generation for Reels)
