@@ -193,13 +193,34 @@ Higher scores = higher dental risk. Swaps must improve score by ≥25 points.
 ## 🎯 Workflow
 
 1. **Capture**: User uploads snack photo
-2. **Vision**: Gemini detects 1-3 items with confidence
+2. **Vision**: Gemini detects 1-5 items with confidence (smart grouping for plates)
 3. **Match**: Vector search finds similar snacks in Qdrant
 4. **Score**: Calculate dental risk for each item
-5. **Retrieve**: Fetch age-appropriate facts and taste-aligned swaps
-6. **Script**: Gemini composes 4-panel comic with citations
-7. **Render**: Generate character images and compose panels
-8. **Export**: Package with social captions and provenance
+5. **Mode Selection**: Determine comic mode based on average risk score
+6. **Retrieve**: Fetch age-appropriate facts and taste-aligned swaps
+7. **Script**: Gemini composes 4-panel comic with citations
+8. **Render**: Generate character images and compose panels
+9. **Export**: Package with social captions and provenance
+
+### Smart Item Grouping
+
+When detecting multiple similar items (like a fruit plate with 10+ fruits), the vision system intelligently groups them:
+
+| Input | Detection | Mode |
+|-------|-----------|------|
+| Single apple | "Fresh Apple" (1 item) | CELEBRATE |
+| Fruit plate (10+ fruits) | "Mixed Fruit Plate" (1 item) | CELEBRATE |
+| Apple + banana + orange | "Fresh Fruit Assortment" or 3 items | CELEBRATE |
+| Chips + candy + soda | 3 individual items | EDUCATE |
+| Unrecognizable image | "Unidentified Food" (fallback) | UNKNOWN |
+
+### Comic Modes
+
+The app generates different comic styles based on snack healthiness:
+
+- **🎉 CELEBRATE** (risk < 30): Celebratory comic praising healthy choices
+- **📚 EDUCATE** (risk ≥ 30): Educational comic about dental risks with swap suggestions
+- **❓ UNKNOWN** (no match): Generic informational comic about dental health
 
 ## 📝 Example Flow
 

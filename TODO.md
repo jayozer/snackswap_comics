@@ -1,7 +1,8 @@
 # SnackSwap Comics - Implementation Status
 
-> **Last Updated**: 2025-12-05
-> **Status**: MVP Complete + Brand Update
+> **Last Updated**: 2025-12-08
+> **Status**: MVP Complete + Hackathon Enhancements In Progress
+> **Branch**: qdrant-features
 
 ---
 
@@ -119,56 +120,280 @@
 
 ---
 
-## Backlog
+## Phase 5: Hackathon Enhancements
 
-### UI/UX Improvements
-- [ ] **Export Format Buttons**: Update Square, Story, Reel buttons to be more dynamic and mobile-suitable
-- [ ] **"How it Works" Section**: Add clear instructions/tutorial for users
-- [ ] **Header Branding**:
-  - [ ] Update "Poppy Kids Dental" to "Poppy Kids Pediatric Dentistry" with logo
-  - [ ] Add link to business website when clicking the logo
-- [ ] **App Branding**:
-  - [ ] Design better logo for SnackSwap Comics
-  - [ ] Consider new app name (brainstorm options)
+### 5.1 Panel Layout Overhaul (COMPLETED ✓)
+*Prerequisite for: Speech Bubble Integration, Export Format improvements*
+*All export formats tested and working: Square (1080×1080), Portrait (1080×1350), Reel (1080×1920)*
 
-### Freepik Updates
-- [ ] Investigate Freepik API integration issues (see logs below)
-- [ ] Fix speech bubble asset fetching
-- [ ] Fix comic frame asset fetching
-- [ ] Add fallback assets when Freepik API fails
+- [x] **1x4 Vertical Strip Layout** (Hybrid approach: 1x4 base, 2x2 for square export)
+  - [x] Update `nanobana_service.py` prompt to generate 1x4 vertical strip (512×1024 at 1K)
+  - [x] Update `render_service.py` panel coordinate calculations:
+    - [x] `_generate_with_pillow()` - 1x4 vertical fallback layout
+    - [x] `_add_text_overlay()` - adjust text positions for vertical layout
+    - [x] `_enhance_with_freepik()` - adjust bubble/frame placement for vertical
+    - [x] `_detect_bubbles_with_vision()` - update prompt for vertical panels
+  - [x] Update export format resizing logic with hybrid approach:
+    - [x] Square (1080×1080): **Rearrange** 1x4 to 2x2 grid, then scale
+    - [x] Portrait (1080×1350): Scale 1x4 strip, center crop
+    - [x] Reel (1080×1920): Scale 1x4 strip, slight crop
+  - [x] Add `_rearrange_to_grid()` helper method for square export
+  - [x] Test all 3 export formats with new layout ✓
+    - Square (1080×1080): 2x2 grid rearrangement working
+    - Portrait (1080×1350): Pillarboxing working
+    - Reel (1080×1920): Pillarboxing working
+  - **File References**: `nanobana_service.py`, `render_service.py`
+  - **Future Enhancement**: Upgrade from 1K (512×1024) to 2K (1024×2048) resolution
 
-**Freepik Error Logs:**
-```
-WARNING - Freepik enhancement failed: [error details]
-```
-*Note: Currently falling back to PIL-rendered bubbles when Freepik fails*
+### 5.2 Celebrate Mode + Qdrant Enhancements (COMPLETED ✓)
+*Shows app handles healthy snacks positively + advanced search - key hackathon features*
+*Combined because both require seed data changes and re-seeding*
 
-### v1.1 Features
-- [ ] Animated comics (video generation for Reels)
-- [ ] User accounts / session persistence
-- [ ] Comic history / gallery
-- [ ] Social sharing integration
+#### 5.2.1 Seed Data Updates (Single Re-Seed)
+- [x] Add `fact_type` field to existing facts (default: "educate")
+- [x] Add `risk_tags` field to all facts:
+  - [x] "sticky" for sticky candy facts
+  - [x] "sugary" for sugar/bacteria facts
+  - [x] "acidic" for acid erosion facts
+  - [x] "hard" for crunchy/cracking facts
+- [x] Add 5+ healthy snacks with `is_healthy` and `health_benefits` fields:
+  - [x] Apple (fruit, fiber, stimulates saliva)
+  - [x] Carrots (vegetable, crunchy, cleans teeth)
+  - [x] Cheese (dairy, calcium, neutralizes acid)
+  - [x] Almonds (nuts, calcium, protein)
+  - [x] Celery (vegetable, natural toothbrush, high water)
+- [x] Add grouped healthy snacks for smart detection:
+  - [x] Mixed Fruit Plate (grouped fruit detection)
+  - [x] Fresh Fruit Assortment (grouped fruit detection)
+  - [x] Fresh Vegetable Tray (grouped vegetable detection)
+  - [x] Fruit Salad (grouped fruit detection)
+- [x] Add 5+ celebration facts with `fact_type: "celebrate"`:
+  - [x] Crunchy foods as natural toothbrushes
+  - [x] Calcium strengthens enamel
+  - [x] Water content washes away debris
+  - [x] Natural sugars with fiber are gentler
+  - [x] Protein builds strong teeth
+- [x] Add payload indexes: `fact_type`, `risk_tags`, `is_healthy`
+- [x] Re-seed Qdrant Cloud (33 snacks total)
+- [x] **File References**: `seed_data.py`, `qdrant_service.py`, `create_indexes.py`
 
-### v1.2 Features
-- [ ] Multiple comic styles/themes
-- [ ] Character customization
-- [ ] Multi-language support
-- [ ] PWA offline support
+#### 5.2.2 Qdrant Service Updates
+- [x] Add `fact_type` parameter to `search_facts()`
+- [x] Add `risk_tags` filter parameter to `search_facts()`
+- [x] Add `extract_risk_tags()` method to `scoring_service.py`:
+  - [x] stickiness > 0.5 → "sticky"
+  - [x] added_sugar_g > 15 → "sugary"
+  - [x] acidity_tag in (medium, high) → "acidic"
+  - [x] crunch_hardness > 0.7 → "hard"
+- [x] **File References**: `qdrant_service.py`, `scoring_service.py`
 
-### Infrastructure
+#### 5.2.3 API Layer (Mode + Cross-Collection)
+- [x] Create `ComicMode` enum in `models/api.py`: EDUCATE, CELEBRATE, UNKNOWN
+- [x] Add `mode` and `average_risk_score` to `ScoreRetrieveResponse`
+- [x] Add mode determination logic in `score.py`:
+  - [x] risk >= 30 → EDUCATE
+  - [x] risk < 30 → CELEBRATE
+  - [x] no match → UNKNOWN
+- [x] Integrate risk_tags filtering based on matched snack
+- [x] Return empty swaps for non-EDUCATE modes
+- [x] **File References**: `models/api.py`, `score.py`
+
+#### 5.2.4 Panel-Aware Retrieval (QueryBuilder)
+- [x] Create `PanelContext` model in `models/api.py`:
+  - [x] `panel_number: int` (1-4)
+  - [x] `scene: str` (playground, kitchen, dentist, school)
+  - [x] `mood: str` (funny, dramatic, educational, celebratory)
+  - [x] `narrative_beat: str` (intro, conflict, revelation, resolution)
+- [x] Create `QueryBuilder` service in `services/query_builder.py`:
+  - [x] `build_fact_query()` - context-enriched query strings
+  - [x] Mood keywords: funny→"fun fact, surprising", dramatic→"warning, danger"
+  - [x] Beat keywords: intro→"discovery", resolution→"recommendation, tip"
+- [x] Integrate QueryBuilder into `score.py`
+- [x] **File References**: `models/api.py`, `query_builder.py`, `score.py`
+
+#### 5.2.5 Script Composition
+- [x] Add `compose_celebrate_script()` method in `gemini_service.py`:
+  - [x] Positive narrative: Hero Entrance → Superpower → Team Up → Celebration
+  - [x] Captain Sparkle impressed and excited
+  - [x] Focus on WHY snack is great (not "instead of bad snacks")
+- [x] Add `compose_unknown_script()` method for generic dental health comics
+- [x] Update `script.py` endpoint to route based on mode
+- [x] **File References**: `gemini_service.py`, `script.py`
+
+#### 5.2.6 Frontend (Mode Display)
+- [x] Add mode-based banner display (celebrate/educate/unknown)
+- [x] Hide swaps section for non-educate modes
+- [x] Style celebrate banner with positive colors/icons
+- [x] **File References**: `ResultsPanel.tsx`, `page.tsx`
+
+#### 5.2.7 Smart Item Grouping (Multi-Item Detection)
+- [x] Update vision detection prompt to support up to 5 items (from 3)
+- [x] Add smart grouping rules for plates/assortments:
+  - [x] Fruit plates → "Mixed Fruit Plate" (single item)
+  - [x] Veggie trays → "Fresh Vegetable Tray" (single item)
+  - [x] Mixed snacks → Individual items up to 5
+- [x] Add error recovery for vision detection:
+  - [x] Handle None response.text gracefully
+  - [x] Handle malformed JSON responses
+  - [x] Return "Unidentified Food" fallback → triggers UNKNOWN mode
+- [x] Update API documentation (1-5 items, grouped)
+- [x] **File References**: `gemini_service.py:43-199`, `api.py`
+
+### 5.3 User Signup Flow (DATA CAPTURE)
+*Capture age/allergens upfront, use in prompts rather than frontend toggles*
+
+#### 5.3.1 Backend
+- [ ] Create `UserProfile` model in `models/api.py`:
+  - [ ] `user_id: str`
+  - [ ] `age_band: str` (3-5, 6-8, 9-12)
+  - [ ] `allergens: list[str]`
+  - [ ] `created_at: datetime`
+- [ ] Create in-memory user store (MVP) or database table
+- [ ] Create `/api/user/signup` endpoint
+- [ ] Create `/api/user/profile` endpoint (GET/PUT)
+- [ ] Update `score.py` to read from user profile instead of request params
+- [ ] Update `gemini_service.py` to use profile age in prompts
+- [ ] **File References**: `models/api.py`, `score.py`, `gemini_service.py`, new `user.py`
+
+#### 5.3.2 Frontend
+- [ ] Create signup form component (age selector, allergen checkboxes)
+- [ ] Store user_id in localStorage after signup
+- [ ] Pass user_id with API requests
+- [ ] Hide age/allergen selectors unless `DEBUG=true` env var
+- [ ] Show "Edit Profile" option in debug mode
+- [ ] **File References**: `App.jsx`, new `SignupForm.tsx`, `AgeSelector.tsx`
+
+### 5.4 Content Guardrails (KID-SAFE)
+*Explicit safety filters for generated content*
+
+- [ ] Add Gemini safety filters to script output in `gemini_service.py`
+- [ ] Add profanity filter validation on all generated dialogue
+- [ ] Add image safety check before serving Nano-Banana output
+- [ ] Log all generated content for audit review
+- [ ] **File References**: `gemini_service.py`, `render_service.py`
+
+### 5.5 Speech Bubble Integration (VISUAL POLISH)
+*Integrated bubbles that feel part of the comic art*
+*Prerequisite: 5.1 Panel Layout must be complete*
+*See: `docs/speech_bubble_improvement_plan.md` for detailed implementation*
+
+#### 5.5.1 Emotion-Based Prompts
+- [ ] Add `emotion` field to panel model in `models/api.py`
+- [ ] Define `BUBBLE_STYLES` mapping in `nanobana_service.py`:
+  - [ ] "speech" → round oval bubble
+  - [ ] "thought" → cloud-shaped bubble
+  - [ ] "exclaim" → spiky starburst bubble
+  - [ ] "angry" → jagged sharp-edged bubble
+  - [ ] "whisper" → dashed-outline bubble
+- [ ] Update Nano-Banana prompt to request EMPTY emotion-specific bubbles
+- [ ] Update `gemini_service.py` compose_script to return emotion per panel
+- [ ] **File References**: `models/api.py`, `nanobana_service.py`, `gemini_service.py`
+
+#### 5.5.2 Bubble Detection
+- [ ] Add `detect_speech_bubbles()` method to `gemini_service.py`:
+  - [ ] Use Gemini Vision to analyze generated comic
+  - [ ] Return JSON with bbox coordinates, center, style, confidence
+- [ ] Implement hybrid retry + fallback strategy in `render_service.py`:
+  - [ ] MAX_RETRIES = 1
+  - [ ] If detection fails → retry once
+  - [ ] If still fails → fall back to PIL
+- [ ] **File References**: `gemini_service.py`, `render_service.py`
+
+#### 5.5.3 Text Placement
+- [ ] Add `_place_text_in_bubbles()` method to `render_service.py`:
+  - [ ] Calculate text area from detected bbox
+  - [ ] Auto-size font to fit
+  - [ ] Center text in bubble
+  - [ ] Add slight shadow for depth
+- [ ] Add `_fallback_pil_bubbles()` enhanced method:
+  - [ ] Extract dominant colors from comic
+  - [ ] Draw emotion-appropriate bubble shapes
+  - [ ] Add hand-drawn wobble effect
+- [ ] **File References**: `render_service.py`
+
+### 5.6 Branding & Polish
+
+- [ ] **Header branding**: Update to "Poppy Kids Pediatric Dentistry" with logo
+- [ ] **Clinic website link**: Add click-through to business website
+- [ ] **Export Format Buttons**: Make more dynamic and mobile-suitable
+- [ ] **"How it Works" section**: Add tutorial for users
+- [ ] **File References**: Frontend components
+
+---
+
+## Phase 6: Production Readiness (Post-Hackathon)
+
+### 6.1 Analytics & Monitoring
+- [ ] Analytics integration (track generations, downloads, shares)
+- [ ] Error tracking and alerting
+- [ ] Usage metrics dashboard
+
+### 6.2 Infrastructure
 - [ ] Production deployment (Cloud Run / Vercel)
 - [ ] CI/CD pipeline
 - [ ] Monitoring & alerting
 - [ ] Database persistence for scripts
 
+### 6.3 Technical Debt
+- [ ] Request rate limiting
+- [ ] Caching layer for embeddings
+- [ ] Comprehensive error handling tests
+- [ ] Image compression optimization
+- [ ] Upgrade Nano-Banana generation from 1K (512×1024) to 2K (1024×2048) for higher quality exports
+
 ---
 
-## Technical Debt
+## v1.1 Features (Later)
 
-- [ ] Add comprehensive error handling tests
-- [ ] Implement request rate limiting
-- [ ] Add caching layer for embeddings
-- [ ] Optimize image compression
+- [ ] **Animated comics**: Video generation for Reels
+- [ ] **User accounts**: Session persistence, history/gallery
+- [ ] **Social sharing**: Direct share to Instagram/TikTok
+
+## v1.2 Features (Later)
+
+- [ ] Multiple comic styles/themes
+- [ ] Character customization (pick mascot style)
+- [ ] Multi-language support
+- [ ] PWA offline support
+
+---
+
+## Implementation Priority Order
+
+```
+WEEK 1: Foundation + Data
+├── Day 1-2: 1x4 Panel Layout (blocks everything else)
+├── Day 3-4: Celebrate Mode + Qdrant Enhancements - Seed Data (combined re-seed)
+└── Day 5: Payload indexes, re-seed Qdrant Cloud
+
+WEEK 2: API + Search Features
+├── Day 1-2: Mode logic + cross-collection joins in score.py
+├── Day 3: QueryBuilder service + panel-aware retrieval
+├── Day 4: Script composition (celebrate + unknown modes)
+└── Day 5: Frontend mode display
+
+WEEK 3: User Experience
+├── Day 1-2: User Signup Flow (backend)
+├── Day 3: User Signup Flow (frontend)
+├── Day 4-5: Content Guardrails
+
+WEEK 4: Visual Polish
+├── Day 1-3: Speech Bubble Integration (emotion prompts, detection)
+├── Day 4: Speech Bubble Text Placement + Fallback
+└── Day 5: Branding, polish, final testing
+```
+
+---
+
+## Documentation Cross-References
+
+| Doc File | Covers | TODO Sections |
+|----------|--------|---------------|
+| `docs/database-enhancements.md` | Celebrate Mode details | 5.2.1-5.2.6 |
+| `docs/qdrant-enhancements-plan.md` | Panel-aware + cross-collection | 5.2.2, 5.2.4 |
+| `docs/speech_bubble_improvement_plan.md` | Bubble integration | 5.5 |
+| `docs/hackathon-rubric.md` | Judging criteria mapping | All |
+| `docs/qdrantcloud-freepik.md` | Completed migration | N/A (done) |
 
 ---
 
@@ -181,6 +406,7 @@ WARNING - Freepik enhancement failed: [error details]
 
 ### Optional
 - [x] `FREEPIK_API_KEY` - Freepik API for enhanced assets
+- [ ] `DEBUG` - Enable debug mode (shows age/allergen selectors)
 
 See `backend/.env.example` for full configuration options.
 

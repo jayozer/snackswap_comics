@@ -75,6 +75,8 @@ class QdrantService:
             self.FACTS_COLLECTION: [
                 ("clinic_approved", models.PayloadSchemaType.BOOL),
                 ("age_band", models.PayloadSchemaType.KEYWORD),
+                ("fact_type", models.PayloadSchemaType.KEYWORD),
+                ("risk_tags", models.PayloadSchemaType.KEYWORD),
             ],
             self.STYLES_COLLECTION: [
                 ("is_default", models.PayloadSchemaType.BOOL),
@@ -85,6 +87,7 @@ class QdrantService:
             ],
             self.SNACKS_COLLECTION: [
                 ("category", models.PayloadSchemaType.KEYWORD),
+                ("is_healthy", models.PayloadSchemaType.BOOL),
             ],
         }
 
@@ -145,6 +148,8 @@ class QdrantService:
         age_band: str,
         limit: int = 8,
         clinic_approved_only: bool = True,
+        fact_type: str | None = None,
+        risk_tags: list[str] | None = None,
     ) -> list[models.ScoredPoint]:
         """
         Search for relevant facts in the facts_v1 collection.
@@ -154,6 +159,8 @@ class QdrantService:
             age_band: Target age band (3-5, 6-8, 9-12, all)
             limit: Maximum number of results
             clinic_approved_only: Only return clinic-approved facts
+            fact_type: Filter by fact type (educate, celebrate)
+            risk_tags: Filter facts that match these risk tags (sticky, sugary, acidic, hard)
 
         Returns:
             List of scored points (facts)
@@ -182,6 +189,26 @@ class QdrantService:
                     match=models.MatchValue(value=True),
                 )
             )
+
+        # Filter by fact_type (educate or celebrate)
+        if fact_type:
+            must_conditions.append(
+                models.FieldCondition(
+                    key="fact_type",
+                    match=models.MatchValue(value=fact_type),
+                )
+            )
+
+        # Filter by risk_tags (OR logic - any matching tag)
+        if risk_tags:
+            risk_should = [
+                models.FieldCondition(
+                    key="risk_tags",
+                    match=models.MatchValue(value=tag),
+                )
+                for tag in risk_tags
+            ]
+            must_conditions.append(models.Filter(should=risk_should))
 
         query_filter = models.Filter(must=must_conditions)
 

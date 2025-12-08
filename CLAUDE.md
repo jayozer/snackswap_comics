@@ -93,11 +93,40 @@ mypy app/
 The application follows a 6-step pipeline:
 
 1. **Capture** (`/api/capture/intake`) - Upload snack photo, return photo_id
-2. **Vision** (`/api/vision/detect`) - Gemini detects 1-3 food items
-3. **Score** (`/api/score/retrieve`) - Match to snack DB, calculate dental risk, fetch facts/swaps
-4. **Script** (`/api/script/compose`) - Gemini generates 4-panel comic script
+2. **Vision** (`/api/vision/detect`) - Gemini detects 1-5 food items (with smart grouping)
+3. **Score** (`/api/score/retrieve`) - Match to snack DB, calculate dental risk, determine comic mode, fetch facts/swaps
+4. **Script** (`/api/script/compose`) - Gemini generates 4-panel comic script (mode-aware)
 5. **Render** (`/api/render/comic`) - Generate character images and compose panels
 6. **Export** (`/api/export/zip`) - Package with captions and provenance
+
+### Smart Item Grouping
+
+The vision detection intelligently groups similar items to prevent overwhelming the system:
+
+| Input | Detection Result |
+|-------|------------------|
+| Single apple | 1 item: "Fresh Apple" |
+| Fruit plate (10+ fruits) | 1 item: "Mixed Fruit Plate" |
+| Veggie tray | 1 item: "Fresh Vegetable Tray" |
+| 3 distinct snacks | 3 separate items |
+
+Grouping rules (in `gemini_service.py:43-78`):
+- Plates/bowls with similar items → single grouped item
+- Maximum 5 items total
+- Prioritizes most prominent items
+- Falls back to "Unidentified Food" on errors
+
+### Comic Modes
+
+Three comic generation modes based on average dental risk score:
+
+| Mode | Trigger | Script Style |
+|------|---------|--------------|
+| `CELEBRATE` | avg_risk < 30 | Celebrates healthy choices, reinforces good habits |
+| `EDUCATE` | avg_risk ≥ 30 | Educational about dental risks, suggests swaps |
+| `UNKNOWN` | No snack match | Generic dental health info |
+
+Mode is determined in `score.py` and passed to `script.py` for appropriate script generation.
 
 ### Core Components
 

@@ -198,3 +198,36 @@ class ScoringService:
             return "6-8"
         else:
             return "9-12"
+
+    def extract_risk_tags(self, snack_payload: dict[str, Any]) -> list[str]:
+        """
+        Extract risk tags from snack payload for cross-collection filtering.
+
+        Tags are derived from snack characteristics to enable targeted fact retrieval.
+
+        Args:
+            snack_payload: Matched snack data
+
+        Returns:
+            List of risk tags (sticky, sugary, acidic, hard)
+        """
+        tags = []
+
+        # Sticky snacks (stickiness > 0.5)
+        if snack_payload.get("stickiness", 0) > 0.5:
+            tags.append("sticky")
+
+        # Sugary snacks (added_sugar_g > 15)
+        if snack_payload.get("added_sugar_g", 0) > 15:
+            tags.append("sugary")
+
+        # Acidic snacks (medium or high acidity)
+        acidity = snack_payload.get("acidity_tag", "low")
+        if acidity in ("medium", "high"):
+            tags.append("acidic")
+
+        # Hard/crunchy snacks (crunch_hardness > 0.7)
+        if snack_payload.get("crunch_hardness", 0) > 0.7:
+            tags.append("hard")
+
+        return tags

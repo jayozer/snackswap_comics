@@ -8,7 +8,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends
 
 from app.core.config import get_settings, Settings
-from app.models import ScriptComposeRequest, ScriptComposeResponse
+from app.models import ScriptComposeRequest, ScriptComposeResponse, ComicMode
 from app.services.gemini_service import GeminiService
 
 logger = logging.getLogger(__name__)
@@ -32,8 +32,10 @@ async def compose_script(
     """
     Compose a 4-panel comic script using Gemini.
 
-    Takes scored items, facts, and swaps and creates a delightful comic script
-    with character dialogue, visual prompts, and citations.
+    Routes to different composition methods based on mode:
+    - CELEBRATE: Positive celebration comic for healthy snacks
+    - EDUCATE: Educational comic with facts and swap suggestions
+    - UNKNOWN: Generic dental health tips when no snacks recognized
 
     Args:
         request: Script composition request
@@ -54,13 +56,26 @@ async def compose_script(
             for item in request.scored_items
         ]
 
-        # Compose script using Gemini
-        script_result = await gemini_service.compose_script(
-            snacks=snacks_data,
-            facts=request.facts,
-            swaps=request.swaps,
-            age=request.age,
-        )
+        # Route to appropriate composition method based on mode
+        if request.mode == ComicMode.CELEBRATE:
+            logger.info(f"Composing CELEBRATE script for {len(snacks_data)} healthy snacks")
+            script_result = await gemini_service.compose_celebrate_script(
+                snacks=snacks_data,
+                facts=request.facts,
+                age=request.age,
+            )
+        elif request.mode == ComicMode.UNKNOWN:
+            logger.info("Composing UNKNOWN script with generic dental tips")
+            script_result = gemini_service.get_unknown_script(age=request.age)
+        else:
+            # Default to EDUCATE mode
+            logger.info(f"Composing EDUCATE script for {len(snacks_data)} snacks")
+            script_result = await gemini_service.compose_script(
+                snacks=snacks_data,
+                facts=request.facts,
+                swaps=request.swaps,
+                age=request.age,
+            )
 
         # Generate script ID
         script_id = str(uuid.uuid4())
@@ -70,10 +85,11 @@ async def compose_script(
             "script_id": script_id,
             "script_result": script_result,
             "request": request.model_dump(),
+            "mode": request.mode.value,
             "created_at": datetime.utcnow().isoformat(),
         }
 
-        logger.info(f"Composed script {script_id} with {len(script_result['panels'])} panels")
+        logger.info(f"Composed script {script_id} (mode={request.mode.value}) with {len(script_result['panels'])} panels")
 
         return ScriptComposeResponse(
             script_id=script_id,

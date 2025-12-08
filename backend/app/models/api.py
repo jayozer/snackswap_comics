@@ -1,6 +1,15 @@
 """API request and response models."""
 
+from enum import Enum
 from pydantic import BaseModel, Field
+
+
+class ComicMode(str, Enum):
+    """Mode for comic generation based on snack dental risk."""
+
+    EDUCATE = "educate"  # Risk >= 30: Educational comic about dental risks
+    CELEBRATE = "celebrate"  # Risk < 30: Celebratory comic for healthy snacks
+    UNKNOWN = "unknown"  # No match found: Generic informational comic
 
 
 # Capture & Intake
@@ -40,7 +49,7 @@ class DetectedItem(BaseModel):
 class VisionDetectResponse(BaseModel):
     """Response from vision detection."""
 
-    items: list[DetectedItem] = Field(..., description="Detected items (1-3)")
+    items: list[DetectedItem] = Field(..., description="Detected items (1-5, grouped for plates/assortments)")
     needs_confirmation: bool = Field(
         False, description="Whether user confirmation is recommended"
     )
@@ -71,6 +80,24 @@ class ScoreRetrieveResponse(BaseModel):
     scored_items: list[ScoredItem] = Field(..., description="Scored items")
     facts: list[dict] = Field(..., description="Relevant facts (simplified payloads)")
     swaps: list[dict] = Field(..., description="Suggested swaps (simplified payloads)")
+    mode: ComicMode = Field(
+        default=ComicMode.EDUCATE,
+        description="Comic mode: educate (risk>=30), celebrate (risk<30), unknown (no match)"
+    )
+    average_risk_score: float = Field(
+        default=0.0,
+        description="Average dental risk score across all matched items"
+    )
+
+
+# Panel Context for context-aware retrieval
+class PanelContext(BaseModel):
+    """Context for panel-aware fact retrieval."""
+
+    panel_number: int = Field(default=1, ge=1, le=4, description="Panel number (1-4)")
+    scene: str | None = Field(default=None, description="Scene setting (playground, kitchen, dentist, school)")
+    mood: str = Field(default="educational", description="Panel mood (funny, dramatic, educational, celebratory)")
+    narrative_beat: str = Field(default="intro", description="Narrative beat (intro, conflict, revelation, resolution)")
 
 
 # Script Compose
@@ -82,6 +109,7 @@ class ScriptComposeRequest(BaseModel):
     swaps: list[dict] = Field(..., description="Available swaps")
     style_id: str = Field("default", description="Style ID to use")
     age: int = Field(..., ge=3, le=12, description="Child's age")
+    mode: ComicMode = Field(default=ComicMode.EDUCATE, description="Comic mode for script generation")
 
 
 class ScriptComposeResponse(BaseModel):

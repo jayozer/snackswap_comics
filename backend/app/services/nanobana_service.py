@@ -60,7 +60,7 @@ class NanoBananaService:
 
         # Build comprehensive prompt
         prompt_parts = [
-            "Create a 4-panel comic strip in a 2x2 grid layout. Comic book illustration style, vibrant colors, friendly and appealing to children aged 6-8.",
+            "Create a 4-panel comic strip in a VERTICAL 1x4 layout (stacked vertically, one column). Comic book illustration style, vibrant colors, friendly and appealing to children aged 6-8.",
             "",
             "CRITICAL RULES - MUST FOLLOW:",
             "- DO NOT draw any speech bubbles anywhere in the image",
@@ -72,8 +72,10 @@ class NanoBananaService:
             "- Text and speech bubbles will be added as post-processing overlay",
             "",
             "LAYOUT RULES:",
-            "- Must be exactly 2 rows and 2 columns (2x2 grid)",
-            "- Clear panel borders with thin black lines",
+            "- Must be exactly 4 panels stacked vertically (1 column, 4 rows)",
+            "- Panel 1 at the TOP, Panel 4 at the BOTTOM",
+            "- Clear HORIZONTAL panel borders with thin black lines between panels",
+            "- Image aspect ratio is 1:2 (width:height) - tall vertical strip",
             "- All visual elements must be fully visible within panel boundaries",
             "- No cropped or cut-off elements",
             "",
@@ -97,7 +99,7 @@ class NanoBananaService:
             background = panel.get("background", "simple")
             panel_chars = panel.get("characters", [])
 
-            prompt_parts.append(f"PANEL {panel_num} (Position: Row {(panel_num-1)//2 + 1}, Column {(panel_num-1)%2 + 1}):")
+            prompt_parts.append(f"PANEL {panel_num} (Row {panel_num} of 4 from top):")
             prompt_parts.append(f"Title: {title}")
 
             # Character positions and expressions
@@ -130,7 +132,8 @@ class NanoBananaService:
             "- Bright, appealing colors suitable for children",
             "- Friendly, non-threatening character designs",
             "- NO speech bubbles or text - leave top 25% of each panel empty/plain",
-            "- Professional comic book layout",
+            "- VERTICAL 1x4 layout (tall strip, panels stacked top to bottom)",
+            "- Professional comic book layout with consistent panel heights",
             "- Each character maintains exact same appearance across all panels",
         ])
 
@@ -164,15 +167,17 @@ class NanoBananaService:
         self,
         script: dict[str, Any],
         output_path: str | Path,
-        image_size: str = "2K",
+        image_size: str = "1K",
     ) -> Path:
         """
         Generate a 4-panel comic image using Imagen 4.0 or Nano-Banana.
 
+        Generates a 1x4 vertical strip (512×1024 at 1K resolution).
+
         Args:
             script: Comic script with panels and characters
             output_path: Path where to save the generated image
-            image_size: Image size ("1K" or "2K" for Imagen; "256", "512", "1K" for Nano-Banana)
+            image_size: Image size ("1K" = 512×1024 vertical strip, "2K" = 1024×2048)
 
         Returns:
             Path to the generated image

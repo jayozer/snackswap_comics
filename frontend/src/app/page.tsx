@@ -11,6 +11,7 @@ import ComicDisplay from '@/components/ComicDisplay';
 import ToothMascot from '@/components/ToothMascot';
 
 type AppState = 'idle' | 'uploading' | 'scanning' | 'results' | 'comic';
+type ComicMode = 'educate' | 'celebrate' | 'unknown';
 
 interface DetectedItem {
   name: string;
@@ -46,6 +47,8 @@ export default function Home() {
   const [comicData, setComicData] = useState<ComicData | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<ComicMode>('educate');
+  const [averageRisk, setAverageRisk] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -109,6 +112,8 @@ export default function Home() {
       setScoredItems(scoreData.scored_items);
       setFacts(scoreData.facts);
       setSwaps(scoreData.swaps);
+      setMode(scoreData.mode || 'educate');
+      setAverageRisk(scoreData.average_risk_score || 0);
 
       // Step 4: Generate script
       setCurrentStep(3);
@@ -122,6 +127,7 @@ export default function Home() {
           swaps: scoreData.swaps,
           style_id: 'default',
           age: age,
+          mode: scoreData.mode || 'educate',
         }),
       });
 
@@ -159,6 +165,8 @@ export default function Home() {
     setComicData(null);
     setCurrentStep(0);
     setError(null);
+    setMode('educate');
+    setAverageRisk(0);
   };
 
   const viewComic = () => {
@@ -183,8 +191,11 @@ export default function Home() {
               {state === 'idle' && "Hi! I'm Poppy Tooth! Show me your snack and I'll tell you if it's tooth-friendly!"}
               {state === 'uploading' && "Ooh, uploading! Hang tight..."}
               {state === 'scanning' && "Let me take a closer look with my super specs..."}
-              {state === 'results' && "Done! I've got the scoop on your snack!"}
-              {state === 'comic' && "Check out this comic I made just for you!"}
+              {state === 'results' && mode === 'celebrate' && "WOW! You picked an AMAZING tooth-friendly snack! High five!"}
+              {state === 'results' && mode === 'educate' && "Done! I've got the scoop on your snack!"}
+              {state === 'results' && mode === 'unknown' && "Hmm, I couldn't quite figure that one out. Let me share some tips!"}
+              {state === 'comic' && mode === 'celebrate' && "Check out this celebration comic I made just for you!"}
+              {state === 'comic' && mode !== 'celebrate' && "Check out this comic I made just for you!"}
             </p>
           </motion.div>
         </div>
@@ -262,6 +273,8 @@ export default function Home() {
                   scoredItems={scoredItems}
                   facts={facts}
                   swaps={swaps}
+                  mode={mode}
+                  averageRisk={averageRisk}
                   onViewComic={viewComic}
                   onReset={handleReset}
                 />

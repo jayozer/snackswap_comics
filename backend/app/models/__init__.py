@@ -21,6 +21,8 @@ from .api import (
     ExportZipRequest,
     ExportZipResponse,
     ContentManifest,
+    ComicMode,
+    PanelContext,
 )
 
 __all__ = [
@@ -58,4 +60,6 @@ __all__ = [
     "ExportZipRequest",
     "ExportZipResponse",
     "ContentManifest",
+    "ComicMode",
+    "PanelContext",
 ]

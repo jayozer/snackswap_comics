@@ -137,10 +137,10 @@ class RenderService:
         Returns:
             Path to generated image with text overlay
         """
-        # Generate base comic with empty bubbles
-        # Note: Nano-Banana max resolution is 1K (1024x1024), API will ignore "2K" request
+        # Generate base comic as 1x4 vertical strip with empty bubbles
+        # Resolution: 1K = 512×1024 (vertical strip)
         temp_path = self.renders_path / f"{content_id}_nanobana_raw.png"
-        result_path = await self.nanobana.generate_comic_image(script, temp_path, image_size="2K")
+        result_path = await self.nanobana.generate_comic_image(script, temp_path, image_size="1K")
 
         # Add text overlay to the comic
         output_path = self.renders_path / f"{content_id}_base.png"
@@ -156,7 +156,7 @@ class RenderService:
         """
         Generate comic using Pillow (fallback method).
 
-        Creates a simple 4-panel layout with text and basic shapes.
+        Creates a 1x4 vertical strip layout with text and basic shapes.
 
         Args:
             script: Comic script
@@ -165,24 +165,24 @@ class RenderService:
         Returns:
             Path to generated image
         """
-        # Create 4-panel comic (2x2 grid)
-        panel_width = 540  # Each panel is 540x540
-        panel_height = 540
-        margin = 20
-        border = 3
+        # Create 4-panel comic (1x4 vertical strip)
+        panel_width = 512  # Each panel is 512x256
+        panel_height = 256
+        margin = 8
+        border = 2
 
-        total_width = (panel_width * 2) + (margin * 3)  # 1120px
-        total_height = (panel_height * 2) + (margin * 3)  # 1120px
+        total_width = panel_width + (margin * 2)  # 528px
+        total_height = (panel_height * 4) + (margin * 5)  # 1064px
 
         # Create base image
         img = Image.new('RGB', (total_width, total_height), color='#F5F5F5')
         draw = ImageDraw.Draw(img)
 
-        # Try to load fonts
+        # Try to load fonts (scaled for smaller 256px panels)
         try:
-            title_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 24)
-            dialogue_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 18)
-            caption_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 14)
+            title_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 14)
+            dialogue_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 11)
+            caption_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 10)
         except:
             logger.warning("Could not load custom fonts, using default")
             title_font = ImageFont.load_default()
@@ -195,11 +195,9 @@ class RenderService:
             if i >= 4:  # Only render 4 panels
                 break
 
-            # Calculate panel position (2x2 grid)
-            row = i // 2
-            col = i % 2
-            x = margin + (col * (panel_width + margin))
-            y = margin + (row * (panel_height + margin))
+            # Calculate panel position (1x4 vertical strip)
+            x = margin  # Single column
+            y = margin + (i * (panel_height + margin))
 
             # Draw panel background
             bg_colors = ['#FFE5E5', '#E5F5FF', '#FFF5E5', '#E5FFE5']  # Soft pastels
@@ -211,12 +209,12 @@ class RenderService:
             title_bbox = draw.textbbox((0, 0), title, font=title_font)
             title_width = title_bbox[2] - title_bbox[0]
             title_x = x + (panel_width - title_width) // 2
-            draw.text((title_x, y + 15), title, fill='#333', font=title_font)
+            draw.text((title_x, y + 8), title, fill='#333', font=title_font)
 
-            # Draw characters as simple shapes with labels
+            # Draw characters as simple shapes with labels (scaled for 256px panels)
             characters = panel.get("characters", [])
             if characters:
-                char_y = y + 80
+                char_y = y + 55  # Scaled from 80
                 char_spacing = panel_width // (len(characters) + 1)
 
                 for j, char in enumerate(characters):
@@ -234,8 +232,8 @@ class RenderService:
                     elif expression == "excited":
                         char_color = self._brighten_color(char_color)
 
-                    # Draw character circle
-                    radius = 40
+                    # Draw character circle (scaled)
+                    radius = 25
                     draw.ellipse(
                         [char_x - radius, char_y - radius, char_x + radius, char_y + radius],
                         fill=char_color,
@@ -243,57 +241,57 @@ class RenderService:
                         width=2
                     )
 
-                    # Draw simple face
-                    eye_offset = 12
+                    # Draw simple face (scaled)
+                    eye_offset = 8
                     # Eyes
-                    draw.ellipse([char_x - eye_offset - 5, char_y - 10, char_x - eye_offset + 5, char_y], fill='#333')
-                    draw.ellipse([char_x + eye_offset - 5, char_y - 10, char_x + eye_offset + 5, char_y], fill='#333')
+                    draw.ellipse([char_x - eye_offset - 3, char_y - 6, char_x - eye_offset + 3, char_y], fill='#333')
+                    draw.ellipse([char_x + eye_offset - 3, char_y - 6, char_x + eye_offset + 3, char_y], fill='#333')
 
-                    # Mouth based on expression
+                    # Mouth based on expression (scaled)
                     if expression == "happy" or expression == "excited":
-                        draw.arc([char_x - 15, char_y, char_x + 15, char_y + 20], start=0, end=180, fill='#333', width=2)
+                        draw.arc([char_x - 10, char_y, char_x + 10, char_y + 12], start=0, end=180, fill='#333', width=2)
                     elif expression == "worried" or expression == "shocked":
-                        draw.ellipse([char_x - 8, char_y + 10, char_x + 8, char_y + 18], fill='#333')
+                        draw.ellipse([char_x - 5, char_y + 6, char_x + 5, char_y + 12], fill='#333')
                     else:
-                        draw.line([char_x - 15, char_y + 10, char_x + 15, char_y + 10], fill='#333', width=2)
+                        draw.line([char_x - 10, char_y + 6, char_x + 10, char_y + 6], fill='#333', width=2)
 
                     # Draw character name below
                     name_bbox = draw.textbbox((0, 0), char_name, font=caption_font)
                     name_width = name_bbox[2] - name_bbox[0]
-                    draw.text((char_x - name_width // 2, char_y + radius + 10), char_name, fill='#333', font=caption_font)
+                    draw.text((char_x - name_width // 2, char_y + radius + 5), char_name, fill='#333', font=caption_font)
 
-            # Draw dialogue in speech bubbles
+            # Draw dialogue in speech bubbles (scaled for 256px panels)
             dialogue = panel.get("dialogue", [])
             if dialogue:
-                dialogue_y = y + panel_height - 150
-                bubble_height = 40 * len(dialogue)
+                dialogue_y = y + panel_height - 80  # Scaled from 150
+                bubble_height = 25 * min(len(dialogue), 2)  # Max 2 lines in small panels
 
                 # Speech bubble background
-                bubble_margin = 10
+                bubble_margin = 8
                 draw.rounded_rectangle(
-                    [x + bubble_margin, dialogue_y, x + panel_width - bubble_margin, dialogue_y + bubble_height + 20],
-                    radius=10,
+                    [x + bubble_margin, dialogue_y, x + panel_width - bubble_margin, dialogue_y + bubble_height + 12],
+                    radius=6,
                     fill='white',
                     outline='#333',
                     width=2
                 )
 
-                # Draw dialogue lines
-                for j, line in enumerate(dialogue):
-                    text_y = dialogue_y + 10 + (j * 35)
+                # Draw dialogue lines (limit to 2 lines for small panels)
+                for j, line in enumerate(dialogue[:2]):
+                    text_y = dialogue_y + 6 + (j * 18)
                     # Wrap text if too long
-                    wrapped_line = self._wrap_text(line, dialogue_font, panel_width - 40)
-                    for k, wrapped in enumerate(wrapped_line):
-                        draw.text((x + 20, text_y + (k * 20)), wrapped, fill='#333', font=dialogue_font)
+                    wrapped_line = self._wrap_text(line, dialogue_font, panel_width - 30)
+                    for k, wrapped in enumerate(wrapped_line[:1]):  # Only first wrap line
+                        draw.text((x + 15, text_y + (k * 14)), wrapped, fill='#333', font=dialogue_font)
 
-        # Add caption at bottom
+        # Add caption at bottom (scaled)
         caption = script.get("caption", "")
         if caption:
-            caption_y = total_height - 60
-            draw.rectangle([0, caption_y - 10, total_width, total_height], fill='white', outline='#333', width=2)
-            wrapped_caption = self._wrap_text(caption, dialogue_font, total_width - 40)
-            for i, line in enumerate(wrapped_caption):
-                draw.text((20, caption_y + (i * 22)), line, fill='#333', font=dialogue_font)
+            caption_y = total_height - 35
+            draw.rectangle([0, caption_y - 6, total_width, total_height], fill='white', outline='#333', width=2)
+            wrapped_caption = self._wrap_text(caption, dialogue_font, total_width - 30)
+            for i, line in enumerate(wrapped_caption[:2]):  # Max 2 lines
+                draw.text((15, caption_y + (i * 14)), line, fill='#333', font=dialogue_font)
 
         # Save
         output_path = self.renders_path / f"{content_id}_base.png"
@@ -625,14 +623,17 @@ class RenderService:
             if not mime_type:
                 mime_type = "image/png"
 
-            # Create vision prompt
-            prompt = """Analyze this 4-panel comic image arranged in a 2x2 grid.
+            # Create vision prompt for 1x4 vertical layout
+            prompt = """Analyze this 4-panel comic image arranged as a VERTICAL STRIP (1x4 layout).
 
-The panels are numbered:
-- Panel 1: Top-left
-- Panel 2: Top-right
-- Panel 3: Bottom-left
-- Panel 4: Bottom-right
+Image dimensions: 512×1024 pixels (tall vertical strip)
+Each panel is approximately 512×256 pixels.
+
+The panels are stacked vertically:
+- Panel 1: Top (rows 0-256)
+- Panel 2: Second from top (rows 256-512)
+- Panel 3: Third from top (rows 512-768)
+- Panel 4: Bottom (rows 768-1024)
 
 For EACH panel, detect the PRIMARY speech bubble (white or light colored oval with black outline).
 Focus on bubbles in the TOP 40% of each panel only.
@@ -640,10 +641,10 @@ Focus on bubbles in the TOP 40% of each panel only.
 Return JSON with this EXACT structure:
 {
   "bubbles": [
-    {"panel": 1, "x1": 50, "y1": 20, "x2": 450, "y2": 120},
-    {"panel": 2, "x1": 550, "y1": 25, "x2": 950, "y2": 115},
-    {"panel": 3, "x1": 45, "y1": 520, "x2": 445, "y2": 620},
-    {"panel": 4, "x1": 545, "y1": 525, "x2": 945, "y2": 615}
+    {"panel": 1, "x1": 40, "y1": 10, "x2": 470, "y2": 50},
+    {"panel": 2, "x1": 40, "y1": 266, "x2": 470, "y2": 306},
+    {"panel": 3, "x1": 40, "y1": 522, "x2": 470, "y2": 562},
+    {"panel": 4, "x1": 40, "y1": 778, "x2": 470, "y2": 818}
   ]
 }
 
@@ -716,8 +717,8 @@ Rules:
         text: str,
         bubble_width: int,
         bubble_height: int,
-        max_font_size: int = 32,  # Scaled for 2K images
-        min_font_size: int = 16,  # Scaled for 2K images
+        max_font_size: int = 18,  # Scaled for 1K images (512×1024)
+        min_font_size: int = 10,  # Scaled for 1K images
     ) -> tuple[int, list[str]]:
         """
         Find the optimal font size and text wrapping to fit text in bubble.
@@ -805,12 +806,12 @@ Rules:
             img_width, img_height = img.size
             logger.info(f"Processing comic image: {img_width}x{img_height}")
 
-            # Assuming 2x2 grid layout
-            panel_width = img_width // 2
-            panel_height = img_height // 2
+            # 1x4 vertical strip layout
+            panel_width = img_width  # Full width (single column)
+            panel_height = img_height // 4  # Divide height by 4 panels
 
             panels = script.get("panels", [])
-            logger.info(f"Script has {len(panels)} panels - PIL will draw bubbles")
+            logger.info(f"Script has {len(panels)} panels - PIL will draw bubbles (1x4 vertical layout)")
 
             for i, panel in enumerate(panels):
                 if i >= 4:  # Only 4 panels
@@ -821,11 +822,9 @@ Rules:
                     logger.info(f"Panel {i+1}: NO DIALOGUE - skipping bubble")
                     continue
 
-                # Calculate panel position
-                row = i // 2
-                col = i % 2
-                panel_x = col * panel_width
-                panel_y = row * panel_height
+                # Calculate panel position (1x4 vertical strip)
+                panel_x = 0  # Single column
+                panel_y = i * panel_height  # Stacked vertically
 
                 logger.info(f"Panel {i+1}: Position ({panel_x}, {panel_y}), Size {panel_width}x{panel_height}")
 
@@ -837,8 +836,8 @@ Rules:
                 bubble_height = y2 - y1
 
                 # DRAW the speech bubble (PIL draws it, not AI)
-                # Tail direction based on panel position (left panels point left, right panels point right)
-                tail_dir = "left" if col == 0 else "right"
+                # Alternate tail direction for visual variety
+                tail_dir = "left" if i % 2 == 0 else "right"
                 self._draw_speech_bubble(draw, x1, y1, bubble_width, bubble_height, tail_dir)
 
                 logger.info(f"Panel {i+1}: Drew bubble at ({x1},{y1}) size {bubble_width}x{bubble_height}")
@@ -847,12 +846,13 @@ Rules:
                 full_dialogue = " ".join(dialogue)
 
                 # Calculate optimal font size and wrapping for this bubble
+                # Smaller font sizes for 1K resolution (512×1024)
                 font_size, wrapped_lines = self._fit_text_to_bubble(
                     full_dialogue,
                     bubble_width,
                     bubble_height,
-                    max_font_size=28,
-                    min_font_size=14
+                    max_font_size=18,  # Scaled down from 28
+                    min_font_size=10   # Scaled down from 14
                 )
 
                 # Load font at optimal size
@@ -935,7 +935,7 @@ Rules:
         3. Speech bubbles (professional vectors)
 
         Args:
-            base_image_path: Path to base comic image
+            base_image_path: Path to base comic image (1x4 vertical strip)
             script: Comic script
 
         Returns:
@@ -944,10 +944,12 @@ Rules:
         try:
             img = Image.open(base_image_path).convert("RGBA")
             img_width, img_height = img.size
-            panel_width = img_width // 2
-            panel_height = img_height // 2
 
-            logger.info(f"Enhancing {img_width}x{img_height} comic with Freepik assets")
+            # 1x4 vertical strip layout
+            panel_width = img_width  # Full width (single column)
+            panel_height = img_height // 4  # Divide by 4 panels
+
+            logger.info(f"Enhancing {img_width}x{img_height} comic (1x4 vertical) with Freepik assets")
 
             # Fetch assets in parallel (cached after first download)
             import asyncio
@@ -963,7 +965,7 @@ Rules:
                     bubble_img = self._svg_to_png(
                         bubble_paths[0],
                         width=int(panel_width * 0.75),
-                        height=int(panel_height * 0.16),
+                        height=int(panel_height * 0.18),  # Slightly taller for narrow panels
                     )
                     logger.info(f"Loaded speech bubble: {bubble_img.size}")
                 except Exception as e:
@@ -982,15 +984,15 @@ Rules:
                 except Exception as e:
                     logger.warning(f"Failed to convert frame SVG: {e}")
 
-            # Apply to each panel
+            # Apply to each panel (1x4 vertical strip)
             panels = script.get("panels", [])
             for i, panel in enumerate(panels):
                 if i >= 4:
                     break
 
-                row, col = i // 2, i % 2
-                panel_x = col * panel_width
-                panel_y = row * panel_height
+                # 1x4 vertical layout: single column, stacked rows
+                panel_x = 0
+                panel_y = i * panel_height
 
                 # Apply frame border (alpha composite)
                 if frame_img:
@@ -1014,39 +1016,110 @@ Rules:
             logger.error(f"Freepik enhancement failed: {e}", exc_info=True)
             return base_image_path
 
+    def _rearrange_to_grid(self, img: Image.Image) -> Image.Image:
+        """
+        Rearrange 1x4 vertical strip to 2x2 grid for square export.
+
+        Input: 1x4 strip (width × height where height = 4 × panel_height)
+        Output: 2x2 grid (square-ish image)
+
+        Panel arrangement:
+        - Input:  [1] [2] [3] [4] (stacked vertically)
+        - Output: [1] [2]
+                  [3] [4]
+
+        Args:
+            img: PIL Image of 1x4 vertical strip
+
+        Returns:
+            PIL Image rearranged as 2x2 grid
+        """
+        w, h = img.size
+        panel_h = h // 4
+
+        # Extract individual panels
+        panels = [
+            img.crop((0, i * panel_h, w, (i + 1) * panel_h))
+            for i in range(4)
+        ]
+
+        # Create 2x2 grid (width * 2, panel_height * 2)
+        grid_w = w * 2
+        grid_h = panel_h * 2
+        grid = Image.new('RGB', (grid_w, grid_h), color='#FFFFFF')
+
+        # Place panels: [0,1] top row, [2,3] bottom row
+        grid.paste(panels[0], (0, 0))
+        grid.paste(panels[1], (w, 0))
+        grid.paste(panels[2], (0, panel_h))
+        grid.paste(panels[3], (w, panel_h))
+
+        logger.debug(f"Rearranged 1x4 strip ({w}x{h}) to 2x2 grid ({grid_w}x{grid_h})")
+        return grid
+
     async def _generate_export_formats(
         self,
         base_image_path: Path,
         content_id: str,
     ) -> dict[str, str]:
         """
-        Generate multiple export formats from base image.
+        Generate multiple export formats from 1x4 vertical strip.
+
+        Base image is 512×1024 (1:2 ratio).
+        Square export REARRANGES to 2x2 grid showing all 4 panels.
+        Portrait/Reel exports scale the vertical strip directly.
 
         Args:
-            base_image_path: Path to base comic image
+            base_image_path: Path to base comic image (1x4 vertical strip)
             content_id: Content identifier
 
         Returns:
             Dictionary with URIs for each format
         """
         img = Image.open(base_image_path)
+        base_w, base_h = img.size
 
-        # Square format (1080x1080) - for Instagram, TikTok
+        logger.info(f"Generating export formats from {base_w}x{base_h} vertical strip")
+
+        # Square (1080x1080) - REARRANGE to 2x2 grid, then scale
+        # This shows all 4 panels in a traditional comic layout
         square_path = self.renders_path / f"{content_id}_square.png"
-        square_img = img.resize((1080, 1080), Image.Resampling.LANCZOS)
+        grid = self._rearrange_to_grid(img)  # Creates 1024×512 grid from 512×1024 strip
+        square_img = grid.resize((1080, 1080), Image.Resampling.LANCZOS)
         square_img.save(square_path, 'PNG', quality=95)
+        logger.info(f"Square export: rearranged to 2x2 grid, saved {square_path.name}")
 
-        # Portrait format (1080x1350) - for Instagram Stories, Pinterest
+        # Portrait (1080x1350) - Scale 1x4 strip to fit HEIGHT, add pillarboxing
+        # Show ALL 4 panels with bars on sides if needed
         portrait_path = self.renders_path / f"{content_id}_portrait.png"
-        portrait_img = img.resize((1080, 1350), Image.Resampling.LANCZOS)
+        # Scale to fit within 1350 height (maintaining 1:2 ratio)
+        # Height 1350 → width would be 675
+        scaled_w = 675
+        scaled_h = 1350
+        scaled = img.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
+        # Create canvas with dark background, center the comic
+        portrait_img = Image.new('RGB', (1080, 1350), color='#1a1a1a')
+        paste_x = (1080 - scaled_w) // 2  # Center horizontally
+        portrait_img.paste(scaled, (paste_x, 0))
         portrait_img.save(portrait_path, 'PNG', quality=95)
+        logger.info(f"Portrait export: scaled to fit with pillarboxing, saved {portrait_path.name}")
 
-        # Reel cover (1080x1920) - for video platforms
+        # Reel (1080x1920) - Scale 1x4 strip to fit HEIGHT, add pillarboxing
+        # Show ALL 4 panels with bars on sides if needed
         reel_path = self.renders_path / f"{content_id}_reel.png"
-        reel_img = img.resize((1080, 1920), Image.Resampling.LANCZOS)
+        # Scale to fit within 1920 height (maintaining 1:2 ratio)
+        # Height 1920 → width would be 960
+        scaled_w = 960
+        scaled_h = 1920
+        scaled = img.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
+        # Create canvas with dark background, center the comic
+        reel_img = Image.new('RGB', (1080, 1920), color='#1a1a1a')
+        paste_x = (1080 - scaled_w) // 2  # Center horizontally (60px on each side)
+        reel_img.paste(scaled, (paste_x, 0))
         reel_img.save(reel_path, 'PNG', quality=95)
+        logger.info(f"Reel export: scaled to fit with pillarboxing, saved {reel_path.name}")
 
-        logger.info(f"Generated export formats for {content_id}")
+        logger.info(f"Generated all export formats for {content_id}")
 
         return {
             "comic_square_uri": f"/storage/renders/{square_path.name}",
