@@ -6,6 +6,9 @@ backend/.env
 # Backend storage (user uploads, renders)
 backend/storage/
 
+# Test images
+backend/images/
+
 # Python
 __pycache__/
 *.py[cod]
