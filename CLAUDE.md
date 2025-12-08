@@ -16,7 +16,7 @@ SnackSwap Comics is an AI-powered progressive web app that transforms photos of 
   - Gemini 3 Pro Image / Nano-Banana Pro (via `google-genai`) - Comic image generation
 - **Vector Database**: Qdrant for semantic search and fact retrieval
 - **Image Processing**: Pillow + pillow-heif for HEIC/EXIF handling
-- **Frontend**: Next.js/React PWA (planned - not yet implemented)
+- **Frontend**: Next.js 14 + React 18 + Tailwind CSS + Framer Motion
 
 ## Development Setup
 
@@ -47,6 +47,25 @@ docker run -p 6333:6333 qdrant/qdrant
 ./run_server.sh
 # Server runs at http://localhost:8000
 # API docs at http://localhost:8000/docs
+```
+
+### Frontend Development
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+# Runs at http://localhost:3000
+
+# Build for production
+npm run build
+
+# Lint
+npm run lint
 ```
 
 ### Testing and Linting
@@ -93,6 +112,18 @@ The application follows a 6-step pipeline:
   - `freepik_service.py` - Background/prop generation
 - **`app/models/`** - Pydantic models for API contracts and data validation
 - **`app/core/`** - Configuration via pydantic-settings
+
+### Frontend Components (`frontend/src/`)
+
+- **`app/page.tsx`** - Main page with upload flow and results display
+- **`app/layout.tsx`** - Root layout with metadata and fonts
+- **`components/UploadZone.tsx`** - Drag-and-drop snack photo upload
+- **`components/ComicDisplay.tsx`** - Rendered comic panel viewer
+- **`components/ResultsPanel.tsx`** - Dental risk scores, facts, and swaps
+- **`components/AgeSelector.tsx`** - Age band selection (3-5, 6-8, 9-12)
+- **`components/ScanningOverlay.tsx`** - Loading animation during processing
+- **`components/ToothMascot.tsx`** - Animated tooth character
+- **`components/Header.tsx`** - App header with branding
 
 ### Qdrant Collections
 
@@ -215,7 +246,19 @@ This is an MVP implementation. The following are placeholder implementations:
 - **Panel composition** - Freepik API integration needed for enhanced assets
 - **Animated comics** - Video generation for Reels (planned v1.1)
 - **Database persistence** - Currently uses in-memory storage for scripts
-- **Frontend** - Next.js PWA not yet implemented
+
+## Active Development: Qdrant Query Enhancements
+
+The `qdrant-features` branch contains planned improvements (see `docs/qdrant-enhancements-plan.md`):
+
+1. **Panel-aware retrieval** - Blend scene/mood context into fact search queries
+2. **Cross-collection joins** - Use snack metadata (sticky, sugary, acidic) to filter facts with matching `risk_tags`
+
+Key additions planned:
+- `PanelContext` model for mood/scene awareness
+- `QueryBuilder` service for context-enriched queries
+- `risk_tags` field on facts for targeted filtering
+- `extract_risk_tags()` method on `ScoringService`
 
 ## Storage Structure
 
