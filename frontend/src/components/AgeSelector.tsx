@@ -8,13 +8,12 @@ interface AgeSelectorProps {
 }
 
 const ageGroups = [
-  { min: 3, max: 5, emoji: '🧒', label: 'Little' },
-  { min: 6, max: 8, emoji: '👦', label: 'Kid' },
-  { min: 9, max: 12, emoji: '🧑', label: 'Tween' },
+  { min: 9, max: 12, emoji: '🔥', label: 'Tween', mode: 'Spicy' },
+  { min: 13, max: 17, emoji: '💀', label: 'Teen', mode: 'Savage' },
 ];
 
 export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
-  const currentGroup = ageGroups.find(g => age >= g.min && age <= g.max) || ageGroups[1];
+  const currentGroup = ageGroups.find(g => age >= g.min && age <= g.max) || ageGroups[0];
 
   return (
     <motion.div
@@ -30,7 +29,7 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
             HOW OLD ARE YOU?
           </h3>
           <p className="font-comic text-sm text-brand-mid">
-            We'll make the comic just right for you!
+            {currentGroup.mode} mode: {age <= 12 ? 'lighter burns' : 'full destruction'}
           </p>
         </div>
       </div>
@@ -40,8 +39,8 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
         {/* Track background */}
         <div className="h-4 bg-brand-subtle rounded-full border-2 border-brand-dark overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-brand-green via-brand-blue to-brand-orange"
-            style={{ width: `${((age - 3) / 9) * 100}%` }}
+            className="h-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600"
+            style={{ width: `${((age - 9) / 8) * 100}%` }}
             layout
           />
         </div>
@@ -49,8 +48,8 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
         {/* Custom slider */}
         <input
           type="range"
-          min="3"
-          max="12"
+          min="9"
+          max="17"
           value={age}
           onChange={(e) => onAgeChange(Number(e.target.value))}
           className="absolute inset-0 w-full opacity-0 cursor-pointer"
@@ -58,8 +57,8 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
 
         {/* Thumb indicator */}
         <motion.div
-          className="absolute top-1/2 -translate-y-1/2 w-10 h-10 bg-brand-green border-3 border-brand-dark rounded-full flex items-center justify-center font-display text-lg text-white shadow-comic pointer-events-none"
-          style={{ left: `calc(${((age - 3) / 9) * 100}% - 20px)` }}
+          className="absolute top-1/2 -translate-y-1/2 w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 border-3 border-brand-dark rounded-full flex items-center justify-center font-display text-lg text-white shadow-comic pointer-events-none"
+          style={{ left: `calc(${((age - 9) / 8) * 100}% - 20px)` }}
           layout
           whileHover={{ scale: 1.1 }}
         >
@@ -69,14 +68,15 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
 
       {/* Age labels */}
       <div className="flex justify-between mt-3 text-sm font-comic text-brand-mid">
-        <span>3</span>
-        <span>6</span>
         <span>9</span>
-        <span>12</span>
+        <span>11</span>
+        <span>13</span>
+        <span>15</span>
+        <span>17</span>
       </div>
 
       {/* Age group badges */}
-      <div className="flex gap-2 mt-4 justify-center">
+      <div className="flex gap-3 mt-4 justify-center">
         {ageGroups.map((group) => {
           const isActive = age >= group.min && age <= group.max;
           return (
@@ -84,10 +84,10 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
               key={group.label}
               onClick={() => onAgeChange(Math.floor((group.min + group.max) / 2))}
               className={`
-                px-4 py-2 rounded-full font-comic text-sm border-2 border-brand-dark
-                transition-colors
+                px-5 py-2.5 rounded-full font-comic text-sm border-2 border-brand-dark
+                transition-all
                 ${isActive
-                  ? 'bg-brand-blue text-white shadow-comic'
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-comic'
                   : 'bg-white text-brand-mid hover:bg-brand-subtle'
                 }
               `}
@@ -95,6 +95,7 @@ export default function AgeSelector({ age, onAgeChange }: AgeSelectorProps) {
               whileTap={{ scale: 0.95 }}
             >
               {group.emoji} {group.label} ({group.min}-{group.max})
+              <span className="ml-1 text-xs opacity-75">• {group.mode}</span>
             </motion.button>
           );
         })}

@@ -60,13 +60,32 @@ class NanoBananaService:
 
         # Build comprehensive prompt
         prompt_parts = [
-            "Create a 4-panel comic strip in a VERTICAL 1x4 layout (stacked vertically, one column). Comic book illustration style, vibrant colors, friendly and appealing to children aged 6-8.",
+            "Create a 4-panel comic strip in a VERTICAL 1x4 layout (stacked vertically, one column).",
+            "STYLE: Modern 'Webtoon' or 'Adult Swim' animation style. Edgy, high-contrast, expressive.",
+            "Target Audience: Teenagers (9-17) who care about APPEARANCE and AESTHETICS.",
+            "",
+            "VISUAL STYLE RULES (VANITY/APPEARANCE FOCUS):",
+            "- Thick, gritty ink lines (like street art or underground comics)",
+            "- Saturated, neon-accented color palette (Cyberpunk lite or Graffiti vibes)",
+            "- EXPRESSIONS MUST BE EXAGGERATED (Anime style shock, meme faces, intense crying, smug smirk)",
+            "- Backgrounds: Halftone dots, speed lines, abstract gradients",
+            "- Dynamic angles (not just flat side view)",
+            "- Dramatic lighting for 'Roast' moments",
+            "",
+            "VANITY-FOCUSED VISUAL EFFECTS:",
+            "- DR. DRIP (the tooth character) must ALWAYS look PRISTINE WHITE, SPARKLING, and CLEAN",
+            "- Bad snacks (villains) should look GRIMY, SLIMY, STICKY, or have YELLOW STAIN effects around them",
+            "- Panel 2 & 3 (The Roast): Add 'gross' visual effects - green fumes, brown stains, yellow discoloration",
+            "- Panel 4 (The Solution): Add 'clean' visual effects - sparkles, glow, pristine white shine",
+            "- When showing 'bad teeth' effects: use YELLOW tint, fuzzy texture, or crusty appearance",
+            "- When showing 'good teeth' effects: use WHITE glow, sparkles, crystal-clear shine",
+            "- Use 'Aura' visual effects: dark/murky for bad snacks, golden/bright for good snacks",
             "",
             "CRITICAL RULES - MUST FOLLOW:",
             "- DO NOT draw any speech bubbles anywhere in the image",
             "- DO NOT include any text, words, letters, or typography anywhere",
             "- DO NOT write any labels, signs, or captions",
-            "- Leave the TOP 25% of each panel as PLAIN BACKGROUND COLOR (sky, wall, etc.)",
+            "- Leave the TOP 25% of each panel as PLAIN BACKGROUND COLOR",
             "- Draw all characters in the BOTTOM 75% of each panel ONLY",
             "- The top area must be completely empty - no objects, no decorations",
             "- Text and speech bubbles will be added as post-processing overlay",
@@ -127,14 +146,23 @@ class NanoBananaService:
         # Add final styling notes
         prompt_parts.extend([
             "",
-            "STYLE NOTES:",
-            "- Cartoon/comic book style with bold outlines",
-            "- Bright, appealing colors suitable for children",
-            "- Friendly, non-threatening character designs",
+            "STYLE NOTES (VANITY/AESTHETIC FOCUS):",
+            "- Webtoon/Adult Swim animation style with bold outlines",
+            "- Saturated, neon-accented colors (NOT pastel or kiddy)",
+            "- Edgy character designs - cool, not cute",
             "- NO speech bubbles or text - leave top 25% of each panel empty/plain",
             "- VERTICAL 1x4 layout (tall strip, panels stacked top to bottom)",
             "- Professional comic book layout with consistent panel heights",
             "- Each character maintains exact same appearance across all panels",
+            "- Dramatic lighting and dynamic camera angles",
+            "- Meme-worthy exaggerated expressions",
+            "",
+            "VANITY CONTRAST (CRITICAL):",
+            "- DR. DRIP: ALWAYS pristine white, sparkling, clean, glowing - 'Hollywood Smile' energy",
+            "- Bad snacks: Look GROSS - yellow stains, sticky residue, grimy, slimy, faded colors",
+            "- Good snacks: Look CLEAN - bright colors, sparkle effects, fresh appearance",
+            "- Visual contrast between 'aesthetic' (clean/white) and 'cooked' (gross/yellow)",
+            "- The goal: Make teens WANT white teeth by showing how gross the alternative looks",
         ])
 
         return "\n".join(prompt_parts)
@@ -149,18 +177,18 @@ class NanoBananaService:
         Returns:
             Visual description string
         """
-        # Map common snack IDs to visual descriptions
+        # Map common snack IDs to visual descriptions - teen/edgy style
         descriptions = {
-            "candy_gummy": "A cute, anthropomorphic gummy bear character. Translucent jelly-like body in bright colors (red, orange, yellow, green). Large friendly eyes, small smile, bear-shaped body with round ears. Glossy, shiny surface.",
-            "chips_classic": "A friendly potato chip character. Golden-yellow, wavy crispy shape. Cartoon eyes and smile on the chip surface. Slightly curled edges, textured surface showing the crunchiness.",
-            "soda_orange": "An orange soda bottle or can character. Orange colored, cylindrical shape with condensation droplets. Happy face on the label. Fizzy bubbles visible around it.",
-            "candy_chocolate": "A chocolate bar character. Brown rectangular shape with segmented squares. Glossy chocolate surface. Friendly smiling face, small arms and legs.",
-            "recurring_tooth": "Captain Sparkle - A superhero tooth character. Bright white, shiny tooth shape with sparkles around it. Big expressive eyes, enthusiastic smile. Wears a tiny red superhero cape. Very animated expressions (excited, shocked, triumphant, worried). Small arms and legs. Always energetic and dramatic pose.",
+            "candy_gummy": "An anthropomorphic gummy bear character with swagger. Translucent jelly-like body in neon colors. Exaggerated expressions - can look smug, nervous, or defeated. Might wear tiny chains or streetwear. Glossy surface with dramatic lighting.",
+            "chips_classic": "A potato chip character with attitude. Golden-yellow, wavy crispy shape. Cartoon eyes that can show smugness or panic. Slightly curled edges, textured surface. Can look like it's trying too hard to be cool.",
+            "soda_orange": "An orange soda can character with main-character energy. Neon orange, cylindrical shape with condensation droplets. Expressive face - can be cocky or scared. Fizzy bubbles as dramatic effect.",
+            "candy_chocolate": "A chocolate bar character with street style. Brown rectangular shape with segmented squares. Glossy chocolate surface. Can have smug or nervous expressions. Might wear tiny sneakers or gold chain.",
+            "recurring_tooth": "DR. DRIP - A hype-beast molar tooth character obsessed with AESTHETICS. PRISTINE WHITE tooth shape with SPARKLE EFFECTS and GLOW - representing the perfect 'Hollywood Smile'. ALWAYS looks CLEAN, WHITE, and SPARKLING. Wears dark sunglasses, has a literal gold crown on top of the tooth. Fresh sneakers (kicks) on small feet. Expression range: disgusted (at gross snacks), impressed (at healthy snacks), smug. Very confident stance. NOT a baby superhero - more like a beauty influencer who happens to be a tooth. Represents the 'glow up' aesthetic teens want.",
         }
 
         return descriptions.get(
             item_id,
-            "A friendly animated food character with cartoon eyes, smile, and small limbs. Colorful and appealing to children."
+            "An animated food character with attitude - can look smug, nervous, or defeated. Streetwear-influenced design, expressive eyes. Teen-appropriate edgy style, NOT cutesy."
         )
 
     async def generate_comic_image(
@@ -325,14 +353,15 @@ class NanoBananaService:
             Path to generated image
         """
         prompt = f"""
-        Create a single character illustration in comic book style.
+        Create a single character illustration in Webtoon/Adult Swim animation style.
 
         Character: {character_name}
         Description: {character_description}
         Expression: {expression}
 
-        Style: Cartoon/comic book art, vibrant colors, friendly and appealing to children.
-        Background: Simple white or transparent.
+        Style: Modern edgy comic art, neon-accented colors, cool and appealing to teenagers.
+        Bold outlines, dramatic lighting, exaggerated expressions.
+        Background: Simple gradient or transparent.
         """
 
         try:

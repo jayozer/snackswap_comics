@@ -1,8 +1,9 @@
 # SnackSwap Comics - Implementation Status
 
 > **Last Updated**: 2025-12-08
-> **Status**: MVP Complete + Hackathon Enhancements In Progress
-> **Branch**: qdrant-features
+> **Status**: MVP Complete + "Roast My Snack" Pivot Complete (5.3 ✓)
+> **Branch**: user-signup
+> **Target Audience**: Teens 9-17 (Spicy/Savage modes)
 
 ---
 
@@ -213,9 +214,9 @@
 
 #### 5.2.5 Script Composition
 - [x] Add `compose_celebrate_script()` method in `gemini_service.py`:
-  - [x] Positive narrative: Hero Entrance → Superpower → Team Up → Celebration
-  - [x] Captain Sparkle impressed and excited
-  - [x] Focus on WHY snack is great (not "instead of bad snacks")
+  - [x] Positive narrative: THE ENTRANCE → THE STATS → THE GLAZE → THE CROWN (W Arc)
+  - [x] DR. DRIP character as hype-beast giving props
+  - [x] Focus on WHY snack is great (verdicts: "W", "BASED", "GOATED")
 - [x] Add `compose_unknown_script()` method for generic dental health comics
 - [x] Update `script.py` endpoint to route based on mode
 - [x] **File References**: `gemini_service.py`, `script.py`
@@ -239,31 +240,27 @@
 - [x] Update API documentation (1-5 items, grouped)
 - [x] **File References**: `gemini_service.py:43-199`, `api.py`
 
-### 5.3 User Signup Flow (DATA CAPTURE)
-*Capture age/allergens upfront, use in prompts rather than frontend toggles*
+### 5.3 User Preferences (COMPLETED - MODIFIED ✓)
+*"Roast My Snack" Pivot: localStorage preferences instead of signup flow*
 
 #### 5.3.1 Backend
-- [ ] Create `UserProfile` model in `models/api.py`:
-  - [ ] `user_id: str`
-  - [ ] `age_band: str` (3-5, 6-8, 9-12)
-  - [ ] `allergens: list[str]`
-  - [ ] `created_at: datetime`
-- [ ] Create in-memory user store (MVP) or database table
-- [ ] Create `/api/user/signup` endpoint
-- [ ] Create `/api/user/profile` endpoint (GET/PUT)
-- [ ] Update `score.py` to read from user profile instead of request params
-- [ ] Update `gemini_service.py` to use profile age in prompts
-- [ ] **File References**: `models/api.py`, `score.py`, `gemini_service.py`, new `user.py`
+- [x] Update age validation to 9-17 range in `api.py`
+- [x] Update age bands to 9-12 (Spicy) and 13-17 (Savage) in `scoring_service.py`
+- [x] Update script prompts for DR. DRIP character in `gemini_service.py`
+- [x] Update visual style to Webtoon/Adult Swim in `nanobana_service.py`
+- [x] Add teen facts (F033-F046) with savage language in `seed_data.py`
+- [x] Fix Qdrant client API (`query_points` instead of deprecated `search`)
+- **File References**: `api.py`, `scoring_service.py`, `gemini_service.py`, `nanobana_service.py`, `qdrant_service.py`
 
 #### 5.3.2 Frontend
-- [ ] Create signup form component (age selector, allergen checkboxes)
-- [ ] Store user_id in localStorage after signup
-- [ ] Pass user_id with API requests
-- [ ] Hide age/allergen selectors unless `DEBUG=true` env var
-- [ ] Show "Edit Profile" option in debug mode
-- [ ] **File References**: `App.jsx`, new `SignupForm.tsx`, `AgeSelector.tsx`
+- [x] Create `usePreferences.ts` hook for localStorage persistence
+- [x] Create `AllergenSelector.tsx` component (8 common allergens)
+- [x] Update `AgeSelector.tsx` for 9-17 range with Tween/Teen modes
+- [x] Update `page.tsx` with dark theme and DR. DRIP messaging
+- [x] Pass age and allergens to score/retrieve API
+- **File References**: `usePreferences.ts`, `AllergenSelector.tsx`, `AgeSelector.tsx`, `page.tsx`
 
-### 5.4 Content Guardrails (KID-SAFE)
+### 5.4 Content Guardrails (TEEN-SAFE)
 *Explicit safety filters for generated content*
 
 - [ ] Add Gemini safety filters to script output in `gemini_service.py`

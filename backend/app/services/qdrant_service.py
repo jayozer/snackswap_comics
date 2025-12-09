@@ -131,16 +131,16 @@ class QdrantService:
             query_filter = self._build_filter(filters)
 
         # Use asyncio.to_thread to avoid blocking the event loop
-        results = await asyncio.to_thread(
-            self.client.search,
+        response = await asyncio.to_thread(
+            self.client.query_points,
             collection_name=self.SNACKS_COLLECTION,
-            query_vector=query_vector,
+            query=query_vector,
             limit=limit,
             query_filter=query_filter,
             with_payload=True,
         )
 
-        return results
+        return response.points
 
     async def search_facts(
         self,
@@ -213,16 +213,16 @@ class QdrantService:
         query_filter = models.Filter(must=must_conditions)
 
         # Use asyncio.to_thread to avoid blocking the event loop
-        results = await asyncio.to_thread(
-            self.client.search,
+        response = await asyncio.to_thread(
+            self.client.query_points,
             collection_name=self.FACTS_COLLECTION,
-            query_vector=query_vector,
+            query=query_vector,
             limit=limit,
             query_filter=query_filter,
             with_payload=True,
         )
 
-        return results
+        return response.points
 
     async def search_swaps(
         self,
@@ -275,16 +275,16 @@ class QdrantService:
             query_filter = models.Filter(must=must_conditions)
 
         # Use asyncio.to_thread to avoid blocking the event loop
-        results = await asyncio.to_thread(
-            self.client.search,
+        response = await asyncio.to_thread(
+            self.client.query_points,
             collection_name=self.SWAPS_COLLECTION,
-            query_vector=query_vector,
+            query=query_vector,
             limit=limit,
             query_filter=query_filter,
             with_payload=True,
         )
 
-        return results
+        return response.points
 
     def get_style(self, style_id: str) -> models.Record | None:
         """Get a specific style by ID."""
