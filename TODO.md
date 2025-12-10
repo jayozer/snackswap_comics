@@ -260,14 +260,15 @@
 - [x] Pass age and allergens to score/retrieve API
 - **File References**: `usePreferences.ts`, `AllergenSelector.tsx`, `AgeSelector.tsx`, `page.tsx`
 
-### 5.4 Content Guardrails (TEEN-SAFE)
+### 5.4 Content Guardrails (TEEN-SAFE) ✓
 *Explicit safety filters for generated content*
 
-- [ ] Add Gemini safety filters to script output in `gemini_service.py`
-- [ ] Add profanity filter validation on all generated dialogue
-- [ ] Add image safety check before serving Nano-Banana output
-- [ ] Log all generated content for audit review
-- [ ] **File References**: `gemini_service.py`, `render_service.py`
+- [x] Add Gemini safety filters to script output in `gemini_service.py`
+- [x] Add profanity filter validation on all generated dialogue
+- [x] Add image safety check before serving Nano-Banana output
+- [x] Log all generated content for audit review
+- **New Files**: `guardrails_service.py`, `audit_service.py`, `test_guardrails.py`
+- **File References**: `gemini_service.py`, `nanobana_service.py`
 
 ### 5.5 Speech Bubble Integration (VISUAL POLISH)
 *Integrated bubbles that feel part of the comic art*

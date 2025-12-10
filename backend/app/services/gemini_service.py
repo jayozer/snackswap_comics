@@ -8,6 +8,7 @@ import base64
 import json
 import logging
 import mimetypes
+import time
 from typing import Any
 from pathlib import Path
 
@@ -16,6 +17,8 @@ from google.genai import types
 
 from app.core.config import Settings
 from app.models import DetectedItem, Panel
+from app.services.guardrails_service import get_guardrails_service, ContentRating
+from app.services.audit_service import get_audit_service, GenerationType
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +30,10 @@ class GeminiService:
         """Initialize Gemini service with the new SDK."""
         self.settings = settings
         self.client = genai.Client(api_key=settings.gemini_api_key)
+        self.guardrails = get_guardrails_service()
+        self.audit = get_audit_service(settings)
 
-        logger.info("Initialized Gemini service with new google.genai SDK")
+        logger.info("Initialized Gemini service with new google.genai SDK and guardrails")
 
     def _repair_json(self, text: str) -> str | None:
         """
@@ -423,6 +428,8 @@ Return your response as valid JSON with this EXACT structure:
 Make it about LOOKS. Make it about AESTHETIC. Make teens care about their smile's appearance."""
 
         try:
+            start_time = time.time()
+
             # Use asyncio.to_thread to avoid blocking the event loop
             response = await asyncio.to_thread(
                 self.client.models.generate_content,
@@ -527,7 +534,36 @@ Make it about LOOKS. Make it about AESTHETIC. Make teens care about their smile'
 
                     panel['dialogue'] = validated_dialogue
 
-            logger.info(f"Composed script with {len(result.get('panels', []))} panels")
+            # Guardrails validation
+            validation = self.guardrails.validate_script(result, auto_clean=True)
+            duration_ms = int((time.time() - start_time) * 1000)
+
+            # Audit logging
+            self.audit.log_generation(
+                generation_type=GenerationType.SCRIPT_COMPOSE,
+                input_data={
+                    "age": age,
+                    "snacks": [s.get("name", "unknown") for s in snacks[:5]],
+                    "fact_count": len(facts),
+                    "swap_count": len(swaps),
+                },
+                output_data=result,
+                validation_passed=validation.passed,
+                validation_details=validation.details,
+                flagged_terms=validation.flagged_terms,
+                user_age=age,
+                duration_ms=duration_ms,
+            )
+
+            if not validation.passed:
+                logger.error(f"Script failed guardrails: {validation.details}")
+                raise ValueError(f"Generated content failed safety check: {validation.details}")
+
+            # Use cleaned content if available
+            if validation.cleaned_content:
+                result = validation.cleaned_content
+
+            logger.info(f"Composed script with {len(result.get('panels', []))} panels (validation: {validation.rating.value})")
             return result
 
         except Exception as e:
@@ -744,6 +780,8 @@ Return your response as valid JSON with this EXACT structure:
 Make it about the GLOW UP. Make teens want that Hollywood smile."""
 
         try:
+            start_time = time.time()
+
             response = await asyncio.to_thread(
                 self.client.models.generate_content,
                 model=self.settings.gemini_writer_model,
@@ -842,7 +880,35 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
 
                     panel['dialogue'] = validated_dialogue
 
-            logger.info(f"Composed celebrate script with {len(result.get('panels', []))} panels")
+            # Guardrails validation
+            validation = self.guardrails.validate_script(result, auto_clean=True)
+            duration_ms = int((time.time() - start_time) * 1000)
+
+            # Audit logging
+            self.audit.log_generation(
+                generation_type=GenerationType.SCRIPT_CELEBRATE,
+                input_data={
+                    "age": age,
+                    "snacks": [s.get("name", "unknown") for s in snacks[:5]],
+                    "fact_count": len(facts),
+                },
+                output_data=result,
+                validation_passed=validation.passed,
+                validation_details=validation.details,
+                flagged_terms=validation.flagged_terms,
+                user_age=age,
+                duration_ms=duration_ms,
+            )
+
+            if not validation.passed:
+                logger.error(f"Celebrate script failed guardrails: {validation.details}")
+                raise ValueError(f"Generated content failed safety check: {validation.details}")
+
+            # Use cleaned content if available
+            if validation.cleaned_content:
+                result = validation.cleaned_content
+
+            logger.info(f"Composed celebrate script with {len(result.get('panels', []))} panels (validation: {validation.rating.value})")
             return result
 
         except Exception as e:
