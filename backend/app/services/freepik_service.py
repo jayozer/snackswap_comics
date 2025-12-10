@@ -59,9 +59,9 @@ class FreepikService:
                 "order": "relevance",
             }
 
-            # Add content type filter
+            # Add content type filter (1 to enable, 0 to disable per API docs)
             if content_type:
-                params[f"filters[content_type][{content_type}]"] = "true"
+                params[f"filters[content_type][{content_type}]"] = 1
 
             response = await self.client.get(
                 f"{self.BASE_URL}/resources",
