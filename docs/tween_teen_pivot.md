@@ -688,6 +688,28 @@ Vibe Reference:
 - NOT: Corporate, sterile, "educational material"
 ```
 
+### 6.3 Expression Library (Dr. Drip + Snacks)
+
+- Smug/Judging: Shades on, arms crossed; default roast stance.
+- Side-eye/Skeptical: Brow raised, slight head tilt.
+- Roast Strike: Pointing mid-burn, mouth open.
+- Shock/Disbelief: Shades lifted, eyes wide.
+- Disgust/"Nope": Looking away, hand up.
+- Ratio/Destroy: Leaning in with a savage smirk.
+- Respect/Approval: Subtle nod, half-smile.
+- Hype/Cheer: Fist pump, "W" energy.
+- Crown/Ceremony: Placing or receiving a crown.
+- Based/Impressed: Sparkle eyes, "sheesh" vibe.
+- Concerned/"That's sus": Lighter burn for tweens.
+- Dramatic Gasp: Hands on face, over-the-top reaction.
+- Sad/Defeated (L snack): Slumped, tear, or melting.
+- Nervous/Sweating: Snack realizing it's in trouble.
+- Confident/Flex: Buff pose, main-character energy.
+- Curious/Intrigued: Lean-in, evaluating.
+- Suggesting/Guiding: Open hand toward the swap.
+- Shocked-but-Proud: Surprised that the snack is actually good.
+- Chill/Neutral: Idle/resting state.
+
 ---
 
 ## Part 7: Example Scripts
