@@ -12,6 +12,7 @@ SnackSwap Comics is an AI-powered progressive web app that transforms a simple p
 - **🔄 Smart Swaps**: Get healthier alternatives that match taste profiles (salty, sweet, crunchy)
 - **🎨 Brand-Ready**: Customizable styles, colors, and branding for dental practices
 - **📱 Social-Optimized**: Export in multiple formats (1080×1080, 1080×1350, Reel covers)
+- **🖼️ Mode-Based Backgrounds**: Freepik vector backgrounds auto-selected by comic mode (CELEBRATE/EDUCATE)
 - **♿ Accessible**: Auto-generated alt text and captions for all content
 
 ## 🏗️ Architecture

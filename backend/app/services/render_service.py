@@ -78,6 +78,45 @@ class RenderService:
         )
         return Image.open(BytesIO(png_data)).convert("RGBA")
 
+    def _blend_background(
+        self,
+        base_img: Image.Image,
+        bg_img: Image.Image,
+        opacity: float = 0.35,
+    ) -> Image.Image:
+        """
+        Blend a background image under the base image at specified opacity.
+
+        This creates a subtle texture/mood layer that enhances the comic
+        without overwhelming the Nano-Banana generated characters.
+
+        Args:
+            base_img: The base comic image (RGBA)
+            bg_img: The background to blend (RGBA)
+            opacity: Background opacity (0.0 to 1.0), default 0.35
+
+        Returns:
+            Blended image (RGBA)
+        """
+        # Ensure both images are RGBA
+        base_img = base_img.convert("RGBA")
+        bg_img = bg_img.convert("RGBA")
+
+        # Resize background to match base dimensions
+        bg_resized = bg_img.resize(base_img.size, Image.Resampling.LANCZOS)
+
+        # Apply opacity to background by modifying alpha channel
+        r, g, b, a = bg_resized.split()
+        a = a.point(lambda x: int(x * opacity))
+        bg_with_opacity = Image.merge("RGBA", (r, g, b, a))
+
+        # Composite: white base → background at opacity → base image on top
+        result = Image.new("RGBA", base_img.size, (255, 255, 255, 255))
+        result = Image.alpha_composite(result, bg_with_opacity)
+        result = Image.alpha_composite(result, base_img)
+
+        return result
+
     async def render_comic(
         self,
         script: dict[str, Any],
@@ -1415,16 +1454,17 @@ Rules:
         script: dict[str, Any],
     ) -> Path:
         """
-        Enhance comic with Freepik assets (speech bubbles, frames, backgrounds).
+        Enhance comic with Freepik assets (backgrounds, speech bubbles, frames).
 
         Layering order (bottom to top):
-        1. Base comic image (characters from Nano-Banana)
-        2. Comic frames (panel borders)
-        3. Speech bubbles (professional vectors)
+        1. Mode background (Freepik) - blended at ~35% opacity
+        2. Base comic image (characters from Nano-Banana)
+        3. Comic frames (panel borders)
+        4. Speech bubbles (professional vectors)
 
         Args:
             base_image_path: Path to base comic image (1x4 vertical strip)
-            script: Comic script
+            script: Comic script (includes mode: CELEBRATE/EDUCATE/UNKNOWN)
 
         Returns:
             Path to enhanced image
@@ -1437,14 +1477,26 @@ Rules:
             panel_width = img_width  # Full width (single column)
             panel_height = img_height // 4  # Divide by 4 panels
 
-            logger.info(f"Enhancing {img_width}x{img_height} comic (1x4 vertical) with Freepik assets")
+            # Get comic mode for background selection
+            comic_mode = script.get("mode", "EDUCATE")
+            logger.info(f"Enhancing {img_width}x{img_height} comic (1x4 vertical) with Freepik assets (mode: {comic_mode})")
 
-            # Fetch assets in parallel (cached after first download)
+            # Fetch all assets in parallel (cached after first download)
             import asyncio
-            bubble_paths, frame_paths = await asyncio.gather(
+            bubble_paths, frame_paths, bg_path = await asyncio.gather(
                 self.freepik.get_speech_bubbles(style="comic", limit=1),
                 self.freepik.get_comic_frames(limit=1),
+                self.freepik.get_mode_background(comic_mode),
             )
+
+            # Step 1: Apply mode background to full comic (if available)
+            if bg_path:
+                try:
+                    bg_img = self._svg_to_png(bg_path, width=img_width, height=img_height)
+                    img = self._blend_background(img, bg_img, opacity=0.35)
+                    logger.info(f"Applied {comic_mode} mode background at 35% opacity")
+                except Exception as e:
+                    logger.warning(f"Failed to apply background: {e}")
 
             # Convert SVG bubble to PNG at appropriate size
             bubble_img = None
