@@ -12,6 +12,13 @@ from app.core.config import Settings
 
 logger = logging.getLogger(__name__)
 
+# Mode-to-background theme mapping for comic backgrounds
+MODE_BACKGROUND_THEMES = {
+    "CELEBRATE": "bright colorful celebration confetti vector",
+    "EDUCATE": "clean modern gradient vector background",
+    "UNKNOWN": "simple colorful cartoon vector background",
+}
+
 
 class FreepikService:
     """Service for searching and downloading comic assets from Freepik API."""
@@ -230,6 +237,33 @@ class FreepikService:
 
         logger.info(f"Fetched {len(bg_paths)} background assets")
         return bg_paths
+
+    async def get_mode_background(self, mode: str) -> Path | None:
+        """
+        Fetch a single background asset for the comic mode.
+
+        Uses MODE_BACKGROUND_THEMES mapping to get appropriate background style.
+
+        Args:
+            mode: Comic mode (CELEBRATE, EDUCATE, UNKNOWN)
+
+        Returns:
+            Path to downloaded background asset or None if not found
+        """
+        # Get theme from mode mapping, default to UNKNOWN
+        theme = MODE_BACKGROUND_THEMES.get(mode.upper(), MODE_BACKGROUND_THEMES["UNKNOWN"])
+
+        logger.info(f"Fetching background for mode '{mode}' with theme: '{theme}'")
+
+        # Fetch single background
+        backgrounds = await self.get_backgrounds(theme=theme, limit=1)
+
+        if backgrounds:
+            logger.info(f"Got background for mode '{mode}': {backgrounds[0]}")
+            return backgrounds[0]
+
+        logger.warning(f"No background found for mode '{mode}'")
+        return None
 
     async def close(self):
         """Close the HTTP client."""

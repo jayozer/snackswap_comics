@@ -17,7 +17,7 @@
 | **Gemini 2.5 Flash Writer** | Generates mode-aware 4-panel comic scripts (EDUCATE/CELEBRATE/UNKNOWN) | `gemini_service.py:compose_script()` |
 | **Nano-Banana (gemini-3-pro-image-preview)** | Creates 2x2 comic grid with consistent characters (Captain Sparkle + food characters) | `nanobana_service.py` |
 | **Gemini text-embedding-004** | 768-dim embeddings for semantic search across all collections | `gemini_service.py:generate_embedding()` |
-| **Freepik API** | Professional speech bubbles, comic frames (with fallback to PIL) | `freepik_service.py` |
+| **Freepik API** | Professional speech bubbles, comic frames, **mode-based backgrounds** (CELEBRATE/EDUCATE themes) | `freepik_service.py` |
 | **Qdrant** | Semantic search for snacks, facts, swaps, styles with risk_tags filtering | `qdrant_service.py` |
 
 **Visual Polish**:
@@ -40,15 +40,24 @@
 - **EDUCATE** (risk ≥ 30): Educational comics with dental risks and swaps
 - **UNKNOWN** (no match): Generic dental health comics
 
+**Mode-Based Background Themes** (NEW):
+- Freepik vector backgrounds auto-selected by comic mode
+- **CELEBRATE** → Bright colorful celebration confetti
+- **EDUCATE** → Clean modern gradient
+- **UNKNOWN** → Simple colorful cartoon
+- Blended at 35% opacity to enhance (not replace) Nano-Banana output
+- Layer order: Background → Base comic → Frames → Bubbles → Text
+
 ### 📋 TODO
 
-- [ ] **1x4 Panel Layout**: Change from 2x2 grid to 1x4 vertical strip for better resizing across social formats (Square, Portrait, Reel)
+- [x] **Panel Layouts**: Square (2x2), Portrait (1x4), Reel (1x4) ✓
 - [x] **Celebrate Mode**: Positive comics for healthy snacks ✓
 - [x] **Unknown Mode**: Generic comics for unrecognized items ✓
 - [x] **Smart Item Grouping**: Fruit plates, veggie trays grouped as single items ✓
+- [ ] **Direct Social Sharing**: Add share buttons for Instagram and TikTok (native share intents)
 - [ ] **Animated comics**: Video generation for Reels (v1.1)
 - [ ] **Multiple comic styles/themes** (v1.2)
-- [ ] **Enhanced Freepik Integration**: Use Freepik assets more extensively (backgrounds, props, effects). Currently falls back to PIL when Freepik API unavailable.
+- [x] **Enhanced Freepik Integration**: Mode-based backgrounds (CELEBRATE/EDUCATE themes), speech bubbles, comic frames ✓
 
 ---
 
@@ -136,11 +145,11 @@ risk_score = 100 × (
 
 ### 📋 TODO
 
-- [ ] **Content moderation layer**: Add Gemini safety filters to script output
-- [ ] **Profanity filter**: Validate all generated dialogue
-- [ ] **Image safety check**: Validate Imagen output before serving
+- [x] **Content moderation layer**: GuardrailsService validates all generated content ✓
+- [x] **Profanity filter**: Blocked/mild term filtering with auto-clean ✓
+- [x] **Image safety check**: Image prompt validation before generation ✓
 - [ ] **Rate limiting**: Prevent abuse (TODO.md - Technical Debt)
-- [ ] **Audit logging**: Track all generated content for review
+- [x] **Audit logging**: AuditService tracks all generated content ✓
 
 ---
 
@@ -169,7 +178,7 @@ risk_score = 100 × (
 
 ### 📋 TODO
 
-- [ ] **User Signup Flow**: Capture age and allergens during signup. Use this info in Gemini prompts rather than frontend toggles. Age/allergen selectors only visible when `DEBUG=true` for admin testing.
+- [ ] **User Signup Flow** (v1.1): Capture age and allergens during signup. Use this info in Gemini prompts rather than frontend toggles. Age/allergen selectors only visible when `DEBUG=true` for admin testing.
 - [ ] **"How it Works" section**: Add clear tutorial for users (TODO.md - Backlog)
 - [ ] **Parameter clarity UI**: Show what age band affects (language, facts, swaps) - visible in debug mode
 
@@ -223,6 +232,7 @@ risk_score = 100 × (
 | **Taste-Cluster Swaps** | Recommendations match flavor profiles (sweet-chewy → sweet-chewy) | Higher acceptance rate |
 | **PIL Post-Processing** | Nano-Banana generates art, PIL adds precise text overlays | Best of both worlds |
 | **Age-Banded RAG** | Same snack → different facts based on child's age | Developmentally appropriate |
+| **Mode-Based Backgrounds** | Freepik backgrounds auto-selected by comic mode at 35% opacity | Visual polish without obscuring characters |
 
 **Technical Innovations**:
 - Gemini-native stack (vision + writer + embedding + Nano-Banana)
@@ -232,11 +242,13 @@ risk_score = 100 × (
 
 ### 📋 TODO
 
-- [ ] **1x4 Panel Layout**: Vertical strip format for flexible social media resizing
+- [x] **Panel Layouts**: Square (2x2), Portrait (1x4), Reel (1x4) ✓
 - [x] **Celebrate Mode**: Positive reinforcement for healthy snacks (novel narrative) ✓
 - [x] **Smart Item Grouping**: Multi-item plates detected as single grouped items ✓
 - [x] **Panel-aware retrieval**: Facts match comic mood/scene context ✓
 - [x] **Cross-collection joins**: Snack traits drive fact selection ✓
+- [x] **Mode-Based Backgrounds**: Freepik backgrounds per comic mode (CELEBRATE/EDUCATE/UNKNOWN) ✓
+- [ ] **Direct Social Sharing**: Instagram and TikTok share buttons
 - [ ] **Animated comics**: Video generation (novel format)
 - [ ] **Character customization**: Let users pick mascot style (v1.2)
 - [ ] **Multi-language support**: Expand reach (v1.2)
@@ -247,12 +259,12 @@ risk_score = 100 × (
 
 | Criteria | Status | Strength | Gap |
 |----------|--------|----------|-----|
-| **1. Creative Quality** | 🟢 Strong | Full Gemini stack + Celebrate/Unknown modes + Smart grouping | 1x4 layout not done |
+| **1. Creative Quality** | 🟢 Strong | Full Gemini stack + Celebrate/Unknown modes + Smart grouping + 3 layouts + **Mode-based backgrounds** | Direct social sharing needed |
 | **2. Search & Similarity** | 🟢 Strong | Transparent scoring, 4 collections, QueryBuilder, risk_tags | All key features implemented ✓ |
-| **3. Guardrails** | 🟡 Good | Age-band, clinic-approved, error recovery | No content moderation layer yet |
-| **4. UX & Tradeoffs** | 🟡 Good | Age selection, formats, debug mode | User signup flow not done |
+| **3. Guardrails** | 🟢 Strong | GuardrailsService + AuditService + profanity filter + image safety | Rate limiting (v1.1) |
+| **4. UX & Tradeoffs** | 🟢 Strong | Age selection, 3 export formats, debug mode | User signup flow (v1.1) |
 | **5. Real-World Fit** | 🟢 Strong | Built for Poppy Kids Dental | Analytics not integrated |
-| **6. Innovation** | 🟢 Strong | Celebrate mode + Smart grouping + Risk tag extraction | Key differentiators implemented ✓ |
+| **6. Innovation** | 🟢 Strong | Celebrate mode + Smart grouping + Risk tag extraction + **Mode-based backgrounds** | Key differentiators implemented ✓ |
 
 ---
 
@@ -265,12 +277,19 @@ risk_score = 100 × (
 - ✅ **Cross-collection Joins**: Snack risk_tags filter relevant facts (sticky→sticky facts)
 - ✅ **Risk Tag Extraction**: Auto-extract sticky/sugary/acidic/hard from matched snacks
 - ✅ **Error Recovery**: Vision detection gracefully handles None responses, malformed JSON
+- ✅ **Content Guardrails**: GuardrailsService with profanity filter, blocked/mild term lists, auto-clean
+- ✅ **Audit Logging**: AuditService tracks all generated content with daily JSONL logs
+- ✅ **Image Safety**: Prompt validation before image generation
+- ✅ **Panel Layouts**: Square (2x2), Portrait (1x4), Reel (1x4)
+- ✅ **Mode-Based Background Themes**: Freepik backgrounds per comic mode (CELEBRATE/EDUCATE/UNKNOWN)
 
 ---
 
 ## Priority TODOs for Hackathon
 
-1. **1x4 Panel Layout** - Better format flexibility for social media (Square, Portrait, Reel)
-2. **User Signup Flow** - Capture age/allergens upfront, use in prompts (not frontend toggles)
-3. **Content Guardrails** - Add explicit safety filters for kid content
-4. **Header branding** - Polish for Poppy Kids Pediatric Dentistry
+1. **Direct Social Sharing** - Add Instagram and TikTok share buttons (native share intents)
+2. **Header branding** - Polish for Poppy Kids Pediatric Dentistry
+
+### Deferred to v1.1
+- **User Signup Flow** - Capture age/allergens upfront, use in prompts (not frontend toggles)
+- **Rate Limiting** - Prevent abuse
