@@ -6,6 +6,7 @@ Uses the official google-genai SDK for image generation.
 
 import logging
 import mimetypes
+import time
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,8 @@ from google import genai
 from google.genai import types
 
 from app.core.config import Settings
+from app.services.guardrails_service import get_guardrails_service
+from app.services.audit_service import get_audit_service, GenerationType
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +27,13 @@ class NanoBananaService:
         """Initialize image generation service with the google-genai SDK."""
         self.settings = settings
         self.client = genai.Client(api_key=settings.gemini_api_key)
+        self.guardrails = get_guardrails_service()
+        self.audit = get_audit_service(settings)
 
         # Determine which model is being used
         self.is_imagen = "imagen" in settings.gemini_image_model.lower()
         model_name = "Imagen 4.0" if self.is_imagen else "Nano-Banana"
-        logger.info(f"Initialized image generation service with {model_name} ({settings.gemini_image_model})")
+        logger.info(f"Initialized image generation service with {model_name} and guardrails ({settings.gemini_image_model})")
 
     def build_comic_prompt(self, script: dict[str, Any]) -> str:
         """
@@ -215,8 +220,24 @@ class NanoBananaService:
             Exception: If generation fails
         """
         try:
+            start_time = time.time()
+
             # Build comprehensive prompt
             prompt = self.build_comic_prompt(script)
+
+            # Validate image prompt before generation
+            prompt_validation = self.guardrails.validate_image_prompt(prompt)
+            if not prompt_validation.passed:
+                logger.error(f"Image prompt failed guardrails: {prompt_validation.details}")
+                # Log the blocked attempt
+                self.audit.log_image_generation(
+                    prompt=prompt[:500],
+                    image_path=None,
+                    validation_passed=False,
+                    validation_details=prompt_validation.details,
+                    duration_ms=int((time.time() - start_time) * 1000),
+                )
+                raise ValueError(f"Image prompt failed safety check: {prompt_validation.details}")
 
             model_name = "Imagen 4.0" if self.is_imagen else "Nano-Banana"
             logger.info(f"Generating comic image with {model_name} (size: {image_size})")
@@ -249,6 +270,15 @@ class NanoBananaService:
                 # The image object from Imagen 4.0 has a save() method with different signature
                 # It takes only the path, not format argument
                 generated_image.image.save(final_path)
+
+                # Audit log successful generation
+                self.audit.log_image_generation(
+                    prompt=prompt[:500],
+                    image_path=str(final_path),
+                    validation_passed=True,
+                    validation_details="Image generated successfully",
+                    duration_ms=int((time.time() - start_time) * 1000),
+                )
 
                 logger.info(f"Comic image saved to: {final_path}")
                 return final_path
@@ -309,6 +339,15 @@ class NanoBananaService:
 
                         with open(final_path, "wb") as f:
                             f.write(data_buffer)
+
+                        # Audit log successful generation
+                        self.audit.log_image_generation(
+                            prompt=prompt[:500],
+                            image_path=str(final_path),
+                            validation_passed=True,
+                            validation_details="Image generated successfully",
+                            duration_ms=int((time.time() - start_time) * 1000),
+                        )
 
                         logger.info(f"Comic image saved to: {final_path}")
                         file_saved = True
