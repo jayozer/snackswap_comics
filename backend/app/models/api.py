@@ -60,7 +60,7 @@ class ScoreRetrieveRequest(BaseModel):
     """Request model for scoring and retrieval."""
 
     items: list[DetectedItem] = Field(..., description="Detected items from vision")
-    age: int = Field(..., ge=3, le=12, description="Child's age")
+    age: int = Field(..., ge=9, le=17, description="User's age (9-17)")
     allergies: list[str] = Field(default_factory=list, description="Allergies (dairy, nuts, etc.)")
 
 
@@ -108,7 +108,7 @@ class ScriptComposeRequest(BaseModel):
     facts: list[dict] = Field(..., description="Available facts")
     swaps: list[dict] = Field(..., description="Available swaps")
     style_id: str = Field("default", description="Style ID to use")
-    age: int = Field(..., ge=3, le=12, description="Child's age")
+    age: int = Field(..., ge=9, le=17, description="User's age (9-17)")
     mode: ComicMode = Field(default=ComicMode.EDUCATE, description="Comic mode for script generation")
 
 

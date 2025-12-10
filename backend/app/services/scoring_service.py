@@ -85,7 +85,7 @@ class ScoringService:
         Args:
             original_snack: Original snack data
             swap_candidates: List of potential swaps
-            age_band: Target age band (3-5, 6-8, 9-12)
+            age_band: Target age band (9-12 or 13-17)
             allergies: List of allergens to avoid
 
         Returns:
@@ -191,13 +191,11 @@ class ScoringService:
         return payload
 
     def get_age_band(self, age: int) -> str:
-        """Convert age to age band string."""
-        if age <= 5:
-            return "3-5"
-        elif age <= 8:
-            return "6-8"
+        """Convert age to age band: 9-12 (Tween/Spicy) or 13-17 (Teen/Savage)."""
+        if age <= 12:
+            return "9-12"  # Tween - Spicy mode
         else:
-            return "9-12"
+            return "13-17"  # Teen - Savage mode
 
     def extract_risk_tags(self, snack_payload: dict[str, Any]) -> list[str]:
         """

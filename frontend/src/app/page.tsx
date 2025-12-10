@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/Header';
 import UploadZone from '@/components/UploadZone';
 import AgeSelector from '@/components/AgeSelector';
+import AllergenSelector from '@/components/AllergenSelector';
 import ScanningOverlay from '@/components/ScanningOverlay';
 import ResultsPanel from '@/components/ResultsPanel';
 import ComicDisplay from '@/components/ComicDisplay';
 import ToothMascot from '@/components/ToothMascot';
+import { usePreferences } from '@/hooks/usePreferences';
 
 type AppState = 'idle' | 'uploading' | 'scanning' | 'results' | 'comic';
 type ComicMode = 'educate' | 'celebrate' | 'unknown';
@@ -37,7 +39,7 @@ interface ComicData {
 
 export default function Home() {
   const [state, setState] = useState<AppState>('idle');
-  const [age, setAge] = useState(7);
+  const { age, allergens, mode: intensityMode, setAge, setAllergens, isLoaded } = usePreferences();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [photoId, setPhotoId] = useState<string | null>(null);
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
@@ -47,17 +49,17 @@ export default function Home() {
   const [comicData, setComicData] = useState<ComicData | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<ComicMode>('educate');
+  const [comicMode, setComicMode] = useState<ComicMode>('educate');
   const [averageRisk, setAverageRisk] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const steps = [
     { label: 'Uploading', icon: '📤' },
-    { label: 'Detecting snacks', icon: '🔍' },
-    { label: 'Checking dental risk', icon: '🦷' },
-    { label: 'Writing script', icon: '✍️' },
-    { label: 'Drawing comic', icon: '🎨' },
+    { label: 'Scanning snack', icon: '🔍' },
+    { label: 'Checking aesthetic threat', icon: '💀' },
+    { label: 'Writing vanity roast', icon: '🔥' },
+    { label: 'Creating glow up comic', icon: '🎨' },
   ];
 
   const handleFileSelect = useCallback(async (file: File) => {
@@ -94,7 +96,7 @@ export default function Home() {
       const visionData = await visionRes.json();
       setDetectedItems(visionData.items);
 
-      // Step 3: Score and retrieve facts
+      // Step 3: Score and retrieve facts (now with allergens)
       setCurrentStep(2);
 
       const scoreRes = await fetch('/api/score/retrieve', {
@@ -103,7 +105,7 @@ export default function Home() {
         body: JSON.stringify({
           items: visionData.items,
           age: age,
-          allergies: [],
+          allergies: allergens,
         }),
       });
 
@@ -112,7 +114,7 @@ export default function Home() {
       setScoredItems(scoreData.scored_items);
       setFacts(scoreData.facts);
       setSwaps(scoreData.swaps);
-      setMode(scoreData.mode || 'educate');
+      setComicMode(scoreData.mode || 'educate');
       setAverageRisk(scoreData.average_risk_score || 0);
 
       // Step 4: Generate script
@@ -125,7 +127,7 @@ export default function Home() {
           scored_items: scoreData.scored_items,
           facts: scoreData.facts,
           swaps: scoreData.swaps,
-          style_id: 'default',
+          style_id: intensityMode === 'Savage' ? 'savage_teen' : 'spicy_tween',
           age: age,
           mode: scoreData.mode || 'educate',
         }),
@@ -152,7 +154,7 @@ export default function Home() {
       setError(err.message || 'Something went wrong');
       setState('idle');
     }
-  }, [age]);
+  }, [age, allergens, intensityMode]);
 
   const handleReset = () => {
     setState('idle');
@@ -165,7 +167,7 @@ export default function Home() {
     setComicData(null);
     setCurrentStep(0);
     setError(null);
-    setMode('educate');
+    setComicMode('educate');
     setAverageRisk(0);
   };
 
@@ -173,8 +175,48 @@ export default function Home() {
     setState('comic');
   };
 
+  // Get DR. DRIP's message based on state and mode - VANITY FOCUSED
+  const getDrDripMessage = () => {
+    if (state === 'idle') {
+      return intensityMode === 'Savage'
+        ? "Yo. Dr. Drip here. Show me your snack and I'll tell you if it's gonna cook your smile or give you that glow up."
+        : "Hey! Dr. Drip here. Drop your snack and let's see if it's aesthetic or gonna turn your teeth yellow!";
+    }
+    if (state === 'uploading') return "Uploading... hold up.";
+    if (state === 'scanning') return "Scanning for aesthetic threats... 👀";
+    if (state === 'results' && comicMode === 'celebrate') {
+      return intensityMode === 'Savage'
+        ? "Sheesh! This snack is a natural glow up. Your smile stays pristine. No filter needed."
+        : "Yooo this snack keeps your teeth WHITE! Glow up approved!";
+    }
+    if (state === 'results' && comicMode === 'educate') {
+      return intensityMode === 'Savage'
+        ? "Bro... this snack is gonna cook your smile. Yellow teeth incoming. Not aesthetic."
+        : "Hmm... this snack might stain your teeth. Let me show you why it's not aesthetic.";
+    }
+    if (state === 'results' && comicMode === 'unknown') {
+      return "Couldn't ID that snack, but here's some glow up secrets for your smile.";
+    }
+    if (state === 'comic' && comicMode === 'celebrate') {
+      return "Check out this glow up comic I made for you! 10/10 aura.";
+    }
+    if (state === 'comic') {
+      return "Peep this comic I made. Your friends need to see why their smile is cooked.";
+    }
+    return "...";
+  };
+
+  // Don't render until preferences are loaded from localStorage
+  if (!isLoaded) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="text-white text-xl font-comic">Loading...</div>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen pb-20 bg-gradient-to-br from-brand-light to-white">
+    <main className="min-h-screen pb-20 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
       <Header />
 
       <div className="container mx-auto px-4 max-w-4xl pt-12">
@@ -182,20 +224,16 @@ export default function Home() {
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-12">
           <ToothMascot state={state} />
           <motion.div
-            className="speech-bubble max-w-xs md:max-w-md shadow-lg"
+            className="speech-bubble max-w-xs md:max-w-md shadow-lg bg-white/95 backdrop-blur"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            key={state}
+            key={state + comicMode}
           >
-            <p className="font-bold text-lg text-brand-dark">
-              {state === 'idle' && "Hi! I'm Poppy Tooth! Show me your snack and I'll tell you if it's tooth-friendly!"}
-              {state === 'uploading' && "Ooh, uploading! Hang tight..."}
-              {state === 'scanning' && "Let me take a closer look with my super specs..."}
-              {state === 'results' && mode === 'celebrate' && "WOW! You picked an AMAZING tooth-friendly snack! High five!"}
-              {state === 'results' && mode === 'educate' && "Done! I've got the scoop on your snack!"}
-              {state === 'results' && mode === 'unknown' && "Hmm, I couldn't quite figure that one out. Let me share some tips!"}
-              {state === 'comic' && mode === 'celebrate' && "Check out this celebration comic I made just for you!"}
-              {state === 'comic' && mode !== 'celebrate' && "Check out this comic I made just for you!"}
+            <p className="font-bold text-lg text-gray-800">
+              {getDrDripMessage()}
+            </p>
+            <p className="text-xs text-gray-500 mt-1 font-comic">
+              {intensityMode} Mode {intensityMode === 'Savage' ? '💀' : '🔥'}
             </p>
           </motion.div>
         </div>
@@ -204,18 +242,18 @@ export default function Home() {
         <AnimatePresence>
           {error && (
             <motion.div
-              className="bg-red-50 text-red-600 p-4 mb-6 rounded-2xl border-2 border-red-100 flex items-center gap-4 shadow-sm"
+              className="bg-red-900/50 text-red-200 p-4 mb-6 rounded-2xl border-2 border-red-500/50 flex items-center gap-4 shadow-sm backdrop-blur"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <span className="text-2xl">🙊</span>
+              <span className="text-2xl">💀</span>
               <div>
-                <p className="font-bold">Oops!</p>
+                <p className="font-bold">Bruh...</p>
                 <p>{error}</p>
                 <button
                   onClick={handleReset}
-                  className="mt-1 underline font-bold hover:text-red-800"
+                  className="mt-1 underline font-bold hover:text-red-100"
                 >
                   Try again
                 </button>
@@ -225,7 +263,7 @@ export default function Home() {
         </AnimatePresence>
 
         {/* Main Content Card */}
-        <div className="poppy-card p-6 md:p-10 relative overflow-hidden transition-all duration-300">
+        <div className="bg-white/95 backdrop-blur rounded-3xl p-6 md:p-10 relative overflow-hidden transition-all duration-300 shadow-2xl border-4 border-gray-800">
           <AnimatePresence mode="wait">
             {(state === 'idle' || state === 'uploading') && (
               <motion.div
@@ -233,7 +271,7 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="space-y-8"
+                className="space-y-6"
               >
                 <UploadZone
                   onFileSelect={handleFileSelect}
@@ -241,8 +279,12 @@ export default function Home() {
                   isUploading={state === 'uploading'}
                 />
 
-                <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-2">
                   <AgeSelector age={age} onAgeChange={setAge} />
+                  <AllergenSelector
+                    selectedAllergens={allergens}
+                    onAllergensChange={setAllergens}
+                  />
                 </div>
               </motion.div>
             )}
@@ -273,7 +315,7 @@ export default function Home() {
                   scoredItems={scoredItems}
                   facts={facts}
                   swaps={swaps}
-                  mode={mode}
+                  mode={comicMode}
                   averageRisk={averageRisk}
                   onViewComic={viewComic}
                   onReset={handleReset}
@@ -297,8 +339,8 @@ export default function Home() {
           </AnimatePresence>
         </div>
 
-        <p className="text-center text-brand-mid text-sm mt-8 font-body">
-          Powered by Gemini Vision & Qdrant • © 2025 Poppy Kids Dental
+        <p className="text-center text-gray-400 text-sm mt-8 font-body">
+          Powered by Gemini Vision & Qdrant • Roast My Snack 2025 • Your Smile's Glow Up Starts Here
         </p>
       </div>
     </main>

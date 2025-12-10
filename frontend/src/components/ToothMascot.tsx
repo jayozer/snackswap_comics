@@ -8,12 +8,13 @@ interface ToothMascotProps {
 
 export default function ToothMascot({ state }: ToothMascotProps) {
   // Determine which image to show based on state
-  let imageSrc = '/images/poppy_tooth_hero.png'; // Default
+  // Determine which image to show based on state
+  let imageSrc = '/images/dr_drip_hero.png'; // Default
 
   if (state === 'scanning') {
-    imageSrc = '/images/poppy_tooth_scanning.png';
+    imageSrc = '/images/dr_drip_scanning.png';
   } else if (state === 'results' || state === 'comic') {
-    imageSrc = '/images/poppy_tooth_success.png';
+    imageSrc = '/images/dr_drip_success.png';
   }
 
   return (

@@ -30,6 +30,58 @@ class GeminiService:
 
         logger.info("Initialized Gemini service with new google.genai SDK")
 
+    def _repair_json(self, text: str) -> str | None:
+        """
+        Attempt to repair truncated or malformed JSON.
+
+        Args:
+            text: Potentially malformed JSON string
+
+        Returns:
+            Repaired JSON string or None if repair fails
+        """
+        import re
+
+        # Count open/close brackets
+        open_braces = text.count('{')
+        close_braces = text.count('}')
+        open_brackets = text.count('[')
+        close_brackets = text.count(']')
+
+        # If severely truncated (missing closing structure), try to repair
+        if open_braces > close_braces or open_brackets > close_brackets:
+            logger.info(f"Attempting JSON repair: {open_braces} {{ vs {close_braces} }}, {open_brackets} [ vs {close_brackets} ]")
+
+            # Find the last complete object/array
+            # Look for common truncation points
+            truncation_patterns = [
+                r',\s*"[^"]*$',  # Truncated in middle of a key
+                r',\s*$',  # Trailing comma
+                r':\s*"[^"]*$',  # Truncated in middle of a value
+                r':\s*\[[^\]]*$',  # Truncated array
+            ]
+
+            repaired = text
+            for pattern in truncation_patterns:
+                match = re.search(pattern, repaired)
+                if match:
+                    repaired = repaired[:match.start()]
+                    break
+
+            # Close any open structures
+            while repaired.count('[') > repaired.count(']'):
+                repaired += ']'
+            while repaired.count('{') > repaired.count('}'):
+                repaired += '}'
+
+            # Remove any trailing commas before closing brackets
+            repaired = re.sub(r',\s*}', '}', repaired)
+            repaired = re.sub(r',\s*]', ']', repaired)
+
+            return repaired
+
+        return None
+
     async def detect_items(self, image_path: str) -> list[DetectedItem]:
         """
         Detect food items in an image using Gemini Vision.
@@ -40,25 +92,39 @@ class GeminiService:
         Returns:
             List of detected items
         """
-        prompt = """You are a food vision assistant for a children's dental health app.
+        prompt = """You are a precise food detection assistant for a dental health app.
 
-From this photo, identify up to 5 food items or snacks. For each item, provide:
-- name: Common name of the item
-- brand_guess: Brand name if visible (or null if unclear)
-- category: Category (e.g., chips, candy, cookie, fruit, vegetable, beverage, dairy)
-- visible_clues: What visual clues helped identify it (packaging color, shape, text)
+⚠️ CRITICAL: ONLY identify what you ACTUALLY SEE in the image. DO NOT guess or assume.
+
+Analyze this photo and identify up to 5 food/snack items. For each item, provide:
+- name: The ACCURATE common name of EXACTLY what you see (be specific and literal)
+- brand_guess: Brand name if clearly visible on packaging (or null if not visible)
+- category: One of: candy, chips, cookies, crackers, fruit, vegetables, dairy, beverage, baked_goods, processed_snack, healthy_snack
+- visible_clues: Observable details that helped identify it (color, shape, texture, packaging)
 - confidence: Your confidence level (0.0 to 1.0)
 
-IMPORTANT GROUPING RULES:
-- If you see a plate/bowl with multiple similar items (e.g., fruit plate, veggie tray, mixed snacks),
-  group them as ONE item with a descriptive name like:
-  - "Mixed Fruit Plate" or "Fresh Fruit Assortment" (for assorted fruits)
-  - "Fresh Vegetable Tray" (for assorted vegetables)
-  - "Mixed Snack Bowl" (for assorted crackers/chips/snacks)
-- Only list individual items separately if they are clearly DIFFERENT types of snacks
-- Maximum 5 items total - prioritize the most prominent items
+🍎 HEALTHY FOOD RECOGNITION (IMPORTANT):
+- Fresh fruits: apples, oranges, bananas, grapes, berries, melons, etc.
+- Fresh vegetables: carrots, celery, cucumbers, broccoli, peppers, etc.
+- Fruit plates/bowls = "Mixed Fruit Plate" or "Fresh Fruit Assortment" (category: fruit)
+- Vegetable trays = "Fresh Vegetable Tray" (category: vegetables)
+- Cheese slices/cubes = "Cheese" or "Cheddar Cheese" (category: dairy)
+- Nuts = "Almonds", "Mixed Nuts" etc. (category: healthy_snack)
 
-Focus on packaged snacks, lunch items, or identifiable foods. Ignore utensils or plates themselves.
+🚫 COMMON MISTAKES TO AVOID:
+- Do NOT confuse colorful fruits with candy
+- Do NOT confuse vegetable trays with processed snacks
+- Do NOT confuse cheese with crackers
+- Fresh, whole foods are NEVER "crackers" or "chips"
+- If you see natural, unprocessed food, it's likely fruit/vegetables/dairy
+
+GROUPING RULES:
+- Multiple similar items = ONE grouped item
+  - Example: bowl of mixed fruits = "Mixed Fruit Plate" (category: fruit)
+  - Example: vegetable tray = "Fresh Vegetable Tray" (category: vegetables)
+  - Example: 10 gummy bears = "Gummy Bears" (category: candy)
+- Maximum 5 distinct food items total
+- Prioritize the most prominent/visible items
 
 Return your response as a JSON object with this structure:
 {
@@ -67,15 +133,15 @@ Return your response as a JSON object with this structure:
       "name": "string",
       "brand_guess": "string or null",
       "category": "string",
-      "visible_clues": "string",
+      "visible_clues": "string describing what you ACTUALLY see",
       "confidence": 0.95
     }
   ],
   "needs_confirmation": false
 }
 
-Set needs_confirmation to true if any item has confidence < 0.7.
-ALWAYS return valid JSON even if you're uncertain - use lower confidence scores for uncertain items."""
+Set needs_confirmation to true ONLY if the image is blurry or food is unrecognizable.
+ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assume."""
 
         try:
             # Read image file and encode as base64
@@ -213,120 +279,133 @@ ALWAYS return valid JSON even if you're uncertain - use lower confidence scores 
             snacks: List of snack data
             facts: List of relevant facts
             swaps: List of suggested swaps
-            age: Child's age
+            age: User's age (9-17)
 
         Returns:
             Comic script with panels, caption, and alt text
         """
-        # Determine age band
-        if age <= 5:
-            age_band = "3-5"
-            tone = "very simple, playful"
-        elif age <= 8:
-            age_band = "6-8"
-            tone = "friendly, fun"
-        else:
+        # Determine age band: 9-12 (Spicy) or 13-17 (Savage)
+        if age <= 12:
             age_band = "9-12"
-            tone = "engaging, cool"
+            intensity = "Spicy"
+            tone = "sarcastic, meme-y, lighter burns"
+        else:
+            age_band = "13-17"
+            intensity = "Savage"
+            tone = "full destruction mode, no mercy, brutal honesty"
 
         # Build context
         snacks_context = json.dumps(snacks, indent=2)
         facts_context = json.dumps(facts, indent=2)
         swaps_context = json.dumps(swaps, indent=2)
 
-        prompt = f"""You are a comedy writer for kids creating HILARIOUS 4-panel dental health comics.
+        prompt = f"""You are a SAVAGE ROAST COMEDIAN writing for Gen Z/Gen Alpha teens (ages 9-17).
+Your goal: Create a 4-panel "Roast Object" comic where a snack gets absolutely DESTROYED for being UGLY and ruining your AESTHETIC.
 
-TARGET AUDIENCE: Age {age} ({age_band} years old), tone: {tone} and FUNNY!
+TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 
-🎭 RECURRING CHARACTER - CAPTAIN SPARKLE:
-Captain Sparkle is a superhero tooth who appears in EVERY comic. Personality: Enthusiastic, slightly dramatic, loves puns. Always wears a tiny superhero cape. Catchphrase: "Sparkle power!" Expression changes based on situation (excited, shocked, worried, triumphant).
+⚠️ TEENS DON'T CARE ABOUT HEALTH - THEY ONLY CARE ABOUT:
+- VANITY: Having white, bright teeth (The "Hollywood Smile")
+- AESTHETICS: Not having gross, yellow, or "fuzzy" teeth
+- SOCIAL STATUS: Having "Rizz" and "Aura". Bad teeth = Negative Aura.
 
-SNACKS IN PHOTO (they become animated characters):
+🎭 RECURRING CHARACTER - DR. DRIP:
+A hype-beast molar tooth with sunglasses, a gold crown, and fresh kicks.
+Personality: Obsessed with "The Glow Up" and "Aesthetics". He doesn't care if you get sick. He cares if you look MID.
+Catchphrases: "Your smile is COOKED." / "Negative Aura detected."
+Verdicts: "COOKED SMILE" / "YELLOW TEETH SIGNAL" / "NOT AESTHETIC"
+
+SNACKS IN PHOTO (The Victims):
 {snacks_context}
 
-DENTAL FACTS (integrate into jokes, cite fact_id in citation_ids):
+FACTS (The Ammo - cite fact_id):
 {facts_context}
 
-HEALTHIER SWAPS (make them sound awesome):
+⚠️ CRITICAL: RE-FRAME ALL FACTS TO BE ABOUT LOOKS/VANITY:
+- Sugar = "Turns your teeth YELLOW over time"
+- Acids = "Melts your enamel so you look transparent/weak"
+- Sticky = "Looks gross and fuzzy on your teeth"
+- Cavities = "Holes in your teeth are NOT aesthetic"
+- Bacteria = "Makes your breath cooked"
+
+SWAPS (The Glow Up Secret):
 {swaps_context}
 
-🎬 PANEL STRUCTURE (Comedy-First):
+🎬 PANEL STRUCTURE (The Vanity Roast Arc):
 
-PANEL 1 - THE HOOK (Funny Introduction)
-- Snack introduces itself with a PUN or funny trait
-- Captain Sparkle appears with excited expression
-- Set up the comedic situation
-- Include at least ONE wordplay or visual gag
+PANEL 1 - THE FLEX (The Setup)
+- Snack enters acting tasty. "I'm the main character."
+- Dr. Drip looks disgusted (behind sunglasses). "Ew. Brother ewww."
+- Snack tries to have "aura" but Dr. Drip isn't buying it
 
-PANEL 2 - ESCALATION (The Problem Revealed)
-- Captain Sparkle discovers something about the snack (cite a fact here)
-- Snack reacts DRAMATICALLY (shocked, worried, or over-confident)
-- Use exaggeration for comedy (if sticky, make it SUPER sticky)
-- Include a surprising prop or visual element
+PANEL 2 - THE EXPOSÉ (The Vanity Roast)
+- Dr. Drip EXPOSES how the snack makes you LOOK BAD (cite fact_id)
+- "You turn bright white teeth into YELLOW BRICKS."
+- "You give people 'Fuzzy Tooth' syndrome. Cringe."
+- Snack looks offended: "But I taste good!"
 
-PANEL 3 - THE TWIST (Role Reversal or Surprise)
-- Unexpected moment! (e.g., snack admits truth, Captain Sparkle has idea)
-- Another fact revealed in funny way (cite fact_id)
-- Character expressions should be extreme (gasp!, idea!, worried!)
-- Include callback to Panel 1 or running gag
+PANEL 3 - THE RATIO (The Social Destruction)
+- Dr. Drip destroys the snack's social status
+- "Imagine talking to your crush with yellow teeth. Couldn't be me."
+- "That's negative aura fr fr."
+- Snack is crying: "I just wanted to be aesthetic!"
+- Visual: Snack looks gross, melting, or ugly
 
-PANEL 4 - THE PUNCHLINE (Happy Resolution)
-- Introduce swap character with funny personality
-- Captain Sparkle triumphant pose: "Sparkle power!"
-- End with a joke that ties to the beginning
-- Positive, no shaming - make swap sound COOL
+PANEL 4 - THE VIBE CHECK (The Glow Up Switch)
+- Dr. Drip presents the SWAP as the "Glow Up" secret
+- "Eat [Swap Name]. It scrubs your teeth white while you eat."
+- "Your smile will be unfiltered. Main character energy."
+- Final Verdict: "COOKED SMILE" or "YELLOW TEETH SIGNAL"
 
-🎨 COMEDY TECHNIQUES (Use ALL of these):
-1. PUNS & WORDPLAY: Character names, dialogue, situations
-2. VISUAL GAGS: Props (tiny capes, party hats, magnifying glass), exaggerated expressions
-3. CHARACTER COMEDY: Distinct personalities (nervous snack, know-it-all tooth, cheerful swap)
-4. SURPRISE MOMENTS: Unexpected reactions, plot twists, dramatic reveals
+🎨 COMEDY TECHNIQUES (VANITY FOCUS):
+1. APPEARANCE WORDS: "Yellow", "Stained", "Gross", "Fuzzy", "Crusty", "Transparent"
+2. VANITY SHAMING: "Your Instagram pics need a filter with that smile"
+3. LOOKSMAXXING SLANG: "Glow up", "Aura", "Aesthetic", "Rizz", "No filter needed"
 
 ⚠️ CRITICAL RULES FOR FACT CITATIONS:
 - citation_ids field = ONLY fact IDs like ["F001", "F003"]
 - dialogue field = ONLY what characters SAY - NEVER include "F001" or fact IDs in dialogue
 - The dialogue should naturally incorporate the fact's content WITHOUT mentioning the ID
 - WRONG: "I stick to teeth [F001]"
-- RIGHT: dialogue: ["I stick to teeth for hours!"], citation_ids: ["F001"]
+- RIGHT: dialogue: ["Bro sticks to teeth for hours!"], citation_ids: ["F001"]
 
 📝 OTHER RULES:
-- Every panel needs a LAUGH MOMENT (joke, pun, visual gag, surprise)
-- Keep dialogue VERY SHORT: Maximum 2-3 brief lines per panel
+- Every panel needs a ROAST MOMENT or meme reference
+- Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
 - CRITICAL TEXT LIMITS: Each dialogue line must be under 40 characters, total per panel under 100 characters
-- Shorter is better - aim for punchy, concise jokes that kids can read quickly
-- Expressions: happy, shocked, worried, excited, triumphant, scheming
-- Props add comedy: superhero capes, detective hats, party decorations, microphones
-- NO scolding or guilt - keep it light and fun!
+- Expressions: smug, skeptical, shocked, defeated, crying, triumphant, flexing
+- Props: sunglasses, gold chains, sneakers, "L" signs, sweat drops
+- NO PREACHING - Don't sound like a dentist. Sound like a hater with dental knowledge.
 
-EXAMPLE PANEL (showing humor + citations done RIGHT):
+EXAMPLE PANEL (showing VANITY roast + citations done RIGHT):
 
 {{
   "panel_number": 2,
-  "title": "The Sticky Situation",
+  "title": "The Exposé",
   "dialogue": [
-    "I throw PARTIES for bacteria! They absolutely LOVE me!",
-    "*GASP* You mean sticky candies stay on teeth for HOURS?!",
-    "Yep! It's like an all-night rave for tiny party animals!"
+    "Bro turns white teeth into YELLOW BRICKS.",
+    "That's negative aura detected.",
+    "But I taste good!"
   ],
-  "citation_ids": ["F002"],  // Fact about stickiness - ID here, NOT in dialogue
+  "citation_ids": ["F002"],
   "characters": [
     {{
-      "name": "Gummy Gary",
+      "name": "Sugar Bomb Sam",
       "item_id": "candy_gummy",
-      "expression": "proud",
+      "expression": "sweating",
       "position": "left",
-      "props": ["party hat", "confetti"]
+      "props": ["sweat drops", "yellow stains", "gross aura"]
     }},
     {{
-      "name": "Captain Sparkle",
+      "name": "Dr. Drip",
       "item_id": "recurring_tooth",
-      "expression": "shocked",
+      "expression": "disgusted",
       "position": "right",
-      "props": ["superhero cape"]
+      "props": ["sunglasses", "gold crown", "fresh kicks", "pristine white shine"]
     }}
   ],
-  "visual_prompt": "Gummy bear character wearing party hat with tiny bacteria having a party. Tooth superhero looking shocked with wide eyes and open mouth.",
-  "background": "simple with subtle party decorations"
+  "visual_prompt": "Gummy candy looking gross with yellow stains while pristine white molar tooth with sunglasses looks disgusted. Contrast between gross and aesthetic.",
+  "background": "split background - grimy on left, sparkling clean on right"
 }}
 
 📋 REQUIRED JSON OUTPUT STRUCTURE:
@@ -337,11 +416,11 @@ Return your response as valid JSON with this EXACT structure:
   "panels": [
     // Array of 4 panels, each following the structure shown above
   ],
-  "summary_caption": "A catchy one-liner that captures the comic's main joke or lesson (under 100 chars)",
-  "alt_text": "Accessibility description for screen readers: describe the comic's story and visual elements (1-2 sentences)"
+  "summary_caption": "A vanity-focused verdict (under 100 chars) - e.g. 'Your smile is COOKED'",
+  "alt_text": "Accessibility description for screen readers (1-2 sentences)"
 }}
 
-Make it HILARIOUS while teaching dental health!"""
+Make it about LOOKS. Make it about AESTHETIC. Make teens care about their smile's appearance."""
 
         try:
             # Use asyncio.to_thread to avoid blocking the event loop
@@ -389,13 +468,24 @@ Make it HILARIOUS while teaching dental health!"""
             if response_text.endswith("```"):
                 response_text = response_text[:-3]
 
-            # Try to parse JSON - log raw response on failure
+            # Try to parse JSON - with repair attempts on failure
             try:
                 result = json.loads(response_text.strip())
             except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse Gemini response as JSON: {e}")
-                logger.error(f"Raw response (first 1000 chars): {response_text[:1000]}")
-                raise ValueError(f"Gemini returned invalid JSON: {e}")
+                logger.warning(f"Initial JSON parse failed: {e}")
+                logger.warning(f"Raw response (first 500 chars): {response_text[:500]}")
+
+                # Attempt to repair truncated JSON
+                repaired = self._repair_json(response_text.strip())
+                if repaired:
+                    try:
+                        result = json.loads(repaired)
+                        logger.info("JSON repair successful")
+                    except json.JSONDecodeError as e2:
+                        logger.error(f"JSON repair failed: {e2}")
+                        raise ValueError(f"Gemini returned invalid JSON: {e}")
+                else:
+                    raise ValueError(f"Gemini returned invalid JSON: {e}")
 
             # Safety filter: Remove any fact IDs that slipped into dialogue
             import re
@@ -517,79 +607,91 @@ Make it HILARIOUS while teaching dental health!"""
         """
         Compose a celebratory 4-panel comic script for healthy snacks.
 
-        Uses positive narrative arc:
-        Panel 1: Hero Entrance - Healthy snack introduced as hero
-        Panel 2: Superpower - Health benefits revealed
-        Panel 3: Team Up - Captain Sparkle and snack team up
-        Panel 4: Celebration - Victory pose and positive reinforcement
+        Uses positive "W Arc" narrative:
+        Panel 1: The Entrance - Healthy snack walks in confident
+        Panel 2: The Stats - Dr. Drip impressed by health stats
+        Panel 3: The Glaze - Bro-hug moment
+        Panel 4: The Crown - Coronation, verdict: GOATED
 
         Args:
             snacks: List of healthy snack data
             facts: List of celebration facts
-            age: Child's age
+            age: User's age (9-17)
 
         Returns:
             Comic script with panels, caption, and alt text
         """
-        # Determine age band
-        if age <= 5:
-            age_band = "3-5"
-            tone = "very simple, playful, super cheerful"
-        elif age <= 8:
-            age_band = "6-8"
-            tone = "friendly, fun, celebratory"
-        else:
+        # Determine age band: 9-12 (Spicy) or 13-17 (Savage)
+        if age <= 12:
             age_band = "9-12"
-            tone = "engaging, cool, triumphant"
+            intensity = "Spicy"
+            tone = "hype, energetic, respectful props"
+        else:
+            age_band = "13-17"
+            intensity = "Savage"
+            tone = "maximum hype, real recognizes real, absolute respect"
 
         # Build context
         snacks_context = json.dumps(snacks, indent=2)
         facts_context = json.dumps(facts, indent=2)
 
-        prompt = f"""You are a comedy writer for kids creating CELEBRATORY 4-panel dental health comics about HEALTHY SNACKS!
+        prompt = f"""You are a HYPE BEAST writing for teens. This snack is the KEY to LOOKSMAXXING.
 
-TARGET AUDIENCE: Age {age} ({age_band} years old), tone: {tone} and POSITIVE!
+TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 
-🎭 RECURRING CHARACTER - CAPTAIN SPARKLE:
-Captain Sparkle is a superhero tooth who appears in EVERY comic. In celebrate mode, Captain Sparkle is THRILLED and acts like meeting a celebrity. Personality: Enthusiastic, celebratory, loves giving high-fives. Always wears a tiny superhero cape. Catchphrase: "Sparkle power!" Expression: excited, amazed, starstruck, triumphant.
+⚠️ CORE MESSAGE: This snack makes your teeth WHITE, CLEAN, and AESTHETIC.
+Teens don't care about "health" - they care about the GLOW UP.
 
-🌟 HEALTHY SNACKS IN PHOTO (they are HEROES!):
+🎭 RECURRING CHARACTER - DR. DRIP:
+He's giving out the "Glow Up" award. He's genuinely impressed.
+Look: Hype-beast molar with sunglasses, gold crown, fresh kicks, PRISTINE WHITE SHINE
+Expressions: "Sheesh!", "Immaculate vibes.", "No filter needed."
+Verdicts: "AESTHETIC" / "GLOW UP APPROVED" / "10/10 AURA"
+
+🌟 HEALTHY SNACKS (The Looksmaxxers):
 {snacks_context}
 
-🎉 CELEBRATION FACTS (integrate into praise, cite fact_id in citation_ids):
+💎 FACTS (The Beauty Secrets - cite fact_id):
 {facts_context}
 
-🎬 CELEBRATE MODE PANEL STRUCTURE:
+⚠️ CRITICAL: RE-FRAME ALL FACTS AS BEAUTY HACKS:
+- Fiber scrubs teeth = "Natural Whitening Strip"
+- No sugar = "Zero yellow stain risk"
+- Crunchy = "Built-in teeth scrubber"
+- Hydrating = "Keeps smile fresh and clean"
+- Vitamins = "Glow up fuel"
 
-PANEL 1 - HERO ENTRANCE (The Champion Arrives!)
-- Healthy snack enters like a SUPERSTAR (red carpet, spotlight, cheering)
-- Captain Sparkle is AMAZED: "Is that really YOU?!"
-- Snack has a cool superhero name and poses heroically
-- Set up the celebratory mood with confetti or sparkles
+🎬 PANEL STRUCTURE (The Glow Up Arc):
 
-PANEL 2 - SUPERPOWER REVEAL (Show Off the Powers!)
-- Snack demonstrates its AMAZING dental superpowers
-- Captain Sparkle takes notes excitedly (cite a celebration fact here)
-- Use power effects: glowing, sparkling, strength lines
-- Make the health benefits sound like actual superpowers!
+PANEL 1 - THE ENTRANCE
+- Healthy snack walks in looking clean/shiny (like it has a natural filter)
+- Snack literally GLOWS (sparkles, shine effects)
+- Dr. Drip: "Wait... is that a natural filter?"
+- Vibe: Aesthetic immediately detected
 
-PANEL 3 - TEAM UP (Best Friends!)
-- Captain Sparkle and snack do a team pose or high-five
-- Another celebration fact revealed (cite fact_id)
-- They discover they have matching powers or goals
-- Include a funny "best friends" moment
+PANEL 2 - THE STATS (The Beauty Secrets)
+- Snack reveals its beauty secrets (Natural scrubber, No stain risk)
+- "It literally whitens your teeth while you eat?"
+- Dr. Drip is impressed: "So you're basically a whitening kit I can eat?" (cite fact_id)
+- Visual: "Glow Up Stats" screen showing aesthetic benefits
 
-PANEL 4 - VICTORY CELEBRATION (Party Time!)
-- Epic victory pose with both characters
-- Captain Sparkle: "Sparkle power!" with confetti explosion
-- End with an invitation: "Eat more of me!"
-- Positive, exciting, makes healthy eating feel AWESOME
+PANEL 3 - THE GLAZE (The Hype)
+- Dr. Drip hypes up the aesthetic potential
+- "Your smile is gonna blind people. 10/10 Aura."
+- "That's main character energy fr."
+- Mutual respect moment (cite another fact_id if available)
 
-🎨 CELEBRATION TECHNIQUES (Use ALL of these):
-1. HERO TREATMENT: Red carpets, spotlights, trophies, medals
-2. POWER EFFECTS: Sparkles, glow, energy waves, strength lines
-3. TEAM BONDING: High-fives, fist bumps, friendship poses
-4. PARTY VIBES: Confetti, balloons, fireworks, cheering
+PANEL 4 - THE CROWN (The Glow Up Award)
+- Dr. Drip creates a frame with his hands (like taking a photo)
+- "No filter needed. Your smile is already unfiltered perfection."
+- Final verdict text overlay: "AESTHETIC" or "GLOW UP APPROVED"
+- Sparkles, shine effects, golden hour lighting
+
+🎨 LOOKSMAXXING TECHNIQUES:
+1. APPEARANCE WORDS: "White", "Clean", "Bright", "Sparkling", "Unfiltered", "Glowing"
+2. BEAUTY SLANG: "Glow up", "Aesthetic", "No filter needed", "Natural beauty hack"
+3. VANITY FLEX: "Hollywood smile", "Main character teeth", "Rizz-ready smile"
+4. VISUAL GLOW: Sparkles, shine effects, pristine white, golden hour lighting
 
 ⚠️ CRITICAL RULES FOR FACT CITATIONS:
 - citation_ids field = ONLY fact IDs like ["F025", "F027"]
@@ -597,12 +699,12 @@ PANEL 4 - VICTORY CELEBRATION (Party Time!)
 - The dialogue should naturally incorporate the fact's content WITHOUT mentioning the ID
 
 📝 OTHER RULES:
-- Every panel should feel like a CELEBRATION
-- Keep dialogue VERY SHORT: Maximum 2-3 brief lines per panel
+- Every panel should feel like a W (win)
+- Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
 - CRITICAL TEXT LIMITS: Each dialogue line must be under 40 characters, total per panel under 100 characters
-- Expressions: excited, amazed, proud, triumphant, starstruck
-- Props: capes, medals, trophies, confetti cannons, spotlights
-- NO negatives - everything is positive and awesome!
+- Expressions: impressed, respectful, hyped, triumphant, nodding
+- Props: sunglasses, gold crown, sneakers, trophy, stat screens
+- NO CRINGE - Keep it genuinely cool, not try-hard
 
 📋 REQUIRED JSON OUTPUT STRUCTURE:
 
@@ -612,27 +714,34 @@ Return your response as valid JSON with this EXACT structure:
   "panels": [
     {{
       "panel_number": 1,
-      "title": "Panel Title",
-      "dialogue": ["Line 1", "Line 2"],
+      "title": "The Entrance",
+      "dialogue": ["Wait... is that a natural filter?", "I literally GLOW."],
       "citation_ids": ["F025"],
       "characters": [
         {{
-          "name": "Character Name",
-          "item_id": "snack_id",
-          "expression": "excited",
+          "name": "Crunchy Apple Chad",
+          "item_id": "fruit_apple",
+          "expression": "glowing",
           "position": "left",
-          "props": ["cape", "medal"]
+          "props": ["sparkles", "shine effect", "pristine appearance"]
+        }},
+        {{
+          "name": "Dr. Drip",
+          "item_id": "recurring_tooth",
+          "expression": "impressed",
+          "position": "right",
+          "props": ["sunglasses", "gold crown", "fresh kicks", "pristine white shine"]
         }}
       ],
-      "visual_prompt": "Description of the scene",
-      "background": "celebration themed"
+      "visual_prompt": "Glowing apple character with sparkles enters scene. Pristine white molar tooth with sunglasses looks impressed. Golden hour lighting, aesthetic vibes.",
+      "background": "bright, clean, aesthetic setting with sparkle effects"
     }}
   ],
-  "summary_caption": "A celebratory one-liner (under 100 chars)",
+  "summary_caption": "A beauty-focused verdict (under 100 chars) - e.g. 'Glow Up Approved. No filter needed.'",
   "alt_text": "Accessibility description (1-2 sentences)"
 }}
 
-Make it a CELEBRATION of healthy eating!"""
+Make it about the GLOW UP. Make teens want that Hollywood smile."""
 
         try:
             response = await asyncio.to_thread(
@@ -682,9 +791,20 @@ Make it a CELEBRATION of healthy eating!"""
             try:
                 result = json.loads(response_text.strip())
             except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse celebrate script response: {e}")
-                logger.error(f"Raw response (first 1000 chars): {response_text[:1000]}")
-                raise ValueError(f"Gemini returned invalid JSON: {e}")
+                logger.warning(f"Initial celebrate JSON parse failed: {e}")
+                logger.warning(f"Raw response (first 500 chars): {response_text[:500]}")
+
+                # Attempt to repair truncated JSON
+                repaired = self._repair_json(response_text.strip())
+                if repaired:
+                    try:
+                        result = json.loads(repaired)
+                        logger.info("Celebrate JSON repair successful")
+                    except json.JSONDecodeError as e2:
+                        logger.error(f"Celebrate JSON repair failed: {e2}")
+                        raise ValueError(f"Gemini returned invalid JSON: {e}")
+                else:
+                    raise ValueError(f"Gemini returned invalid JSON: {e}")
 
             # Safety filter: Remove any fact IDs from dialogue
             import re
@@ -733,111 +853,110 @@ Make it a CELEBRATION of healthy eating!"""
         """
         Get a generic fallback script when no snacks are recognized.
 
-        Provides general dental health tips without specific snack references.
+        Provides general appearance/glow-up tips with DR. DRIP character.
+        Focused on VANITY (white teeth, aesthetic smile) not health.
 
         Args:
-            age: Child's age
+            age: User's age (9-17)
 
         Returns:
             Generic comic script with panels, caption, and alt text
         """
-        # Determine age band for tone
-        if age <= 5:
-            tone_adj = "simple"
-            brush_tip = "Brush twice a day!"
-            water_tip = "Drink lots of water!"
-        elif age <= 8:
-            tone_adj = "fun"
-            brush_tip = "Brush for 2 whole minutes!"
-            water_tip = "Water is your teeth's best friend!"
+        # Determine age band: 9-12 (Spicy) or 13-17 (Savage)
+        if age <= 12:
+            tone_adj = "spicy"
+            brush_tip = "2 mins, twice a day. Keeps teeth WHITE."
+            water_tip = "Water washes away the stain. No yellow."
+            outro = "Now you know the glow up secrets!"
         else:
-            tone_adj = "cool"
-            brush_tip = "2 minutes, twice daily - that's the pro move!"
-            water_tip = "Hydration = healthy smile game!"
+            tone_adj = "savage"
+            brush_tip = "2 mins, twice daily. Unless you want yellow teeth."
+            water_tip = "Hydration = no stains. Water mogs soda aesthetically."
+            outro = "Glow up knowledge unlocked. You're welcome."
 
         return {
             "panels": [
                 {
                     "panel_number": 1,
-                    "title": "Captain Sparkle's Daily Patrol",
+                    "title": "Dr. Drip Enters",
                     "dialogue": [
-                        "Hey there! Captain Sparkle here!",
-                        "Ready for some tooth wisdom?"
+                        "Yo. Dr. Drip here.",
+                        "Let me drop some glow up secrets."
                     ],
                     "citation_ids": [],
                     "characters": [
                         {
-                            "name": "Captain Sparkle",
+                            "name": "Dr. Drip",
                             "item_id": "recurring_tooth",
-                            "expression": "excited",
+                            "expression": "cool",
                             "position": "center",
-                            "props": ["superhero cape", "sparkle wand"]
+                            "props": ["sunglasses", "gold crown", "fresh kicks", "pristine white shine"]
                         }
                     ],
-                    "visual_prompt": f"Friendly superhero tooth character in {tone_adj} style, waving hello with sparkles around",
-                    "background": "bright cheerful sky"
+                    "visual_prompt": f"Pristine white molar tooth with sunglasses, gold crown, and sneakers in {tone_adj} style, literally glowing, looking directly at viewer",
+                    "background": "aesthetic gradient with sparkle effects"
                 },
                 {
                     "panel_number": 2,
-                    "title": "The Brushing Power",
+                    "title": "The White Teeth Hack",
                     "dialogue": [
                         brush_tip,
-                        "That's how we fight the cavity crew!"
+                        "That's the unfiltered smile strat."
                     ],
                     "citation_ids": [],
                     "characters": [
                         {
-                            "name": "Captain Sparkle",
+                            "name": "Dr. Drip",
                             "item_id": "recurring_tooth",
-                            "expression": "determined",
+                            "expression": "smug",
                             "position": "left",
-                            "props": ["superhero cape", "giant toothbrush"]
+                            "props": ["sunglasses", "gold crown", "toothbrush sword", "sparkle effect"]
                         }
                     ],
-                    "visual_prompt": "Tooth superhero demonstrating brushing with oversized sparkly toothbrush",
-                    "background": "bathroom with sparkles"
+                    "visual_prompt": "Pristine white tooth character wielding toothbrush like a sword, teeth literally sparkling, dramatic pose",
+                    "background": "clean neon bathroom with mirror showing bright smile"
                 },
                 {
                     "panel_number": 3,
-                    "title": "Hydration Station",
+                    "title": "The No-Stain Move",
                     "dialogue": [
                         water_tip,
-                        "It washes away sneaky sugar!"
+                        "Yellow teeth = cooked. Water = glow up."
                     ],
                     "citation_ids": [],
                     "characters": [
                         {
-                            "name": "Captain Sparkle",
+                            "name": "Dr. Drip",
                             "item_id": "recurring_tooth",
-                            "expression": "happy",
+                            "expression": "nodding",
                             "position": "right",
-                            "props": ["superhero cape", "water bottle"]
+                            "props": ["sunglasses", "gold crown", "water bottle", "pristine white shine"]
                         }
                     ],
-                    "visual_prompt": "Tooth superhero drinking water with refreshing splash effects",
-                    "background": "water droplets and sparkles"
+                    "visual_prompt": "Pristine white tooth character holding water bottle, refreshing sparkle effects around the smile",
+                    "background": "clean aesthetic with crystal water splash effects"
                 },
                 {
                     "panel_number": 4,
-                    "title": "Sparkle Power!",
+                    "title": "The Verdict",
                     "dialogue": [
-                        "Now YOU have the power!",
-                        "Sparkle power!"
+                        outro,
+                        "No filter needed. ✌️"
                     ],
                     "citation_ids": [],
                     "characters": [
                         {
-                            "name": "Captain Sparkle",
+                            "name": "Dr. Drip",
                             "item_id": "recurring_tooth",
                             "expression": "triumphant",
                             "position": "center",
-                            "props": ["superhero cape", "sparkle trail"]
+                            "props": ["sunglasses", "gold crown", "fresh kicks", "peace sign", "sparkle effects"]
                         }
                     ],
-                    "visual_prompt": "Tooth superhero in triumphant pose with sparkle explosion and cape billowing",
-                    "background": "celebration with confetti"
+                    "visual_prompt": "Pristine white tooth character doing peace sign, Hollywood smile energy, walking away with sparkles",
+                    "background": "golden hour lighting with aesthetic glow"
                 }
             ],
-            "summary_caption": "Captain Sparkle shares the secrets to a super smile!",
-            "alt_text": "A 4-panel comic featuring Captain Sparkle, a superhero tooth, sharing dental health tips about brushing and drinking water."
+            "summary_caption": "Dr. Drip drops the glow up secrets. No filter needed.",
+            "alt_text": "A 4-panel comic featuring Dr. Drip, a pristine white molar tooth with sunglasses and gold crown, sharing appearance tips about keeping teeth white and aesthetic."
         }
