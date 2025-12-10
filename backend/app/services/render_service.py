@@ -15,9 +15,22 @@ from app.services.image_service import ImageService
 
 logger = logging.getLogger(__name__)
 
+# Emotion-based bubble styles for speech bubble rendering
+# Maps emotion type to visual style properties
+BUBBLE_STYLES = {
+    "speech": {"shape": "oval", "outline": "black", "fill": "white"},
+    "thought": {"shape": "cloud", "outline": "gray", "fill": "white"},
+    "exclaim": {"shape": "spiky", "outline": "#cc0000", "fill": "#ffff99"},
+    "angry": {"shape": "jagged", "outline": "#8b0000", "fill": "#ffcccc"},
+    "whisper": {"shape": "dashed", "outline": "gray", "fill": "#f0f0f0"},
+}
+
 
 class RenderService:
     """Service for rendering comics from scripts."""
+
+    # Feature flag for AI bubble detection (set to False to always use PIL fallback)
+    USE_AI_BUBBLE_DETECTION = True
 
     def __init__(
         self,
@@ -25,12 +38,14 @@ class RenderService:
         nanobana_service: NanoBananaService = None,
         freepik_service: FreepikService = None,
         image_service: ImageService = None,
+        gemini_service=None,  # Optional: for bubble detection
     ):
         """Initialize render service."""
         self.settings = settings
         self.nanobana = nanobana_service or NanoBananaService(settings)
         self.freepik = freepik_service or FreepikService(settings)
         self.image_service = image_service or ImageService(settings)
+        self.gemini = gemini_service  # Lazy load if needed
 
         self.storage_path = Path(settings.storage_path)
         self.renders_path = self.storage_path / "renders"
@@ -539,12 +554,17 @@ class RenderService:
         width: int,
         height: int,
         tail_direction: str = "center",
+        emotion: str = "speech",
     ) -> None:
         """
-        Draw a speech bubble with tail pointing toward characters.
+        Draw an emotion-appropriate speech bubble with tail.
 
-        Since AI can't reliably create empty bubbles, PIL draws them directly.
-        This ensures consistent, clean bubbles without garbled AI text.
+        Supports different bubble styles based on emotion:
+        - speech: Standard oval bubble (white, black outline)
+        - thought: Cloud-like bubble with small circles as tail
+        - exclaim: Spiky starburst bubble (yellow, red outline)
+        - angry: Jagged irregular bubble (light red, dark red outline)
+        - whisper: Dashed outline bubble (light gray)
 
         Args:
             draw: PIL ImageDraw object
@@ -553,43 +573,307 @@ class RenderService:
             width: Bubble width
             height: Bubble height
             tail_direction: Direction of tail ("left", "center", "right")
+            emotion: Bubble emotion style
         """
-        # Draw main bubble ellipse - white fill with black outline
+        style = BUBBLE_STYLES.get(emotion, BUBBLE_STYLES["speech"])
+
+        if style["shape"] == "oval":
+            self._draw_oval_bubble(draw, x, y, width, height, style, tail_direction)
+        elif style["shape"] == "cloud":
+            self._draw_cloud_bubble(draw, x, y, width, height, style, tail_direction)
+        elif style["shape"] == "spiky":
+            self._draw_spiky_bubble(draw, x, y, width, height, style, tail_direction)
+        elif style["shape"] == "jagged":
+            self._draw_jagged_bubble(draw, x, y, width, height, style, tail_direction)
+        elif style["shape"] == "dashed":
+            self._draw_dashed_bubble(draw, x, y, width, height, style, tail_direction)
+        else:
+            # Default to oval
+            self._draw_oval_bubble(draw, x, y, width, height, style, tail_direction)
+
+    def _draw_oval_bubble(
+        self,
+        draw: ImageDraw.ImageDraw,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        style: dict,
+        tail_direction: str,
+    ) -> None:
+        """Draw standard oval speech bubble."""
+        fill = style.get("fill", "white")
+        outline = style.get("outline", "black")
+
+        # Draw main bubble ellipse
         draw.ellipse(
             [x, y, x + width, y + height],
-            fill="white",
-            outline="black",
+            fill=fill,
+            outline=outline,
             width=3
         )
 
-        # Calculate tail position based on direction
+        # Calculate tail position
         if tail_direction == "left":
             tail_x = x + width // 4
         elif tail_direction == "right":
             tail_x = x + 3 * width // 4
-        else:  # center
+        else:
             tail_x = x + width // 2
 
-        # Draw tail triangle pointing down toward characters
-        # The tail connects the bubble to the characters below
-        tail_base_y = y + height - 8  # Slightly inside bubble for overlap
-        tail_tip_y = y + height + int(height * 0.25)  # 25% below bubble
+        # Draw tail triangle
+        tail_base_y = y + height - 8
+        tail_tip_y = y + height + int(height * 0.25)
 
         tail_points = [
-            (tail_x - 12, tail_base_y),  # Left point of tail base
-            (tail_x + 12, tail_base_y),  # Right point of tail base
-            (tail_x, tail_tip_y),        # Tip of tail pointing down
+            (tail_x - 12, tail_base_y),
+            (tail_x + 12, tail_base_y),
+            (tail_x, tail_tip_y),
         ]
 
-        # Draw tail with same styling as bubble
-        draw.polygon(tail_points, fill="white", outline="black", width=2)
-
-        # Cover the outline where tail meets bubble (clean connection)
+        draw.polygon(tail_points, fill=fill, outline=outline, width=2)
         draw.line(
             [(tail_x - 10, tail_base_y), (tail_x + 10, tail_base_y)],
-            fill="white",
+            fill=fill,
             width=5
         )
+
+    def _draw_cloud_bubble(
+        self,
+        draw: ImageDraw.ImageDraw,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        style: dict,
+        tail_direction: str,
+    ) -> None:
+        """Draw thought bubble with cloud-like shape."""
+        fill = style.get("fill", "white")
+        outline = style.get("outline", "gray")
+
+        # Draw overlapping circles to create cloud effect
+        cx = x + width // 2
+        cy = y + height // 2
+        r_main = min(width, height) // 2
+
+        # Main center ellipse
+        draw.ellipse(
+            [cx - r_main, cy - r_main // 2, cx + r_main, cy + r_main // 2],
+            fill=fill,
+            outline=outline,
+            width=2
+        )
+
+        # Bumps around the edges
+        bump_positions = [
+            (cx - r_main * 0.7, cy - r_main * 0.3, r_main * 0.4),
+            (cx + r_main * 0.7, cy - r_main * 0.3, r_main * 0.4),
+            (cx - r_main * 0.5, cy + r_main * 0.2, r_main * 0.35),
+            (cx + r_main * 0.5, cy + r_main * 0.2, r_main * 0.35),
+            (cx, cy - r_main * 0.4, r_main * 0.45),
+        ]
+
+        for bx, by, br in bump_positions:
+            draw.ellipse(
+                [int(bx - br), int(by - br), int(bx + br), int(by + br)],
+                fill=fill,
+                outline=outline,
+                width=2
+            )
+
+        # Thought bubble tail - small circles leading down
+        if tail_direction == "left":
+            tail_x = x + width // 4
+        elif tail_direction == "right":
+            tail_x = x + 3 * width // 4
+        else:
+            tail_x = x + width // 2
+
+        # Three decreasing circles for tail
+        tail_y = y + height
+        for i, r in enumerate([8, 5, 3]):
+            draw.ellipse(
+                [tail_x - r, tail_y + i * 12 - r, tail_x + r, tail_y + i * 12 + r],
+                fill=fill,
+                outline=outline,
+                width=2
+            )
+
+    def _draw_spiky_bubble(
+        self,
+        draw: ImageDraw.ImageDraw,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        style: dict,
+        tail_direction: str,
+    ) -> None:
+        """Draw starburst/spiky bubble for exclamations."""
+        import math
+
+        fill = style.get("fill", "#ffff99")
+        outline = style.get("outline", "#cc0000")
+
+        cx = x + width // 2
+        cy = y + height // 2
+
+        # Create starburst polygon
+        points = []
+        num_spikes = 12
+        outer_r = min(width, height) // 2
+        inner_r = outer_r * 0.7
+
+        for i in range(num_spikes * 2):
+            angle = math.pi * i / num_spikes - math.pi / 2
+            r = outer_r if i % 2 == 0 else inner_r
+            px = cx + r * math.cos(angle)
+            py = cy + r * math.sin(angle) * (height / width)  # Adjust for aspect ratio
+            points.append((int(px), int(py)))
+
+        draw.polygon(points, fill=fill, outline=outline, width=3)
+
+        # Add tail
+        if tail_direction == "left":
+            tail_x = x + width // 4
+        elif tail_direction == "right":
+            tail_x = x + 3 * width // 4
+        else:
+            tail_x = x + width // 2
+
+        tail_base_y = y + height - 5
+        tail_tip_y = y + height + int(height * 0.3)
+
+        tail_points = [
+            (tail_x - 15, tail_base_y),
+            (tail_x + 15, tail_base_y),
+            (tail_x, tail_tip_y),
+        ]
+
+        draw.polygon(tail_points, fill=fill, outline=outline, width=2)
+
+    def _draw_jagged_bubble(
+        self,
+        draw: ImageDraw.ImageDraw,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        style: dict,
+        tail_direction: str,
+    ) -> None:
+        """Draw jagged/irregular bubble for anger."""
+        import math
+        import random
+
+        random.seed(42)  # Consistent jaggedness
+
+        fill = style.get("fill", "#ffcccc")
+        outline = style.get("outline", "#8b0000")
+
+        # Create irregular polygon with sharp edges
+        points = []
+        num_points = 16
+        cx = x + width // 2
+        cy = y + height // 2
+
+        for i in range(num_points):
+            angle = 2 * math.pi * i / num_points - math.pi / 2
+            # Vary radius randomly for jagged effect
+            base_r = min(width, height) // 2
+            r = base_r * (0.75 + random.random() * 0.4)
+            px = cx + r * math.cos(angle)
+            py = cy + r * math.sin(angle) * (height / width)
+            points.append((int(px), int(py)))
+
+        draw.polygon(points, fill=fill, outline=outline, width=3)
+
+        # Sharp angular tail
+        if tail_direction == "left":
+            tail_x = x + width // 4
+        elif tail_direction == "right":
+            tail_x = x + 3 * width // 4
+        else:
+            tail_x = x + width // 2
+
+        tail_base_y = y + height - 8
+        tail_tip_y = y + height + int(height * 0.35)
+
+        # Jagged tail with extra point
+        tail_points = [
+            (tail_x - 18, tail_base_y),
+            (tail_x - 5, tail_base_y + 10),
+            (tail_x, tail_tip_y),
+            (tail_x + 5, tail_base_y + 8),
+            (tail_x + 18, tail_base_y),
+        ]
+
+        draw.polygon(tail_points, fill=fill, outline=outline, width=2)
+
+    def _draw_dashed_bubble(
+        self,
+        draw: ImageDraw.ImageDraw,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        style: dict,
+        tail_direction: str,
+    ) -> None:
+        """Draw dashed outline bubble for whispers."""
+        import math
+
+        fill = style.get("fill", "#f0f0f0")
+        outline = style.get("outline", "gray")
+
+        # Draw filled ellipse first
+        draw.ellipse(
+            [x, y, x + width, y + height],
+            fill=fill,
+        )
+
+        # Draw dashed outline manually
+        cx = x + width // 2
+        cy = y + height // 2
+        rx = width // 2
+        ry = height // 2
+
+        # Draw dashes around ellipse
+        num_dashes = 24
+        dash_len = 0.7  # Fraction of segment that's visible
+
+        for i in range(num_dashes):
+            angle1 = 2 * math.pi * i / num_dashes
+            angle2 = 2 * math.pi * (i + dash_len) / num_dashes
+
+            x1 = cx + rx * math.cos(angle1)
+            y1 = cy + ry * math.sin(angle1)
+            x2 = cx + rx * math.cos(angle2)
+            y2 = cy + ry * math.sin(angle2)
+
+            draw.line([(int(x1), int(y1)), (int(x2), int(y2))], fill=outline, width=2)
+
+        # Dashed tail
+        if tail_direction == "left":
+            tail_x = x + width // 4
+        elif tail_direction == "right":
+            tail_x = x + 3 * width // 4
+        else:
+            tail_x = x + width // 2
+
+        tail_base_y = y + height - 5
+        tail_tip_y = y + height + int(height * 0.2)
+
+        # Draw dashed lines for tail
+        for i in range(3):
+            y_start = tail_base_y + i * 8
+            y_end = min(y_start + 5, tail_tip_y)
+            draw.line(
+                [(tail_x - 8 + i * 4, y_start), (tail_x - 4 + i * 4, y_end)],
+                fill=outline,
+                width=2
+            )
 
     async def _detect_bubbles_with_vision(
         self,
@@ -773,6 +1057,193 @@ Rules:
         wrapped = self._wrap_text(text, font, available_width)
         return (min_font_size, wrapped[:3])  # Truncate to 3 lines max
 
+    async def _try_detect_bubbles(
+        self,
+        image_path: Path,
+        panels_with_dialogue: list[int],
+        max_retries: int = 1,
+    ) -> dict[int, dict] | None:
+        """
+        Try to detect bubble positions with retry logic.
+
+        Detection cascade:
+        1. Gemini Vision (most accurate, ~1 API call)
+        2. OpenCV contour detection (fast, no cost)
+        3. Return None to trigger PIL fallback
+
+        Args:
+            image_path: Path to comic image
+            panels_with_dialogue: List of panel indices that have dialogue
+            max_retries: Number of retries for Gemini Vision
+
+        Returns:
+            Dict of detected bubbles or None if detection fails
+        """
+        # Check if detection is enabled and service available
+        if not self.USE_AI_BUBBLE_DETECTION:
+            logger.info("AI bubble detection disabled, using PIL fallback")
+            return None
+
+        # Lazy load Gemini service if needed
+        if self.gemini is None:
+            try:
+                from app.services.gemini_service import GeminiService
+                self.gemini = GeminiService(self.settings)
+                logger.info("Lazy-loaded GeminiService for bubble detection")
+            except Exception as e:
+                logger.warning(f"Could not load GeminiService: {e}")
+                return None
+
+        # Try Gemini Vision detection with retries
+        for attempt in range(max_retries + 1):
+            try:
+                bubble_positions = await self.gemini.detect_speech_bubbles(str(image_path))
+
+                if bubble_positions:
+                    # Check if we detected bubbles for most panels with dialogue
+                    detected_panels = set(bubble_positions.keys())
+                    needed_panels = set(panels_with_dialogue)
+                    coverage = len(detected_panels & needed_panels) / len(needed_panels) if needed_panels else 0
+
+                    if coverage >= 0.5:  # At least 50% coverage
+                        logger.info(f"Gemini Vision detection successful: {len(bubble_positions)} bubbles ({coverage:.0%} coverage)")
+                        return bubble_positions
+                    else:
+                        logger.warning(f"Low bubble coverage ({coverage:.0%}), retry or fallback")
+
+            except Exception as e:
+                logger.warning(f"Gemini Vision detection attempt {attempt + 1} failed: {e}")
+
+            if attempt < max_retries:
+                logger.info(f"Retrying bubble detection ({attempt + 1}/{max_retries})")
+
+        # Try OpenCV fallback
+        logger.info("Trying OpenCV contour detection as fallback")
+        try:
+            img = Image.open(image_path)
+            img_width, img_height = img.size
+            panel_height = img_height // 4
+
+            opencv_bubbles = {}
+            for panel_idx in panels_with_dialogue:
+                panel_y = panel_idx * panel_height
+                bbox = self._detect_bubble_boundaries(img, 0, panel_y, img_width, panel_height)
+                if bbox:
+                    x1, y1, x2, y2 = bbox
+                    opencv_bubbles[panel_idx] = {
+                        "bbox": [x1, y1, x2, y2],
+                        "center": [(x1 + x2) // 2, (y1 + y2) // 2],
+                        "style": "round",
+                        "confidence": 0.7,
+                    }
+
+            if opencv_bubbles:
+                logger.info(f"OpenCV detected {len(opencv_bubbles)} bubbles")
+                return opencv_bubbles
+
+        except Exception as e:
+            logger.warning(f"OpenCV detection failed: {e}")
+
+        logger.info("All detection methods failed, will use PIL fallback")
+        return None
+
+    async def _place_text_in_detected_bubbles(
+        self,
+        img: Image.Image,
+        draw: ImageDraw.ImageDraw,
+        script: dict[str, Any],
+        bubble_positions: dict[int, dict],
+        output_path: Path,
+    ) -> Path:
+        """
+        Place dialogue text inside detected bubble regions.
+
+        This method is used when bubbles are detected in the AI-generated image,
+        so we only need to add text without drawing new bubbles.
+
+        Args:
+            img: PIL Image object
+            draw: PIL ImageDraw object
+            script: Comic script with dialogue
+            bubble_positions: Dict mapping panel index to bubble info
+            output_path: Where to save the result
+
+        Returns:
+            Path to image with text overlay
+        """
+        panels = script.get("panels", [])
+
+        for panel_idx, bubble in bubble_positions.items():
+            if panel_idx >= len(panels):
+                continue
+
+            panel = panels[panel_idx]
+            dialogue = panel.get("dialogue", [])
+
+            if not dialogue:
+                continue
+
+            # Get bubble bounding box
+            bbox = bubble.get("bbox", [0, 0, 100, 50])
+            x1, y1, x2, y2 = bbox
+
+            # Calculate text area with padding inside bubble
+            padding = 10
+            text_area_width = (x2 - x1) - (padding * 2)
+            text_area_height = (y2 - y1) - (padding * 2)
+
+            if text_area_width <= 0 or text_area_height <= 0:
+                logger.warning(f"Panel {panel_idx}: Invalid bubble bbox, skipping")
+                continue
+
+            # Combine dialogue
+            full_dialogue = " ".join(dialogue)
+
+            # Fit text to detected bubble size
+            font_size, wrapped_lines = self._fit_text_to_bubble(
+                full_dialogue,
+                text_area_width,
+                text_area_height,
+                max_font_size=18,
+                min_font_size=10,
+            )
+
+            # Load font
+            try:
+                font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Comic Sans MS.ttf", font_size)
+            except:
+                try:
+                    font = ImageFont.truetype("/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf", font_size)
+                except:
+                    font = ImageFont.load_default()
+
+            # Calculate text positioning (centered in bubble)
+            line_height = font_size + 4
+            total_text_height = len(wrapped_lines) * line_height
+            text_start_y = y1 + padding + (text_area_height - total_text_height) // 2
+
+            # Draw text with slight shadow for readability
+            for k, wrapped_line in enumerate(wrapped_lines):
+                text_bbox = draw.textbbox((0, 0), wrapped_line, font=font)
+                text_width = text_bbox[2] - text_bbox[0]
+
+                # Center horizontally
+                text_x = x1 + padding + (text_area_width - text_width) // 2
+                text_y = text_start_y + (k * line_height)
+
+                # Draw shadow (1px offset)
+                draw.text((text_x + 1, text_y + 1), wrapped_line, font=font, fill="#333333")
+                # Draw main text
+                draw.text((text_x, text_y), wrapped_line, font=font, fill="black")
+
+            logger.info(f"Panel {panel_idx}: Placed text in detected bubble at ({x1},{y1})-({x2},{y2})")
+
+        # Save result
+        img.save(output_path, 'PNG', quality=95)
+        logger.info(f"Text placement in detected bubbles complete: {output_path}")
+
+        return output_path
+
     async def _add_text_overlay(
         self,
         base_image_path: Path,
@@ -782,16 +1253,13 @@ Rules:
         """
         Add speech bubbles and text overlay to comic image.
 
-        Since AI cannot reliably create empty bubbles (generates garbled text),
-        PIL now draws the bubbles directly in a fixed position (top 20% of each panel).
-
-        This approach:
-        1. Calculates fixed bubble position in top 20% of panel
-        2. Draws clean speech bubble with tail
-        3. Adds text centered inside the bubble
+        Uses intelligent detection cascade:
+        1. Try Gemini Vision to detect existing bubbles
+        2. Try OpenCV contour detection
+        3. Fall back to PIL bubble drawing if detection fails
 
         Args:
-            base_image_path: Path to base comic image (from AI - no bubbles)
+            base_image_path: Path to base comic image
             script: Comic script with dialogue
             output_path: Where to save the result
 
@@ -811,6 +1279,23 @@ Rules:
             panel_height = img_height // 4  # Divide height by 4 panels
 
             panels = script.get("panels", [])
+
+            # Find which panels have dialogue
+            panels_with_dialogue = [i for i, p in enumerate(panels[:4]) if p.get("dialogue")]
+
+            # Try detection cascade
+            detected_bubbles = await self._try_detect_bubbles(
+                base_image_path, panels_with_dialogue
+            )
+
+            if detected_bubbles:
+                logger.info(f"Using detected bubbles for {len(detected_bubbles)} panels")
+                # Place text in detected bubbles (no bubble drawing needed)
+                return await self._place_text_in_detected_bubbles(
+                    img, draw, script, detected_bubbles, output_path
+                )
+
+            # Fall back to PIL bubble drawing
             logger.info(f"Script has {len(panels)} panels - PIL will draw bubbles (1x4 vertical layout)")
 
             for i, panel in enumerate(panels):
@@ -835,12 +1320,15 @@ Rules:
                 bubble_width = x2 - x1
                 bubble_height = y2 - y1
 
+                # Get emotion for bubble style (default to "speech" if not specified)
+                emotion = panel.get("emotion", "speech")
+
                 # DRAW the speech bubble (PIL draws it, not AI)
                 # Alternate tail direction for visual variety
                 tail_dir = "left" if i % 2 == 0 else "right"
-                self._draw_speech_bubble(draw, x1, y1, bubble_width, bubble_height, tail_dir)
+                self._draw_speech_bubble(draw, x1, y1, bubble_width, bubble_height, tail_dir, emotion)
 
-                logger.info(f"Panel {i+1}: Drew bubble at ({x1},{y1}) size {bubble_width}x{bubble_height}")
+                logger.info(f"Panel {i+1}: Drew {emotion} bubble at ({x1},{y1}) size {bubble_width}x{bubble_height}")
 
                 # Combine all dialogue into single text block
                 full_dialogue = " ".join(dialogue)
@@ -1065,9 +1553,8 @@ Rules:
         """
         Generate multiple export formats from 1x4 vertical strip.
 
-        Base image is 512×1024 (1:2 ratio).
-        Square export REARRANGES to 2x2 grid showing all 4 panels.
-        Portrait/Reel exports scale the vertical strip directly.
+        Dynamically calculates dimensions based on actual base image size
+        to preserve aspect ratio. Uses letterboxing/pillarboxing as needed.
 
         Args:
             base_image_path: Path to base comic image (1x4 vertical strip)
@@ -1081,43 +1568,51 @@ Rules:
 
         logger.info(f"Generating export formats from {base_w}x{base_h} vertical strip")
 
-        # Square (1080x1080) - REARRANGE to 2x2 grid, then scale
-        # This shows all 4 panels in a traditional comic layout
+        # Square (1080x1080) - REARRANGE to 2x2 grid, then scale-to-fit with letterboxing
         square_path = self.renders_path / f"{content_id}_square.png"
-        grid = self._rearrange_to_grid(img)  # Creates 1024×512 grid from 512×1024 strip
-        square_img = grid.resize((1080, 1080), Image.Resampling.LANCZOS)
+        grid = self._rearrange_to_grid(img)
+        grid_w, grid_h = grid.size
+        target_size = 1080
+        # Scale to fit within square while preserving aspect ratio
+        scale = min(target_size / grid_w, target_size / grid_h)
+        scaled_w = int(grid_w * scale)
+        scaled_h = int(grid_h * scale)
+        scaled_grid = grid.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
+        # Center on dark background
+        square_img = Image.new('RGB', (target_size, target_size), color='#1a1a1a')
+        paste_x = (target_size - scaled_w) // 2
+        paste_y = (target_size - scaled_h) // 2
+        square_img.paste(scaled_grid, (paste_x, paste_y))
         square_img.save(square_path, 'PNG', quality=95)
-        logger.info(f"Square export: rearranged to 2x2 grid, saved {square_path.name}")
+        logger.info(f"Square export: grid {grid_w}x{grid_h} scaled to {scaled_w}x{scaled_h}, saved {square_path.name}")
 
-        # Portrait (1080x1350) - Scale 1x4 strip to fit HEIGHT, add pillarboxing
-        # Show ALL 4 panels with bars on sides if needed
+        # Portrait (1080x1350) - Scale to fit within canvas, preserve aspect ratio
         portrait_path = self.renders_path / f"{content_id}_portrait.png"
-        # Scale to fit within 1350 height (maintaining 1:2 ratio)
-        # Height 1350 → width would be 675
-        scaled_w = 675
-        scaled_h = 1350
+        target_w, target_h = 1080, 1350
+        scale = min(target_w / base_w, target_h / base_h)
+        scaled_w = int(base_w * scale)
+        scaled_h = int(base_h * scale)
         scaled = img.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
-        # Create canvas with dark background, center the comic
-        portrait_img = Image.new('RGB', (1080, 1350), color='#1a1a1a')
-        paste_x = (1080 - scaled_w) // 2  # Center horizontally
-        portrait_img.paste(scaled, (paste_x, 0))
+        portrait_img = Image.new('RGB', (target_w, target_h), color='#1a1a1a')
+        paste_x = (target_w - scaled_w) // 2
+        paste_y = (target_h - scaled_h) // 2
+        portrait_img.paste(scaled, (paste_x, paste_y))
         portrait_img.save(portrait_path, 'PNG', quality=95)
-        logger.info(f"Portrait export: scaled to fit with pillarboxing, saved {portrait_path.name}")
+        logger.info(f"Portrait export: {base_w}x{base_h} scaled to {scaled_w}x{scaled_h}, saved {portrait_path.name}")
 
-        # Reel (1080x1920) - Scale 1x4 strip to fit HEIGHT, add pillarboxing
-        # Show ALL 4 panels with bars on sides if needed
+        # Reel (1080x1920) - Scale to fit within canvas, preserve aspect ratio
         reel_path = self.renders_path / f"{content_id}_reel.png"
-        # Scale to fit within 1920 height (maintaining 1:2 ratio)
-        # Height 1920 → width would be 960
-        scaled_w = 960
-        scaled_h = 1920
+        target_w, target_h = 1080, 1920
+        scale = min(target_w / base_w, target_h / base_h)
+        scaled_w = int(base_w * scale)
+        scaled_h = int(base_h * scale)
         scaled = img.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
-        # Create canvas with dark background, center the comic
-        reel_img = Image.new('RGB', (1080, 1920), color='#1a1a1a')
-        paste_x = (1080 - scaled_w) // 2  # Center horizontally (60px on each side)
-        reel_img.paste(scaled, (paste_x, 0))
+        reel_img = Image.new('RGB', (target_w, target_h), color='#1a1a1a')
+        paste_x = (target_w - scaled_w) // 2
+        paste_y = (target_h - scaled_h) // 2
+        reel_img.paste(scaled, (paste_x, paste_y))
         reel_img.save(reel_path, 'PNG', quality=95)
-        logger.info(f"Reel export: scaled to fit with pillarboxing, saved {reel_path.name}")
+        logger.info(f"Reel export: {base_w}x{base_h} scaled to {scaled_w}x{scaled_h}, saved {reel_path.name}")
 
         logger.info(f"Generated all export formats for {content_id}")
 

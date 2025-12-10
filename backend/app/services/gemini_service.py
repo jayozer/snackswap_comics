@@ -382,7 +382,14 @@ PANEL 4 - THE VIBE CHECK (The Glow Up Switch)
 - Props: sunglasses, gold chains, sneakers, "L" signs, sweat drops
 - NO PREACHING - Don't sound like a dentist. Sound like a hater with dental knowledge.
 
-EXAMPLE PANEL (showing VANITY roast + citations done RIGHT):
+🎤 SPEECH BUBBLE EMOTIONS (Required per panel):
+Specify the "emotion" for each panel's speech bubble style:
+- Panel 1 (THE FLEX): "speech" - normal confident talking
+- Panel 2 (THE EXPOSÉ): "exclaim" - dramatic reveal, starburst bubble
+- Panel 3 (THE RATIO): "angry" - destruction mode, jagged bubble
+- Panel 4 (THE VIBE CHECK): "speech" - resolution, normal bubble
+
+EXAMPLE PANEL (showing VANITY roast + citations + emotion done RIGHT):
 
 {{
   "panel_number": 2,
@@ -392,6 +399,7 @@ EXAMPLE PANEL (showing VANITY roast + citations done RIGHT):
     "That's negative aura detected.",
     "But I taste good!"
   ],
+  "emotion": "exclaim",
   "citation_ids": ["F002"],
   "characters": [
     {{
@@ -419,7 +427,8 @@ Return your response as valid JSON with this EXACT structure:
 
 {{
   "panels": [
-    // Array of 4 panels, each following the structure shown above
+    // Array of 4 panels, each with: panel_number, title, dialogue, emotion, citation_ids, characters, visual_prompt, background
+    // emotion REQUIRED: "speech" (panels 1,4), "exclaim" (panel 2), "angry" (panel 3)
   ],
   "summary_caption": "A vanity-focused verdict (under 100 chars) - e.g. 'Your smile is COOKED'",
   "alt_text": "Accessibility description for screen readers (1-2 sentences)"
@@ -742,6 +751,13 @@ PANEL 4 - THE CROWN (The Glow Up Award)
 - Props: sunglasses, gold crown, sneakers, trophy, stat screens
 - NO CRINGE - Keep it genuinely cool, not try-hard
 
+🎤 SPEECH BUBBLE EMOTIONS (Required per panel):
+Specify the "emotion" for each panel's speech bubble style:
+- Panel 1 (THE ENTRANCE): "speech" - confident entrance
+- Panel 2 (THE STATS): "exclaim" - impressed by beauty secrets
+- Panel 3 (THE GLAZE): "speech" - hype moment
+- Panel 4 (THE CROWN): "exclaim" - triumphant coronation
+
 📋 REQUIRED JSON OUTPUT STRUCTURE:
 
 Return your response as valid JSON with this EXACT structure:
@@ -752,6 +768,7 @@ Return your response as valid JSON with this EXACT structure:
       "panel_number": 1,
       "title": "The Entrance",
       "dialogue": ["Wait... is that a natural filter?", "I literally GLOW."],
+      "emotion": "speech",
       "citation_ids": ["F025"],
       "characters": [
         {{
@@ -772,6 +789,7 @@ Return your response as valid JSON with this EXACT structure:
       "visual_prompt": "Glowing apple character with sparkles enters scene. Pristine white molar tooth with sunglasses looks impressed. Golden hour lighting, aesthetic vibes.",
       "background": "bright, clean, aesthetic setting with sparkle effects"
     }}
+    // ... panels 2-4 with emotion: "exclaim", "speech", "exclaim" respectively
   ],
   "summary_caption": "A beauty-focused verdict (under 100 chars) - e.g. 'Glow Up Approved. No filter needed.'",
   "alt_text": "Accessibility description (1-2 sentences)"
@@ -949,6 +967,7 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                         "Yo. Dr. Drip here.",
                         "Let me drop some glow up secrets."
                     ],
+                    "emotion": "speech",
                     "citation_ids": [],
                     "characters": [
                         {
@@ -969,6 +988,7 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                         brush_tip,
                         "That's the unfiltered smile strat."
                     ],
+                    "emotion": "exclaim",
                     "citation_ids": [],
                     "characters": [
                         {
@@ -989,6 +1009,7 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                         water_tip,
                         "Yellow teeth = cooked. Water = glow up."
                     ],
+                    "emotion": "speech",
                     "citation_ids": [],
                     "characters": [
                         {
@@ -1009,6 +1030,7 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                         outro,
                         "No filter needed. ✌️"
                     ],
+                    "emotion": "speech",
                     "citation_ids": [],
                     "characters": [
                         {
@@ -1026,3 +1048,141 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
             "summary_caption": "Dr. Drip drops the glow up secrets. No filter needed.",
             "alt_text": "A 4-panel comic featuring Dr. Drip, a pristine white molar tooth with sunglasses and gold crown, sharing appearance tips about keeping teeth white and aesthetic."
         }
+
+    async def detect_speech_bubbles(self, image_path: str) -> dict[int, dict] | None:
+        """
+        Use Gemini Vision to detect speech bubble positions in a comic image.
+
+        Analyzes a 4-panel vertical comic strip and returns bubble locations
+        for each panel, enabling smart text placement.
+
+        Args:
+            image_path: Path to the comic image file
+
+        Returns:
+            Dict mapping panel number (0-3) to bubble info:
+            {
+                0: {"bbox": [x1,y1,x2,y2], "center": [cx,cy], "style": "round", "confidence": 0.95},
+                1: {"bbox": [...], ...},
+                ...
+            }
+            Returns None if detection fails or no bubbles found.
+        """
+        prompt = """Analyze this 4-panel vertical comic strip (panels numbered 0-3 from top).
+
+IMAGE LAYOUT:
+- Vertical strip with 4 panels stacked (1x4 layout)
+- Each panel is approximately 512×256 pixels
+- Panel 0: rows 0-256 (top)
+- Panel 1: rows 256-512
+- Panel 2: rows 512-768
+- Panel 3: rows 768-1024 (bottom)
+
+TASK: Find the PRIMARY speech bubble in each panel.
+Look for white/light colored oval, cloud, spiky, or jagged shapes in the TOP 40% of each panel.
+
+Return JSON with this EXACT structure:
+{
+  "bubbles": [
+    {
+      "panel": 0,
+      "bbox": [x1, y1, x2, y2],
+      "center": [cx, cy],
+      "style": "round",
+      "confidence": 0.95
+    }
+  ],
+  "success": true
+}
+
+RULES:
+- Coordinates are ABSOLUTE pixels from image top-left (0,0)
+- bbox: [x1, y1, x2, y2] where (x1,y1) is top-left, (x2,y2) is bottom-right
+- center: [cx, cy] is the center point of the bubble
+- style: "round" | "cloud" | "spiky" | "jagged" | "dashed"
+- confidence: 0.0 to 1.0 based on certainty
+- Only include PRIMARY/LARGEST bubble per panel
+- If no bubble found in a panel, omit that panel from the array
+- If no bubbles found at all, return {"bubbles": [], "success": false}
+
+Return ONLY valid JSON, no other text."""
+
+        try:
+            # Read image file
+            image_path_obj = Path(image_path)
+            with open(image_path_obj, "rb") as f:
+                image_data = f.read()
+
+            # Determine mime type
+            mime_type, _ = mimetypes.guess_type(str(image_path_obj))
+            if not mime_type:
+                mime_type = "image/png"
+
+            # Call Gemini Vision
+            response = await asyncio.to_thread(
+                self.client.models.generate_content,
+                model=self.settings.gemini_vision_model,
+                contents=[
+                    types.Content(
+                        role="user",
+                        parts=[
+                            types.Part.from_text(text=prompt),
+                            types.Part.from_bytes(
+                                data=image_data,
+                                mime_type=mime_type
+                            ),
+                        ],
+                    ),
+                ],
+                config=types.GenerateContentConfig(
+                    temperature=0.1,  # Low for factual detection
+                    max_output_tokens=1024,
+                ),
+            )
+
+            # Parse JSON response
+            if response.text is None:
+                logger.warning("Gemini Vision returned None for bubble detection")
+                return None
+
+            response_text = response.text.strip()
+
+            # Handle markdown code blocks
+            if response_text.startswith("```json"):
+                response_text = response_text[7:]
+            if response_text.startswith("```"):
+                response_text = response_text[3:]
+            if response_text.endswith("```"):
+                response_text = response_text[:-3]
+
+            result = json.loads(response_text.strip())
+
+            # Check if detection was successful
+            if not result.get("success", False) or not result.get("bubbles"):
+                logger.info("No bubbles detected by Gemini Vision")
+                return None
+
+            # Convert to dict mapping panel number to bubble info
+            bubbles_by_panel = {}
+            for bubble in result.get("bubbles", []):
+                panel_num = bubble.get("panel")
+                if panel_num is not None and 0 <= panel_num < 4:
+                    bubbles_by_panel[panel_num] = {
+                        "bbox": bubble.get("bbox", [0, 0, 0, 0]),
+                        "center": bubble.get("center", [0, 0]),
+                        "style": bubble.get("style", "round"),
+                        "confidence": bubble.get("confidence", 0.5),
+                    }
+
+            if bubbles_by_panel:
+                logger.info(f"Gemini Vision detected bubbles in {len(bubbles_by_panel)} panels")
+                return bubbles_by_panel
+
+            return None
+
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse bubble detection JSON: {e}")
+            return None
+        except Exception as e:
+            logger.warning(f"Bubble detection failed: {e}")
+            return None

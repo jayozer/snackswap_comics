@@ -87,13 +87,12 @@ class NanoBananaService:
             "- Use 'Aura' visual effects: dark/murky for bad snacks, golden/bright for good snacks",
             "",
             "CRITICAL RULES - MUST FOLLOW:",
-            "- DO NOT draw any speech bubbles anywhere in the image",
-            "- DO NOT include any text, words, letters, or typography anywhere",
-            "- DO NOT write any labels, signs, or captions",
-            "- Leave the TOP 25% of each panel as PLAIN BACKGROUND COLOR",
+            "- DO NOT include any text, words, letters, or typography anywhere in the image",
+            "- DO NOT write any labels, signs, captions, or placeholder text",
+            "- Leave the TOP 25% of each panel with space for speech bubbles (will be added later)",
             "- Draw all characters in the BOTTOM 75% of each panel ONLY",
-            "- The top area must be completely empty - no objects, no decorations",
-            "- Text and speech bubbles will be added as post-processing overlay",
+            "- The top area should have simple background - no objects blocking bubble placement",
+            "- Text will be added as post-processing overlay",
             "",
             "LAYOUT RULES:",
             "- Must be exactly 4 panels stacked vertically (1 column, 4 rows)",
@@ -122,9 +121,21 @@ class NanoBananaService:
             visual_prompt = panel.get("visual_prompt", "")
             background = panel.get("background", "simple")
             panel_chars = panel.get("characters", [])
+            emotion = panel.get("emotion", "speech")  # Default to speech
+
+            # Map emotion to visual mood guidance
+            emotion_mood = {
+                "speech": "calm, conversational mood",
+                "thought": "contemplative, dreamy atmosphere",
+                "exclaim": "dramatic, intense moment with high energy",
+                "angry": "tense, aggressive atmosphere with sharp contrasts",
+                "whisper": "quiet, secretive mood with soft lighting",
+            }
+            mood = emotion_mood.get(emotion, "conversational mood")
 
             prompt_parts.append(f"PANEL {panel_num} (Row {panel_num} of 4 from top):")
             prompt_parts.append(f"Title: {title}")
+            prompt_parts.append(f"Mood: {mood}")
 
             # Character positions and expressions
             if panel_chars:
@@ -155,11 +166,11 @@ class NanoBananaService:
             "- Webtoon/Adult Swim animation style with bold outlines",
             "- Saturated, neon-accented colors (NOT pastel or kiddy)",
             "- Edgy character designs - cool, not cute",
-            "- NO speech bubbles or text - leave top 25% of each panel empty/plain",
+            "- NO TEXT anywhere - leave top 25% of each panel clear for overlay",
             "- VERTICAL 1x4 layout (tall strip, panels stacked top to bottom)",
             "- Professional comic book layout with consistent panel heights",
             "- Each character maintains exact same appearance across all panels",
-            "- Dramatic lighting and dynamic camera angles",
+            "- Dramatic lighting and dynamic camera angles (especially for 'angry' and 'exclaim' moods)",
             "- Meme-worthy exaggerated expressions",
             "",
             "VANITY CONTRAST (CRITICAL):",
@@ -301,6 +312,7 @@ class NanoBananaService:
                     ],
                     image_config=types.ImageConfig(
                         image_size=image_size,
+                        aspect_ratio="9:16",  # Tall portrait for 1x4 vertical comic strip
                     ),
                 )
 

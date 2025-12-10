@@ -19,6 +19,9 @@ class Panel(BaseModel):
     panel_number: int = Field(..., ge=1, le=4, description="Panel number (1-4)")
     title: str | None = Field(None, description="Optional panel title")
     dialogue: list[str] = Field(default_factory=list, description="Lines of dialogue/narration")
+    emotion: str | None = Field(
+        None, description="Bubble emotion style (speech, thought, exclaim, angry, whisper)"
+    )
     citation_ids: list[str] = Field(default_factory=list, description="Fact IDs cited in this panel")
     characters: list[CharacterNote] = Field(
         default_factory=list, description="Characters in this panel"
