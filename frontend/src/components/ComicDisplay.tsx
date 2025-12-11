@@ -68,6 +68,37 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
     }
   };
 
+  // Platform-specific share helper
+  const shareToPlatform = async (url: string, text: string) => {
+    if (!url || !navigator.share) return;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const file = new File([blob], 'snackswap-comic.png', { type: 'image/png' });
+      await navigator.share({
+        title: 'My SnackSwap Comic!',
+        text,
+        files: [file],
+      });
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Share failed:', error);
+      }
+    }
+  };
+
+  const handleInstagramShare = async () => {
+    // Use portrait format for Instagram Stories
+    const url = comicData.comic_portrait_uri || comicData.comic_square_uri;
+    await shareToPlatform(url, 'Check out my dental health comic! 🦷✨ #DentalHealth #KidsHealth');
+  };
+
+  const handleTikTokShare = async () => {
+    // Use reel format for TikTok
+    const url = comicData.reel_cover_uri || comicData.comic_square_uri;
+    await shareToPlatform(url, 'My SnackSwap dental health comic! 🦷🎬 #DentalHealth #KidsHealth #SnackSwap');
+  };
+
   return (
     <div className="space-y-6">
       {/* TA-DA! Header */}
@@ -189,17 +220,33 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
           </span>
         </button>
 
-        {/* Share button (if supported) */}
+        {/* Social share buttons (if supported) */}
         {typeof navigator !== 'undefined' && navigator.share && (
-          <button
-            onClick={handleShare}
-            disabled={!imageUrl}
-            className="comic-btn w-full bg-brand-orange text-white disabled:opacity-50"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span>🚀</span> SHARE WITH FRIENDS!
-            </span>
-          </button>
+          <div className="flex flex-col gap-2">
+            <motion.button
+              onClick={handleInstagramShare}
+              disabled={!comicData.comic_portrait_uri && !comicData.comic_square_uri}
+              className="comic-btn w-full py-3 px-6 text-white font-bold disabled:opacity-50"
+              style={{ background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span className="flex items-center justify-center gap-2">
+                <span>📸</span> SHARE TO INSTAGRAM
+              </span>
+            </motion.button>
+            <motion.button
+              onClick={handleTikTokShare}
+              disabled={!comicData.reel_cover_uri && !comicData.comic_square_uri}
+              className="comic-btn w-full py-3 px-6 text-white font-bold bg-black disabled:opacity-50"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span className="flex items-center justify-center gap-2">
+                <span>🎵</span> SHARE TO TIKTOK
+              </span>
+            </motion.button>
+          </div>
         )}
 
         {/* Try again button */}
