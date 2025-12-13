@@ -209,14 +209,14 @@ export default function Home() {
   // Don't render until preferences are loaded from localStorage
   if (!isLoaded) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="text-white text-xl font-comic">Loading...</div>
+      <main className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-gray-800 text-xl font-comic">Loading...</div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen pb-20 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+    <main className="min-h-screen pb-20 bg-white">
       <Header />
 
       <div className="container mx-auto px-4 max-w-4xl pt-12">
@@ -339,9 +339,23 @@ export default function Home() {
           </AnimatePresence>
         </div>
 
-        <p className="text-center text-gray-400 text-sm mt-8 font-body">
-          Powered by Gemini Vision & Qdrant • Roast My Snack 2025 • Your Smile's Glow Up Starts Here
-        </p>
+        <footer className="mt-8 flex flex-col items-center gap-4">
+          <p className="text-center text-gray-500 text-sm font-body">
+            Powered by Gemini Vision & Qdrant • Roast My Snack 2025 • Your Smile's Glow Up Starts Here
+          </p>
+          <a
+            href="https://www.poppykidsdental.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-transform hover:scale-105"
+          >
+            <img
+              src="/images/poppykids_logo.png"
+              alt="Poppy Kids Pediatric Dentistry"
+              className="h-12 w-auto"
+            />
+          </a>
+        </footer>
       </div>
     </main>
   );
