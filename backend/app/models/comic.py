@@ -3,6 +3,15 @@
 from pydantic import BaseModel, Field
 
 
+class DialogueLine(BaseModel):
+    """Single line of dialogue with speaker attribution."""
+
+    speaker: str = Field(..., description="Character name who speaks this line (e.g., 'Dr. Drip')")
+    text: str = Field(..., description="The dialogue text")
+    position: str = Field("center", description="Speaker position for bubble tail (left, center, right)")
+    emotion: str = Field("speech", description="Bubble emotion style (speech, thought, exclaim, angry, whisper)")
+
+
 class CharacterNote(BaseModel):
     """Character appearance and expression notes for a panel."""
 
@@ -18,9 +27,12 @@ class Panel(BaseModel):
 
     panel_number: int = Field(..., ge=1, le=4, description="Panel number (1-4)")
     title: str | None = Field(None, description="Optional panel title")
-    dialogue: list[str] = Field(default_factory=list, description="Lines of dialogue/narration")
+    dialogue: list[DialogueLine] = Field(
+        default_factory=list,
+        description="Lines of dialogue with speaker attribution"
+    )
     emotion: str | None = Field(
-        None, description="Bubble emotion style (speech, thought, exclaim, angry, whisper)"
+        None, description="Default bubble emotion style (speech, thought, exclaim, angry, whisper)"
     )
     citation_ids: list[str] = Field(default_factory=list, description="Fact IDs cited in this panel")
     characters: list[CharacterNote] = Field(
@@ -28,6 +40,10 @@ class Panel(BaseModel):
     )
     visual_prompt: str = Field(..., description="Visual description for image generation")
     background: str = Field("simple", description="Background type (simple, kitchen, park)")
+
+    def get_dialogue_texts(self) -> list[str]:
+        """Get just the text of all dialogue lines (for backwards compatibility)."""
+        return [line.text for line in self.dialogue]
 
 
 class ComicScript(BaseModel):
