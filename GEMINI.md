@@ -28,10 +28,9 @@ SnackSwap Comics is an AI-powered progressive web app that transforms a simple p
     cp .env.example .env
     # Edit .env and add your API keys
     ```
-4.  **Start Qdrant (if running locally):**
-    ```bash
-    docker run -p 6333:6333 qdrant/qdrant
-    ```
+4.  **Configure Qdrant:**
+    The project uses Qdrant Cloud by default (pre-configured in `.env`).
+    For local development: `docker run -p 6333:6333 qdrant/qdrant`
 5.  **Seed the database:**
     ```bash
     ./seed_data.sh

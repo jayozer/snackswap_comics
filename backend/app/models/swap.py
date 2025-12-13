@@ -36,7 +36,7 @@ class SwapPayload(BaseModel):
     # Practical info
     prep_time: str = Field("0", description="Prep time (0, <5min, 5-15min)")
     suitability: dict[str, bool] = Field(
-        default_factory=dict, description="Age band suitability (3-5, 6-8, 9-12)"
+        default_factory=dict, description="Age band suitability (9-12, 13-17)"
     )
     example_brands: list[str] = Field(
         default_factory=list, description="Example brands (for Maps queries)"

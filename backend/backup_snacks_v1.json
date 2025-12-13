@@ -1,0 +1,1029 @@
+[
+  {
+    "id": "02d6d8e0-1840-5a3b-936b-a560bd495845",
+    "payload": {
+      "snack_id": "cake_slice",
+      "name": "Birthday Cake Slice",
+      "brand": "Generic",
+      "category": "bakery",
+      "flavor_notes": [
+        "sweet",
+        "vanilla",
+        "frosted"
+      ],
+      "sugar_g_per_100g": 40.0,
+      "added_sugar_g": 35.0,
+      "acidity_tag": "low",
+      "stickiness": 0.5,
+      "residue": 0.6,
+      "crunch_hardness": 0.1,
+      "water_content": 0.22,
+      "typical_portion_g": 80,
+      "age_flags": {},
+      "allergy_tags": [
+        "gluten",
+        "dairy",
+        "eggs"
+      ],
+      "taste_cluster": "sweet-baked",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "02dd36df-6e9e-5664-b469-eecd744577e7",
+    "payload": {
+      "snack_id": "healthy_fruit_plate",
+      "name": "Mixed Fruit Plate",
+      "brand": "Generic",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "fresh",
+        "juicy",
+        "variety"
+      ],
+      "sugar_g_per_100g": 10.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.1,
+      "crunch_hardness": 0.4,
+      "water_content": 0.85,
+      "typical_portion_g": 200,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-fresh",
+      "images": [],
+      "is_healthy": true,
+      "health_benefits": [
+        "Variety of fruits provides diverse vitamins for oral health",
+        "High water content helps wash away food particles",
+        "Natural fiber stimulates saliva production",
+        "Crunchy fruits act like natural toothbrushes"
+      ]
+    }
+  },
+  {
+    "id": "0357e082-aedf-58ea-802f-67156db4c22e",
+    "payload": {
+      "snack_id": "candy_taffy",
+      "name": "Salt Water Taffy",
+      "brand": "Generic",
+      "category": "candy",
+      "flavor_notes": [
+        "sweet",
+        "chewy",
+        "vanilla"
+      ],
+      "sugar_g_per_100g": 65.0,
+      "added_sugar_g": 65.0,
+      "acidity_tag": "low",
+      "stickiness": 0.9,
+      "residue": 0.85,
+      "crunch_hardness": 0.0,
+      "water_content": 0.06,
+      "typical_portion_g": 30,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-chewy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "0712e8bb-b78e-57ac-971d-26081a96569e",
+    "payload": {
+      "snack_id": "soda_cola",
+      "name": "Cola Soda",
+      "brand": "Generic",
+      "category": "beverage",
+      "flavor_notes": [
+        "sweet",
+        "fizzy",
+        "caramel"
+      ],
+      "sugar_g_per_100g": 10.6,
+      "added_sugar_g": 10.6,
+      "acidity_tag": "high",
+      "stickiness": 0.2,
+      "residue": 0.4,
+      "crunch_hardness": 0.0,
+      "water_content": 0.89,
+      "typical_portion_g": 355,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-fizzy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "0cb83f83-ee96-5233-9863-d40cfcdccd20",
+    "payload": {
+      "snack_id": "candy_lollipop",
+      "name": "Lollipop",
+      "brand": "Generic",
+      "category": "candy",
+      "flavor_notes": [
+        "sweet",
+        "fruity",
+        "hard"
+      ],
+      "sugar_g_per_100g": 98.0,
+      "added_sugar_g": 98.0,
+      "acidity_tag": "medium",
+      "stickiness": 0.3,
+      "residue": 0.6,
+      "crunch_hardness": 0.0,
+      "water_content": 0.01,
+      "typical_portion_g": 17,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-hard",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "17359c3e-3f6c-53da-8797-202f5a3460d6",
+    "payload": {
+      "snack_id": "cereal_frosted",
+      "name": "Frosted Flakes Cereal",
+      "brand": "Generic",
+      "category": "cereal",
+      "flavor_notes": [
+        "sweet",
+        "crunchy",
+        "corn"
+      ],
+      "sugar_g_per_100g": 37.0,
+      "added_sugar_g": 33.0,
+      "acidity_tag": "low",
+      "stickiness": 0.2,
+      "residue": 0.4,
+      "crunch_hardness": 0.3,
+      "water_content": 0.03,
+      "typical_portion_g": 30,
+      "age_flags": {},
+      "allergy_tags": [
+        "gluten"
+      ],
+      "taste_cluster": "sweet-crunch",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "1e4b286c-0ba5-5205-ac57-f179237cc9a8",
+    "payload": {
+      "snack_id": "healthy_celery",
+      "name": "Celery Sticks",
+      "brand": "Generic",
+      "category": "vegetable",
+      "flavor_notes": [
+        "crunchy",
+        "fresh",
+        "mild",
+        "watery"
+      ],
+      "sugar_g_per_100g": 1.3,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.0,
+      "residue": 0.05,
+      "crunch_hardness": 0.5,
+      "water_content": 0.95,
+      "typical_portion_g": 100,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "fresh-crunch",
+      "images": [],
+      "is_healthy": true,
+      "health_benefits": [
+        "95% water content washes away debris",
+        "Fibrous texture scrubs teeth like a natural brush",
+        "Stimulates gums and increases saliva",
+        "Almost no sugar and zero stickiness"
+      ]
+    }
+  },
+  {
+    "id": "22a48038-e2af-5d86-a31d-0e0b01eb9495",
+    "payload": {
+      "snack_id": "candy_sour",
+      "name": "Sour Gummy Worms",
+      "brand": "Generic",
+      "category": "candy",
+      "flavor_notes": [
+        "sour",
+        "sweet",
+        "chewy"
+      ],
+      "sugar_g_per_100g": 50.0,
+      "added_sugar_g": 50.0,
+      "acidity_tag": "high",
+      "stickiness": 0.85,
+      "residue": 0.8,
+      "crunch_hardness": 0.0,
+      "water_content": 0.12,
+      "typical_portion_g": 40,
+      "age_flags": {},
+      "allergy_tags": [
+        "gelatin"
+      ],
+      "taste_cluster": "sweet-sour",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "267c8b1b-0f62-536a-a044-ebc926f77f77",
+    "payload": {
+      "snack_id": "crackers_cheese",
+      "name": "Cheese Crackers",
+      "brand": "Generic",
+      "category": "snack",
+      "flavor_notes": [
+        "cheesy",
+        "crunchy",
+        "savory"
+      ],
+      "sugar_g_per_100g": 4.0,
+      "added_sugar_g": 2.0,
+      "acidity_tag": "low",
+      "stickiness": 0.2,
+      "residue": 0.4,
+      "crunch_hardness": 0.5,
+      "water_content": 0.03,
+      "typical_portion_g": 30,
+      "age_flags": {},
+      "allergy_tags": [
+        "gluten",
+        "dairy"
+      ],
+      "taste_cluster": "savory-crunch",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "3a382d66-1935-5b68-ad7a-be63c62cb455",
+    "payload": {
+      "snack_id": "candy_caramel",
+      "name": "Caramel Candy",
+      "brand": "Generic",
+      "category": "candy",
+      "flavor_notes": [
+        "sweet",
+        "buttery",
+        "chewy"
+      ],
+      "sugar_g_per_100g": 55.0,
+      "added_sugar_g": 50.0,
+      "acidity_tag": "low",
+      "stickiness": 0.95,
+      "residue": 0.9,
+      "crunch_hardness": 0.0,
+      "water_content": 0.08,
+      "typical_portion_g": 40,
+      "age_flags": {},
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "sweet-chewy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "3c9f26bc-0c37-5d90-a7a0-5ee86c0c2623",
+    "payload": {
+      "snack_id": "dried_fruit",
+      "name": "Dried Mango",
+      "brand": "Generic",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "tropical",
+        "chewy"
+      ],
+      "sugar_g_per_100g": 73.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "medium",
+      "stickiness": 0.7,
+      "residue": 0.7,
+      "crunch_hardness": 0.1,
+      "water_content": 0.16,
+      "typical_portion_g": 40,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-chewy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "3f3aa9b7-400c-56cb-ae19-793bde824c34",
+    "payload": {
+      "snack_id": "healthy_apple",
+      "name": "Fresh Apple",
+      "brand": "Generic",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "crunchy",
+        "fresh",
+        "juicy"
+      ],
+      "sugar_g_per_100g": 10.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.1,
+      "crunch_hardness": 0.5,
+      "water_content": 0.86,
+      "typical_portion_g": 180,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-crunch",
+      "images": [],
+      "is_healthy": true,
+      "health_benefits": [
+        "Natural toothbrush - crunchy texture scrubs teeth",
+        "High fiber helps stimulate saliva production",
+        "Low stickiness means less residue on teeth",
+        "Natural sugars with fiber are gentler on enamel"
+      ]
+    }
+  },
+  {
+    "id": "41d3020b-e1cf-52f8-8e74-f8bc380b09d4",
+    "payload": {
+      "snack_id": "popcorn_kettle",
+      "name": "Kettle Corn",
+      "brand": "Generic",
+      "category": "snack",
+      "flavor_notes": [
+        "sweet",
+        "salty",
+        "crunchy"
+      ],
+      "sugar_g_per_100g": 18.0,
+      "added_sugar_g": 15.0,
+      "acidity_tag": "low",
+      "stickiness": 0.2,
+      "residue": 0.3,
+      "crunch_hardness": 0.7,
+      "water_content": 0.03,
+      "typical_portion_g": 30,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-crunch",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "50a71ff7-e3d6-5c3c-8f96-8be988590358",
+    "payload": {
+      "snack_id": "juice_apple",
+      "name": "Apple Juice Box",
+      "brand": "Generic",
+      "category": "beverage",
+      "flavor_notes": [
+        "sweet",
+        "fruity",
+        "apple"
+      ],
+      "sugar_g_per_100g": 10.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "high",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "crunch_hardness": 0.0,
+      "water_content": 0.88,
+      "typical_portion_g": 200,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-fruity",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "5acaf64b-211f-5684-afd8-0ba6019c4448",
+    "payload": {
+      "snack_id": "fruit_snacks",
+      "name": "Fruit Snacks",
+      "brand": "Generic",
+      "category": "candy",
+      "flavor_notes": [
+        "sweet",
+        "fruity",
+        "chewy"
+      ],
+      "sugar_g_per_100g": 48.0,
+      "added_sugar_g": 40.0,
+      "acidity_tag": "medium",
+      "stickiness": 0.85,
+      "residue": 0.8,
+      "crunch_hardness": 0.0,
+      "water_content": 0.12,
+      "typical_portion_g": 25,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-chewy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "5d958c34-6201-574e-abba-aa69ccfbdc77",
+    "payload": {
+      "snack_id": "healthy_veggie_tray",
+      "name": "Fresh Vegetable Tray",
+      "brand": "Generic",
+      "category": "vegetable",
+      "flavor_notes": [
+        "crunchy",
+        "fresh",
+        "variety",
+        "colorful"
+      ],
+      "sugar_g_per_100g": 3.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.0,
+      "residue": 0.1,
+      "crunch_hardness": 0.6,
+      "water_content": 0.9,
+      "typical_portion_g": 150,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "savory-crunch",
+      "images": [],
+      "is_healthy": true,
+      "health_benefits": [
+        "Crunchy veggies scrub teeth naturally while eating",
+        "Very low sugar means almost no food for cavity-causing bacteria",
+        "High water content helps rinse away debris",
+        "Fiber-rich vegetables stimulate healthy saliva flow"
+      ]
+    }
+  },
+  {
+    "id": "78cafab8-1407-53a9-a193-73589786d29b",
+    "payload": {
+      "snack_id": "popsicle",
+      "name": "Fruit Popsicle",
+      "brand": "Generic",
+      "category": "frozen",
+      "flavor_notes": [
+        "sweet",
+        "fruity",
+        "cold"
+      ],
+      "sugar_g_per_100g": 15.0,
+      "added_sugar_g": 12.0,
+      "acidity_tag": "medium",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "crunch_hardness": 0.0,
+      "water_content": 0.8,
+      "typical_portion_g": 70,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-fruity",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "90f217a7-c005-510f-a4b6-2060d91b438f",
+    "payload": {
+      "snack_id": "sports_drink",
+      "name": "Sports Drink",
+      "brand": "Generic",
+      "category": "beverage",
+      "flavor_notes": [
+        "sweet",
+        "citrus",
+        "refreshing"
+      ],
+      "sugar_g_per_100g": 6.0,
+      "added_sugar_g": 6.0,
+      "acidity_tag": "high",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "crunch_hardness": 0.0,
+      "water_content": 0.93,
+      "typical_portion_g": 355,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-fizzy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "93e4b98d-fe2b-5c2f-86cd-526079e3f384",
+    "payload": {
+      "snack_id": "pudding_cup",
+      "name": "Chocolate Pudding Cup",
+      "brand": "Generic",
+      "category": "dairy",
+      "flavor_notes": [
+        "sweet",
+        "chocolatey",
+        "creamy"
+      ],
+      "sugar_g_per_100g": 17.0,
+      "added_sugar_g": 15.0,
+      "acidity_tag": "low",
+      "stickiness": 0.4,
+      "residue": 0.5,
+      "crunch_hardness": 0.0,
+      "water_content": 0.68,
+      "typical_portion_g": 100,
+      "age_flags": {},
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "sweet-creamy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "9674d6df-b130-56cc-af11-780d50cf45d0",
+    "payload": {
+      "snack_id": "pretzels_soft",
+      "name": "Soft Pretzel",
+      "brand": "Generic",
+      "category": "snack",
+      "flavor_notes": [
+        "salty",
+        "doughy",
+        "warm"
+      ],
+      "sugar_g_per_100g": 3.0,
+      "added_sugar_g": 1.0,
+      "acidity_tag": "low",
+      "stickiness": 0.3,
+      "residue": 0.4,
+      "crunch_hardness": 0.2,
+      "water_content": 0.35,
+      "typical_portion_g": 115,
+      "age_flags": {},
+      "allergy_tags": [
+        "gluten"
+      ],
+      "taste_cluster": "savory-soft",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "981356d2-9993-59f4-a12e-b0efcb53d6e9",
+    "payload": {
+      "snack_id": "healthy_fruit_assortment",
+      "name": "Fresh Fruit Assortment",
+      "brand": "Generic",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "fresh",
+        "colorful",
+        "natural"
+      ],
+      "sugar_g_per_100g": 10.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.1,
+      "crunch_hardness": 0.4,
+      "water_content": 0.85,
+      "typical_portion_g": 200,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-fresh",
+      "images": [],
+      "is_healthy": true,
+      "health_benefits": [
+        "Multiple fruits mean multiple tooth-healthy benefits",
+        "Natural sugars combined with fiber are gentler on enamel",
+        "High water content provides natural mouth rinse",
+        "Colorful fruits indicate antioxidants that support gum health"
+      ]
+    }
+  },
+  {
+    "id": "aa4f4da7-ee1b-5c08-8e74-713a45946016",
+    "payload": {
+      "snack_id": "energy_drink",
+      "name": "Energy Drink",
+      "brand": "Generic",
+      "category": "beverage",
+      "flavor_notes": [
+        "sweet",
+        "tangy",
+        "caffeinated"
+      ],
+      "sugar_g_per_100g": 11.0,
+      "added_sugar_g": 11.0,
+      "acidity_tag": "high",
+      "stickiness": 0.1,
+      "residue": 0.3,
+      "crunch_hardness": 0.0,
+      "water_content": 0.87,
+      "typical_portion_g": 250,
+      "age_flags": {
+        "9-12": {
+          "choking_risk": false,
+          "notes": "High caffeine"
+        }
+      },
+      "allergy_tags": [],
+      "taste_cluster": "sweet-fizzy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "abfec5a8-ff9e-5787-845f-11a4bd5bdf71",
+    "payload": {
+      "snack_id": "donut_glazed",
+      "name": "Glazed Donut",
+      "brand": "Generic",
+      "category": "bakery",
+      "flavor_notes": [
+        "sweet",
+        "doughy",
+        "glazed"
+      ],
+      "sugar_g_per_100g": 31.0,
+      "added_sugar_g": 25.0,
+      "acidity_tag": "low",
+      "stickiness": 0.4,
+      "residue": 0.5,
+      "crunch_hardness": 0.1,
+      "water_content": 0.25,
+      "typical_portion_g": 60,
+      "age_flags": {},
+      "allergy_tags": [
+        "gluten",
+        "dairy",
+        "eggs"
+      ],
+      "taste_cluster": "sweet-baked",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "b1e6b184-49a1-5a35-ad2d-2d7fef36851a",
+    "payload": {
+      "snack_id": "ice_cream",
+      "name": "Vanilla Ice Cream",
+      "brand": "Generic",
+      "category": "dairy",
+      "flavor_notes": [
+        "sweet",
+        "creamy",
+        "vanilla"
+      ],
+      "sugar_g_per_100g": 21.0,
+      "added_sugar_g": 18.0,
+      "acidity_tag": "low",
+      "stickiness": 0.3,
+      "residue": 0.4,
+      "crunch_hardness": 0.0,
+      "water_content": 0.61,
+      "typical_portion_g": 65,
+      "age_flags": {},
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "sweet-creamy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "bff91caa-fc42-529f-b951-f6f868a382bb",
+    "payload": {
+      "snack_id": "candy_gummy",
+      "name": "Gummy Bears",
+      "brand": "Generic",
+      "category": "candy",
+      "flavor_notes": [
+        "sweet",
+        "fruity",
+        "chewy"
+      ],
+      "sugar_g_per_100g": 46.0,
+      "added_sugar_g": 46.0,
+      "acidity_tag": "medium",
+      "stickiness": 0.8,
+      "residue": 0.7,
+      "crunch_hardness": 0.0,
+      "water_content": 0.15,
+      "typical_portion_g": 40,
+      "age_flags": {},
+      "allergy_tags": [
+        "gelatin"
+      ],
+      "taste_cluster": "sweet-chewy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "c11ce522-e2e6-55ca-b406-87b600dfede7",
+    "payload": {
+      "snack_id": "healthy_carrots",
+      "name": "Baby Carrots",
+      "brand": "Generic",
+      "category": "vegetable",
+      "flavor_notes": [
+        "crunchy",
+        "sweet",
+        "fresh",
+        "earthy"
+      ],
+      "sugar_g_per_100g": 4.7,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.0,
+      "residue": 0.1,
+      "crunch_hardness": 0.6,
+      "water_content": 0.88,
+      "typical_portion_g": 85,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "savory-crunch",
+      "images": [],
+      "is_healthy": true,
+      "health_benefits": [
+        "Crunchy texture acts like a natural toothbrush",
+        "High water content helps wash away food particles",
+        "Stimulates saliva production for natural protection",
+        "Very low sugar and no stickiness"
+      ]
+    }
+  },
+  {
+    "id": "c7e75aaf-5a35-5759-ac80-7938bda4d768",
+    "payload": {
+      "snack_id": "cookie_chocolate",
+      "name": "Chocolate Chip Cookies",
+      "brand": "Generic",
+      "category": "cookie",
+      "flavor_notes": [
+        "sweet",
+        "chocolatey",
+        "buttery"
+      ],
+      "sugar_g_per_100g": 35.0,
+      "added_sugar_g": 30.0,
+      "acidity_tag": "low",
+      "stickiness": 0.4,
+      "residue": 0.5,
+      "crunch_hardness": 0.3,
+      "water_content": 0.05,
+      "typical_portion_g": 50,
+      "age_flags": {},
+      "allergy_tags": [
+        "gluten",
+        "dairy",
+        "eggs"
+      ],
+      "taste_cluster": "sweet-baked",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "ceaaf835-378d-518a-907e-f5f053ab10a3",
+    "payload": {
+      "snack_id": "candy_chocolate",
+      "name": "Milk Chocolate Bar",
+      "brand": "Generic",
+      "category": "candy",
+      "flavor_notes": [
+        "sweet",
+        "chocolatey",
+        "creamy"
+      ],
+      "sugar_g_per_100g": 50.0,
+      "added_sugar_g": 48.0,
+      "acidity_tag": "low",
+      "stickiness": 0.3,
+      "residue": 0.5,
+      "crunch_hardness": 0.1,
+      "water_content": 0.01,
+      "typical_portion_g": 40,
+      "age_flags": {},
+      "allergy_tags": [
+        "dairy",
+        "soy"
+      ],
+      "taste_cluster": "sweet-creamy",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "d09c0643-a9ec-53ef-af98-202ccafb9d62",
+    "payload": {
+      "snack_id": "healthy_almonds",
+      "name": "Raw Almonds",
+      "brand": "Generic",
+      "category": "nuts",
+      "flavor_notes": [
+        "nutty",
+        "crunchy",
+        "mild",
+        "natural"
+      ],
+      "sugar_g_per_100g": 4.4,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "crunch_hardness": 0.7,
+      "water_content": 0.04,
+      "typical_portion_g": 28,
+      "age_flags": {
+        "3-5": {
+          "choking_risk": true,
+          "notes": "Cut into smaller pieces"
+        }
+      },
+      "allergy_tags": [
+        "nuts"
+      ],
+      "taste_cluster": "savory-crunch",
+      "images": [],
+      "is_healthy": true,
+      "health_benefits": [
+        "Rich in calcium for strong teeth",
+        "Protein helps build healthy tooth tissue",
+        "Low sugar and non-sticky",
+        "Crunching helps clean teeth naturally"
+      ]
+    }
+  },
+  {
+    "id": "e6b570e3-8cfe-59ff-baf3-47409c29f150",
+    "payload": {
+      "snack_id": "granola_bar",
+      "name": "Chocolate Granola Bar",
+      "brand": "Generic",
+      "category": "snack",
+      "flavor_notes": [
+        "sweet",
+        "oaty",
+        "chocolatey"
+      ],
+      "sugar_g_per_100g": 25.0,
+      "added_sugar_g": 18.0,
+      "acidity_tag": "low",
+      "stickiness": 0.5,
+      "residue": 0.6,
+      "crunch_hardness": 0.4,
+      "water_content": 0.06,
+      "typical_portion_g": 35,
+      "age_flags": {},
+      "allergy_tags": [
+        "gluten",
+        "nuts"
+      ],
+      "taste_cluster": "sweet-baked",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "ebdd5c8a-8657-52ec-9b04-830b18ad7a0b",
+    "payload": {
+      "snack_id": "chips_classic",
+      "name": "Classic Potato Chips",
+      "brand": "Generic",
+      "category": "chips",
+      "flavor_notes": [
+        "salty",
+        "crunchy",
+        "savory"
+      ],
+      "sugar_g_per_100g": 1.5,
+      "added_sugar_g": 0.5,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.3,
+      "crunch_hardness": 0.6,
+      "water_content": 0.02,
+      "typical_portion_g": 30,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "savory-crunch",
+      "images": [],
+      "is_healthy": false,
+      "health_benefits": []
+    }
+  },
+  {
+    "id": "f70b61ad-c298-5fb6-bf9e-e02e5f7d78d4",
+    "payload": {
+      "snack_id": "healthy_cheese",
+      "name": "Cheddar Cheese Slices",
+      "brand": "Generic",
+      "category": "dairy",
+      "flavor_notes": [
+        "savory",
+        "creamy",
+        "mild",
+        "rich"
+      ],
+      "sugar_g_per_100g": 0.5,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "crunch_hardness": 0.0,
+      "water_content": 0.37,
+      "typical_portion_g": 28,
+      "age_flags": {},
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "savory-creamy",
+      "images": [],
+      "is_healthy": true,
+      "health_benefits": [
+        "Calcium strengthens tooth enamel",
+        "Helps neutralize acid in the mouth",
+        "Casein protein protects tooth surfaces",
+        "Stimulates saliva which fights bacteria"
+      ]
+    }
+  },
+  {
+    "id": "f9e8541a-c3f3-5afd-b367-b6f17783c334",
+    "payload": {
+      "snack_id": "healthy_fruit_salad",
+      "name": "Fruit Salad",
+      "brand": "Generic",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "fresh",
+        "mixed",
+        "refreshing"
+      ],
+      "sugar_g_per_100g": 11.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.15,
+      "residue": 0.15,
+      "crunch_hardness": 0.3,
+      "water_content": 0.82,
+      "typical_portion_g": 200,
+      "age_flags": {},
+      "allergy_tags": [],
+      "taste_cluster": "sweet-fresh",
+      "images": [],
+      "is_healthy": true,
+      "health_benefits": [
+        "Mixed fruits provide comprehensive oral health vitamins",
+        "Natural fruit juices help hydrate the mouth",
+        "No added sugars means healthier for teeth",
+        "Variety encourages finishing the healthy snack"
+      ]
+    }
+  }
+]

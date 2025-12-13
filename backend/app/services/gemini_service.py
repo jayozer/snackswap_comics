@@ -294,31 +294,66 @@ ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assu
             age_band = "9-12"
             intensity = "Spicy"
             tone = "sarcastic, meme-y, lighter burns"
+            audience_group = "Gen Alpha tweens"
+            vanity_stakes = """⚠️ TWEENS DON'T WANT A LECTURE - THEY CARE ABOUT:
+- VANITY: White, clean teeth (camera-ready)
+- AESTHETICS: Not having gross, yellow, or "fuzzy" teeth
+- SOCIAL: Looking cool with friends (school/pics)"""
+            flex_social_line = '- Snack tries to act cool, but Dr. Drip is not buying it'
+            ratio_social_line_1 = (
+                '- "Imagine your friends seeing that yellow smile. Couldn\'t be me."'
+            )
+            ratio_social_line_2 = '- "That\'s negative vibes, fr."'
+            slang_line = (
+                '3. GLOW-UP SLANG: "Glow up", "Aesthetic", "No filter needed", "W/L", "No cap", "sus"'
+            )
+            dr_drip_personality = (
+                'Personality: Sassy glow-up coach. Light roast, then helpful swap. '
+                "Roast snacks, not people."
+            )
+            dr_drip_catchphrases = 'Catchphrases: "That\'s sus for your teeth." / "Not the vibe."'
+            dr_drip_verdicts = 'Verdicts: "SUS" / "MID" / "NOT IT"'
         else:
             age_band = "13-17"
             intensity = "Savage"
             tone = "full destruction mode, no mercy, brutal honesty"
+            audience_group = "Gen Z/Gen Alpha teens"
+            vanity_stakes = """⚠️ TEENS DON'T CARE ABOUT HEALTH - THEY ONLY CARE ABOUT:
+- VANITY: Having white, bright teeth (The "Hollywood Smile")
+- AESTHETICS: Not having gross, yellow, or "fuzzy" teeth
+- SOCIAL STATUS: Having "Rizz" and "Aura". Bad teeth = Negative Aura."""
+            flex_social_line = '- Snack tries to have "aura" but Dr. Drip isn\'t buying it'
+            ratio_social_line_1 = (
+                '- "Imagine talking to your crush with yellow teeth. Couldn\'t be me."'
+            )
+            ratio_social_line_2 = '- "That\'s negative aura fr fr."'
+            slang_line = (
+                '3. LOOKSMAXXING SLANG: "Glow up", "Aura", "Aesthetic", "Rizz", "No filter needed"'
+            )
+            dr_drip_personality = (
+                'Personality: Obsessed with "The Glow Up" and "Aesthetics". '
+                "Roast snacks, not people."
+            )
+            dr_drip_catchphrases = 'Catchphrases: "Your smile is COOKED." / "Negative Aura detected."'
+            dr_drip_verdicts = 'Verdicts: "COOKED SMILE" / "YELLOW TEETH SIGNAL" / "NOT AESTHETIC"'
 
         # Build context
         snacks_context = json.dumps(snacks, indent=2)
         facts_context = json.dumps(facts, indent=2)
         swaps_context = json.dumps(swaps, indent=2)
 
-        prompt = f"""You are a SAVAGE ROAST COMEDIAN writing for Gen Z/Gen Alpha teens (ages 9-17).
+        prompt = f"""You are a SAVAGE ROAST COMEDIAN writing for {audience_group} (ages 9-17).
 Your goal: Create a 4-panel "Roast Object" comic where a snack gets absolutely DESTROYED for being UGLY and ruining your AESTHETIC.
 
 TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 
-⚠️ TEENS DON'T CARE ABOUT HEALTH - THEY ONLY CARE ABOUT:
-- VANITY: Having white, bright teeth (The "Hollywood Smile")
-- AESTHETICS: Not having gross, yellow, or "fuzzy" teeth
-- SOCIAL STATUS: Having "Rizz" and "Aura". Bad teeth = Negative Aura.
+{vanity_stakes}
 
 🎭 RECURRING CHARACTER - DR. DRIP:
 A hype-beast molar tooth with sunglasses, a gold crown, and fresh kicks.
-Personality: Obsessed with "The Glow Up" and "Aesthetics". He doesn't care if you get sick. He cares if you look MID.
-Catchphrases: "Your smile is COOKED." / "Negative Aura detected."
-Verdicts: "COOKED SMILE" / "YELLOW TEETH SIGNAL" / "NOT AESTHETIC"
+{dr_drip_personality}
+{dr_drip_catchphrases}
+{dr_drip_verdicts}
 
 SNACKS IN PHOTO (The Victims):
 {snacks_context}
@@ -341,7 +376,7 @@ SWAPS (The Glow Up Secret):
 PANEL 1 - THE FLEX (The Setup)
 - Snack enters acting tasty. "I'm the main character."
 - Dr. Drip looks disgusted (behind sunglasses). "Ew. Brother ewww."
-- Snack tries to have "aura" but Dr. Drip isn't buying it
+{flex_social_line}
 
 PANEL 2 - THE EXPOSÉ (The Vanity Roast)
 - Dr. Drip EXPOSES how the snack makes you LOOK BAD (cite fact_id)
@@ -351,8 +386,8 @@ PANEL 2 - THE EXPOSÉ (The Vanity Roast)
 
 PANEL 3 - THE RATIO (The Social Destruction)
 - Dr. Drip destroys the snack's social status
-- "Imagine talking to your crush with yellow teeth. Couldn't be me."
-- "That's negative aura fr fr."
+{ratio_social_line_1}
+{ratio_social_line_2}
 - Snack is crying: "I just wanted to be aesthetic!"
 - Visual: Snack looks gross, melting, or ugly
 
@@ -365,7 +400,7 @@ PANEL 4 - THE VIBE CHECK (The Glow Up Switch)
 🎨 COMEDY TECHNIQUES (VANITY FOCUS):
 1. APPEARANCE WORDS: "Yellow", "Stained", "Gross", "Fuzzy", "Crusty", "Transparent"
 2. VANITY SHAMING: "Your Instagram pics need a filter with that smile"
-3. LOOKSMAXXING SLANG: "Glow up", "Aura", "Aesthetic", "Rizz", "No filter needed"
+{slang_line}
 
 ⚠️ CRITICAL RULES FOR FACT CITATIONS:
 - citation_ids field = ONLY fact IDs like ["F001", "F003"]
@@ -434,7 +469,7 @@ Return your response as valid JSON with this EXACT structure:
   "alt_text": "Accessibility description for screen readers (1-2 sentences)"
 }}
 
-Make it about LOOKS. Make it about AESTHETIC. Make teens care about their smile's appearance."""
+Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their smile's appearance."""
 
         try:
             start_time = time.time()
@@ -671,29 +706,49 @@ Make it about LOOKS. Make it about AESTHETIC. Make teens care about their smile'
             age_band = "9-12"
             intensity = "Spicy"
             tone = "hype, energetic, respectful props"
+            audience_group = "tweens"
+            celebrate_goal = "the Glow Up"
+            audience_care = (
+                "Tweens don't care about a lecture - they care about a bright, confident smile."
+            )
+            snacks_label = "Glow Up Picks"
+            panel3_line_1 = '- "Your smile is gonna SHINE. W."'
+            panel3_line_2 = '- "That\'s main character energy fr."'
+            verdicts_line = 'Verdicts: "AESTHETIC" / "GLOW UP APPROVED" / "SELFIE READY"'
+            vanity_flex_line = (
+                '3. VANITY FLEX: "Hollywood smile", "Main character teeth", "Selfie-ready smile"'
+            )
         else:
             age_band = "13-17"
             intensity = "Savage"
             tone = "maximum hype, real recognizes real, absolute respect"
+            audience_group = "teens"
+            celebrate_goal = "LOOKSMAXXING"
+            audience_care = "Teens don't care about \"health\" - they care about the GLOW UP."
+            snacks_label = "The Looksmaxxers"
+            panel3_line_1 = '- "Your smile is gonna blind people. 10/10 Aura."'
+            panel3_line_2 = '- "That\'s main character energy fr."'
+            verdicts_line = 'Verdicts: "AESTHETIC" / "GLOW UP APPROVED" / "10/10 AURA"'
+            vanity_flex_line = '3. VANITY FLEX: "Hollywood smile", "Main character teeth", "Rizz-ready smile"'
 
         # Build context
         snacks_context = json.dumps(snacks, indent=2)
         facts_context = json.dumps(facts, indent=2)
 
-        prompt = f"""You are a HYPE BEAST writing for teens. This snack is the KEY to LOOKSMAXXING.
+        prompt = f"""You are a HYPE BEAST writing for {audience_group}. This snack is the KEY to {celebrate_goal}.
 
 TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 
 ⚠️ CORE MESSAGE: This snack makes your teeth WHITE, CLEAN, and AESTHETIC.
-Teens don't care about "health" - they care about the GLOW UP.
+{audience_care}
 
 🎭 RECURRING CHARACTER - DR. DRIP:
 He's giving out the "Glow Up" award. He's genuinely impressed.
 Look: Hype-beast molar with sunglasses, gold crown, fresh kicks, PRISTINE WHITE SHINE
 Expressions: "Sheesh!", "Immaculate vibes.", "No filter needed."
-Verdicts: "AESTHETIC" / "GLOW UP APPROVED" / "10/10 AURA"
+{verdicts_line}
 
-🌟 HEALTHY SNACKS (The Looksmaxxers):
+🌟 HEALTHY SNACKS ({snacks_label}):
 {snacks_context}
 
 💎 FACTS (The Beauty Secrets - cite fact_id):
@@ -722,8 +777,8 @@ PANEL 2 - THE STATS (The Beauty Secrets)
 
 PANEL 3 - THE GLAZE (The Hype)
 - Dr. Drip hypes up the aesthetic potential
-- "Your smile is gonna blind people. 10/10 Aura."
-- "That's main character energy fr."
+{panel3_line_1}
+{panel3_line_2}
 - Mutual respect moment (cite another fact_id if available)
 
 PANEL 4 - THE CROWN (The Glow Up Award)
@@ -735,7 +790,7 @@ PANEL 4 - THE CROWN (The Glow Up Award)
 🎨 LOOKSMAXXING TECHNIQUES:
 1. APPEARANCE WORDS: "White", "Clean", "Bright", "Sparkling", "Unfiltered", "Glowing"
 2. BEAUTY SLANG: "Glow up", "Aesthetic", "No filter needed", "Natural beauty hack"
-3. VANITY FLEX: "Hollywood smile", "Main character teeth", "Rizz-ready smile"
+{vanity_flex_line}
 4. VISUAL GLOW: Sparkles, shine effects, pristine white, golden hour lighting
 
 ⚠️ CRITICAL RULES FOR FACT CITATIONS:

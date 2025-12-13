@@ -1,0 +1,688 @@
+[
+  {
+    "id": "036fd7e9-c37d-5f42-8a46-65fda21a4d78",
+    "payload": {
+      "swap_id": "swap_hard_boiled_egg",
+      "name": "Hard boiled egg",
+      "category": "protein",
+      "flavor_notes": [
+        "savory",
+        "filling",
+        "mild"
+      ],
+      "sugar_g_per_100g": 1.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "water_content": 0.75,
+      "allergy_tags": [
+        "eggs"
+      ],
+      "taste_cluster": "savory-soft",
+      "prep_time": "5-15min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [],
+      "popularity_score": 0.75
+    }
+  },
+  {
+    "id": "04de9e9d-05e0-5e18-8208-9179e1b949a5",
+    "payload": {
+      "swap_id": "swap_frozen_grapes",
+      "name": "Frozen grapes",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "cold",
+        "refreshing"
+      ],
+      "sugar_g_per_100g": 16.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.1,
+      "water_content": 0.81,
+      "allergy_tags": [],
+      "taste_cluster": "sweet-frozen",
+      "prep_time": "<5min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [],
+      "popularity_score": 0.8
+    }
+  },
+  {
+    "id": "055cd9b2-39e3-5ca8-ba1a-806ef280703b",
+    "payload": {
+      "swap_id": "swap_water_fruit",
+      "name": "Water with sliced fruit",
+      "category": "beverage",
+      "flavor_notes": [
+        "fresh",
+        "light",
+        "fruity"
+      ],
+      "sugar_g_per_100g": 1.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.0,
+      "residue": 0.0,
+      "water_content": 0.99,
+      "allergy_tags": [],
+      "taste_cluster": "fresh-light",
+      "prep_time": "<5min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [],
+      "popularity_score": 0.8
+    }
+  },
+  {
+    "id": "13d0c48e-6d38-55bd-bcaa-1c558b522c57",
+    "payload": {
+      "swap_id": "swap_whole_wheat_toast",
+      "name": "Whole wheat toast with butter",
+      "category": "grain",
+      "flavor_notes": [
+        "toasty",
+        "wholesome",
+        "warm"
+      ],
+      "sugar_g_per_100g": 3.0,
+      "added_sugar_g": 1.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "water_content": 0.35,
+      "allergy_tags": [
+        "gluten",
+        "dairy"
+      ],
+      "taste_cluster": "savory-crunch",
+      "prep_time": "<5min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Dave's Killer Bread",
+        "Nature's Own"
+      ],
+      "popularity_score": 0.8
+    }
+  },
+  {
+    "id": "5ad86f56-6eef-5862-9e7f-8d782bf76dd7",
+    "payload": {
+      "swap_id": "swap_trail_mix",
+      "name": "Homemade trail mix (no candy)",
+      "category": "snack",
+      "flavor_notes": [
+        "nutty",
+        "crunchy",
+        "varied"
+      ],
+      "sugar_g_per_100g": 8.0,
+      "added_sugar_g": 2.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "water_content": 0.05,
+      "allergy_tags": [
+        "nuts"
+      ],
+      "taste_cluster": "savory-crunch",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [],
+      "popularity_score": 0.75
+    }
+  },
+  {
+    "id": "68359313-28ec-5cc0-807c-8387860f7eb6",
+    "payload": {
+      "swap_id": "swap_apple_slices",
+      "name": "Fresh apple slices",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "crunchy",
+        "fresh"
+      ],
+      "sugar_g_per_100g": 10.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.1,
+      "water_content": 0.86,
+      "allergy_tags": [],
+      "taste_cluster": "sweet-crunch",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [],
+      "popularity_score": 0.9
+    }
+  },
+  {
+    "id": "8dce9fc4-9ec0-5313-8cd6-7c9215f04e7e",
+    "payload": {
+      "swap_id": "swap_carrot_hummus",
+      "name": "Baby carrots with hummus",
+      "category": "veggie",
+      "flavor_notes": [
+        "crunchy",
+        "savory",
+        "fresh"
+      ],
+      "sugar_g_per_100g": 3.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "water_content": 0.88,
+      "allergy_tags": [
+        "sesame"
+      ],
+      "taste_cluster": "savory-crunch",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Sabra",
+        "Bolthouse Farms"
+      ],
+      "popularity_score": 0.8
+    }
+  },
+  {
+    "id": "97031d88-a777-5523-8b26-cee8b206efc0",
+    "payload": {
+      "swap_id": "swap_celery_pb",
+      "name": "Celery sticks with peanut butter",
+      "category": "veggie",
+      "flavor_notes": [
+        "crunchy",
+        "nutty",
+        "fresh"
+      ],
+      "sugar_g_per_100g": 2.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.2,
+      "residue": 0.2,
+      "water_content": 0.9,
+      "allergy_tags": [
+        "peanuts"
+      ],
+      "taste_cluster": "savory-crunch",
+      "prep_time": "<5min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Jif",
+        "Skippy"
+      ],
+      "popularity_score": 0.85
+    }
+  },
+  {
+    "id": "9932310d-84a3-53f7-b3e8-11b49aa5b905",
+    "payload": {
+      "swap_id": "swap_rice_cakes",
+      "name": "Plain rice cakes with avocado",
+      "category": "snack",
+      "flavor_notes": [
+        "light",
+        "crunchy",
+        "fresh"
+      ],
+      "sugar_g_per_100g": 0.5,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "water_content": 0.06,
+      "allergy_tags": [],
+      "taste_cluster": "savory-crunch",
+      "prep_time": "<5min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Quaker",
+        "Lundberg"
+      ],
+      "popularity_score": 0.7
+    }
+  },
+  {
+    "id": "9df936c9-adf2-5380-b04a-6072a7ca346b",
+    "payload": {
+      "swap_id": "swap_grapes",
+      "name": "Fresh grapes",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "juicy",
+        "fresh"
+      ],
+      "sugar_g_per_100g": 16.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.1,
+      "water_content": 0.81,
+      "allergy_tags": [],
+      "taste_cluster": "sweet-crunch",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [],
+      "popularity_score": 0.85
+    }
+  },
+  {
+    "id": "9f3e1ff6-e07a-577f-972a-96be2b1e46aa",
+    "payload": {
+      "swap_id": "swap_popcorn",
+      "name": "Air-popped popcorn with light salt",
+      "category": "snack",
+      "flavor_notes": [
+        "savory",
+        "crunchy",
+        "light"
+      ],
+      "sugar_g_per_100g": 0.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.0,
+      "residue": 0.1,
+      "water_content": 0.04,
+      "allergy_tags": [],
+      "taste_cluster": "savory-crunch",
+      "prep_time": "<5min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Orville",
+        "SkinnyPop"
+      ],
+      "popularity_score": 0.85
+    }
+  },
+  {
+    "id": "aaded70c-1626-5658-a55b-0e3c0fcd8d07",
+    "payload": {
+      "swap_id": "swap_nuts_mixed",
+      "name": "Unsalted mixed nuts",
+      "category": "snack",
+      "flavor_notes": [
+        "nutty",
+        "crunchy",
+        "natural"
+      ],
+      "sugar_g_per_100g": 4.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "water_content": 0.02,
+      "allergy_tags": [
+        "nuts"
+      ],
+      "taste_cluster": "savory-crunch",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Planters",
+        "Blue Diamond"
+      ],
+      "popularity_score": 0.75
+    }
+  },
+  {
+    "id": "ab718977-a9ea-58e1-9269-87aad4f5bdeb",
+    "payload": {
+      "swap_id": "swap_string_cheese",
+      "name": "String cheese",
+      "category": "dairy",
+      "flavor_notes": [
+        "mild",
+        "stretchy",
+        "fun"
+      ],
+      "sugar_g_per_100g": 1.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "water_content": 0.48,
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "savory-creamy",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Frigo",
+        "Polly-O"
+      ],
+      "popularity_score": 0.9
+    }
+  },
+  {
+    "id": "b06e704e-a253-559a-8924-c575c52da32a",
+    "payload": {
+      "swap_id": "swap_cheese_crackers",
+      "name": "Whole grain crackers with cheese slices",
+      "category": "snack",
+      "flavor_notes": [
+        "savory",
+        "cheesy",
+        "wholesome"
+      ],
+      "sugar_g_per_100g": 2.0,
+      "added_sugar_g": 0.5,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.3,
+      "water_content": 0.05,
+      "allergy_tags": [
+        "gluten",
+        "dairy"
+      ],
+      "taste_cluster": "savory-crunch",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Triscuit",
+        "Wheat Thins"
+      ],
+      "popularity_score": 0.85
+    }
+  },
+  {
+    "id": "c7bd9af8-c855-54b6-8185-89b3b8d3c2de",
+    "payload": {
+      "swap_id": "swap_edamame",
+      "name": "Steamed edamame",
+      "category": "veggie",
+      "flavor_notes": [
+        "savory",
+        "soft",
+        "nutty"
+      ],
+      "sugar_g_per_100g": 2.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.0,
+      "residue": 0.1,
+      "water_content": 0.68,
+      "allergy_tags": [
+        "soy"
+      ],
+      "taste_cluster": "savory-soft",
+      "prep_time": "<5min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Seapoint Farms"
+      ],
+      "popularity_score": 0.7
+    }
+  },
+  {
+    "id": "cc7312be-f27a-5b81-86ab-717c9a016962",
+    "payload": {
+      "swap_id": "swap_cucumber",
+      "name": "Cucumber slices with ranch",
+      "category": "veggie",
+      "flavor_notes": [
+        "fresh",
+        "crunchy",
+        "cool"
+      ],
+      "sugar_g_per_100g": 2.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.0,
+      "residue": 0.1,
+      "water_content": 0.95,
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "fresh-crunch",
+      "prep_time": "<5min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Hidden Valley"
+      ],
+      "popularity_score": 0.75
+    }
+  },
+  {
+    "id": "d84148de-da95-5e08-87ff-6dcf9f74f5ee",
+    "payload": {
+      "swap_id": "swap_melon_cubes",
+      "name": "Fresh watermelon cubes",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "juicy",
+        "refreshing"
+      ],
+      "sugar_g_per_100g": 6.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.1,
+      "water_content": 0.91,
+      "allergy_tags": [],
+      "taste_cluster": "sweet-fresh",
+      "prep_time": "<5min",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [],
+      "popularity_score": 0.85
+    }
+  },
+  {
+    "id": "da08dcf3-4d6e-56c9-b1a9-8bb231a7bfbf",
+    "payload": {
+      "swap_id": "swap_yogurt_berries",
+      "name": "Plain yogurt with fresh berries",
+      "category": "dairy",
+      "flavor_notes": [
+        "creamy",
+        "tangy",
+        "sweet-tart"
+      ],
+      "sugar_g_per_100g": 5.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "medium",
+      "stickiness": 0.2,
+      "residue": 0.2,
+      "water_content": 0.85,
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "sweet-creamy",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Chobani",
+        "Fage"
+      ],
+      "popularity_score": 0.9
+    }
+  },
+  {
+    "id": "e0479ed9-37e4-54a2-b516-05d986b4143a",
+    "payload": {
+      "swap_id": "swap_banana",
+      "name": "Fresh banana",
+      "category": "fruit",
+      "flavor_notes": [
+        "sweet",
+        "soft",
+        "creamy"
+      ],
+      "sugar_g_per_100g": 12.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.2,
+      "residue": 0.2,
+      "water_content": 0.75,
+      "allergy_tags": [],
+      "taste_cluster": "sweet-soft",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [],
+      "popularity_score": 0.9
+    }
+  },
+  {
+    "id": "e5f6a6d2-3be9-580a-80d5-7679002a24e3",
+    "payload": {
+      "swap_id": "swap_cottage_cheese",
+      "name": "Cottage cheese with peaches",
+      "category": "dairy",
+      "flavor_notes": [
+        "creamy",
+        "mild",
+        "fruity"
+      ],
+      "sugar_g_per_100g": 4.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.2,
+      "residue": 0.2,
+      "water_content": 0.79,
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "sweet-creamy",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Breakstone's",
+        "Daisy"
+      ],
+      "popularity_score": 0.75
+    }
+  },
+  {
+    "id": "f1e2da0f-a221-576d-9896-59b003195b06",
+    "payload": {
+      "swap_id": "swap_milk",
+      "name": "Plain milk",
+      "category": "beverage",
+      "flavor_notes": [
+        "creamy",
+        "mild",
+        "fresh"
+      ],
+      "sugar_g_per_100g": 5.0,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.1,
+      "water_content": 0.87,
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "neutral-creamy",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Horizon",
+        "Organic Valley"
+      ],
+      "popularity_score": 0.85
+    }
+  },
+  {
+    "id": "fbba0e31-231b-5b95-8873-93c5de6f7e84",
+    "payload": {
+      "swap_id": "swap_cheese_cubes",
+      "name": "Cheddar cheese cubes",
+      "category": "dairy",
+      "flavor_notes": [
+        "savory",
+        "creamy",
+        "mild"
+      ],
+      "sugar_g_per_100g": 0.5,
+      "added_sugar_g": 0.0,
+      "acidity_tag": "low",
+      "stickiness": 0.1,
+      "residue": 0.2,
+      "water_content": 0.37,
+      "allergy_tags": [
+        "dairy"
+      ],
+      "taste_cluster": "savory-creamy",
+      "prep_time": "0",
+      "suitability": {
+        "9-12": true,
+        "13-17": true
+      },
+      "example_brands": [
+        "Tillamook",
+        "Sargento"
+      ],
+      "popularity_score": 0.85
+    }
+  }
+]

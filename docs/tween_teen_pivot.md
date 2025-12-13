@@ -198,6 +198,10 @@ He's not a hater - he's a truth-teller with immaculate drip.
 
 > **Full prompt specifications in:** `docs/new_prompts.md`
 
+**Terminology (UI ↔ API):**
+- **Roast Mode** (bad snack) = `ComicMode.EDUCATE` (risk ≥ 30)
+- **Based Mode** (good snack) = `ComicMode.CELEBRATE` (risk < 30)
+
 ### 4.1 Teen "Roast" Mode (Educate - Bad Snack)
 
 **Triggered when:** Risk score ≥ 30 AND age 13-17
@@ -347,20 +351,19 @@ VISUAL STYLE RULES:
 
 ---
 
-#### File: `backend/data/seeds/seed_data.py`
+#### File: `data/seeds/seed_data.py`
 
 **Changes needed:**
 
-1. Update all `age_band` values from old system to new:
-   - "3-5" → "9-12" (or remove if too young)
-   - "6-8" → "9-12"
-   - "9-12" → "9-12" (keep)
-   - Add new "13-17" variants
+1. Ensure facts only use these `age_band` values:
+   - "9-12"
+   - "13-17"
+   - "all"
 
-2. Add teen-appropriate facts written in roastable format:
+2. Add/expand teen-appropriate facts (13-17) in roastable format:
 
 ```python
-# Example teen facts to add
+# Example teen facts to add (pattern)
 {
     "fact_id": "teen_sugar_bacteria",
     "text": "Sugar literally feeds the bacteria in your mouth - they produce acid that eats through enamel in about 20 minutes after you eat",
@@ -368,7 +371,7 @@ VISUAL STYLE RULES:
     "fact_type": "educate",
     "topic": ["sugar", "bacteria", "acid"],
     "risk_tags": ["sugary"],
-    "roast_hook": "bacteria throwing a party",  # NEW: helps with roast generation
+    "vanity_hook": "bacteria throwing a party",  # Optional: short hook for jokes
 },
 {
     "fact_id": "teen_sticky_time",
@@ -377,7 +380,7 @@ VISUAL STYLE RULES:
     "fact_type": "educate",
     "topic": ["sticky", "candy", "time"],
     "risk_tags": ["sticky"],
-    "roast_hook": "all-you-can-eat bacteria buffet",
+    "vanity_hook": "all-you-can-eat bacteria buffet",
 },
 {
     "fact_id": "teen_acid_erosion",
@@ -386,7 +389,7 @@ VISUAL STYLE RULES:
     "fact_type": "educate",
     "topic": ["sour", "acid", "enamel"],
     "risk_tags": ["acidic"],
-    "roast_hook": "speedrunning enamel destruction",
+    "vanity_hook": "speedrunning enamel destruction",
 },
 # Celebration facts for healthy snacks
 {
@@ -395,7 +398,7 @@ VISUAL STYLE RULES:
     "age_band": "13-17",
     "fact_type": "celebrate",
     "topic": ["cheese", "calcium", "acid"],
-    "roast_hook": "dentist-approved moves",
+    "vanity_hook": "dentist-approved moves",
 },
 {
     "fact_id": "teen_apple_clean",
@@ -403,7 +406,7 @@ VISUAL STYLE RULES:
     "age_band": "13-17",
     "fact_type": "celebrate",
     "topic": ["apple", "crunchy", "cleaning"],
-    "roast_hook": "multitasking legend",
+    "vanity_hook": "multitasking legend",
 },
 ```
 
@@ -901,3 +904,53 @@ Keep updated as trends evolve:
 | Caught in 4K | Caught doing something | "Caught your bacteria in 4K celebrating" |
 | Speedrun | Doing fast | "Cavity speedrun any%" |
 | The vibes are off | Something wrong | "The vibes in your mouth are off rn" |
+
+### Meme Guide Maintenance Checklist
+
+- [ ] Remove dead memes (cringe)
+- [ ] Add 3-5 current phrases (no slurs)
+- [ ] Verify tween-safe vs teen-safe terms
+- [ ] Run a quick “would you share this?” gut check
+
+---
+
+## Review Report (Repo + Pivot Plan)
+
+**Scope:** Review of this pivot doc against current repo implementation, with a focus on (1) technical validity and (2) whether the changes make the app meaningfully more interesting to tweens/teens.
+
+### 1) Validity Check (What’s solid / already aligned)
+
+- **Age pivot is consistent in code.** `backend/app/models/api.py` and `backend/app/services/scoring_service.py` already enforce/produce **9–12 vs 13–17** bands (`ge=9, le=17`, `get_age_band()` returns `"9-12"` or `"13-17"`). Frontend `frontend/src/components/AgeSelector.tsx` matches the same range.
+- **Roast vs Based narrative is implemented.** `backend/app/services/gemini_service.py` has a **Roast Arc** prompt for educate mode and a **W/Based Arc** prompt for celebrate mode, matching Part 4 and Part 7.
+- **Edgy teen visual style is implemented.** `backend/app/services/nanobana_service.py` prompt already specifies Webtoon/Adult Swim vibe, neon palette, exaggerated meme expressions, Dr. Drip “cool not cute,” and vertical 1×4 layout.
+- **Teen facts exist.** `data/seeds/seed_data.py` includes a dedicated **13–17** block with slang-forward educate + celebrate facts.
+
+**Net:** The pivot described here is not speculative — most core mechanics are already in place.
+
+### 2) Teen/Tween Interest Check (Why this will land)
+
+- **Clear value for teens:** you correctly reframe dental health into **vanity + social status** stakes (white teeth, aesthetic, aura). That’s a believable “why care” for 13–17.
+- **Shareable format:** vertical 4‑panel strip, punchy dialogue limits, and verdict overlays are naturally “story/screenshot” friendly.
+- **Mascot fit:** Dr. Drip’s hype‑beast molar persona is specific enough to feel like a *character*, not a dentist reskin. The visual notes in Part 3 and 6 support that.
+- **Tone guardrails:** you explicitly call out “roast ≠ bully,” avoid body‑shaming, and keep slang current. This is key for teen authenticity.
+- **Dual‑band approach:** “Spicy” 9–12 vs “Savage” 13–17 prevents the app from feeling childish to teens while still being usable for tweens.
+
+### 3) Gaps / Potential Issues
+
+- **Seed path alignment:** this doc now references `data/seeds/seed_data.py` (matches `backend/seed_data.sh`).
+- **Age-band cleanup:** facts/models now reference `"9-12"`, `"13-17"`, and `"all"` only (re-seed required to propagate changes to Qdrant).
+- **Mode naming drift:** addressed via the “Terminology (UI ↔ API)” note in Part 4.
+- **Tween prompt maturity:** prompts now separate tween vs teen vocabulary (tween avoids dating/rizz references).
+- **Slang half-life:** a maintenance checklist is included in the Meme Reference Guide appendix.
+
+### 4) Recommendations (Prioritized Next Steps)
+
+1. **Re-seed vectors after seed/schema edits.** Run `cd backend && ./seed_data.sh` (ensures Qdrant reflects the updated age bands and facts).
+2. **Retention/virality add‑ons (post‑demo).**
+   - One‑tap **share/export** CTA after render (TikTok/IG story sizing already supported).
+   - Optional “Roast intensity” toggle within safe bounds.
+   - Weekly “Snack Crimes” challenge to drive repeat use.
+
+### 5) Bottom Line
+
+This pivot is **valid and already mostly implemented**, and the framing is **genuinely teen‑native**: social/vanity stakes, roast comedy, and story‑format output are all strong reasons teens would try and share it. Addressing the small consistency gaps (seed bands, naming, tween maturity) will make the plan cleaner and reduce the chance of “cringe” or contributor confusion.

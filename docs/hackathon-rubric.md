@@ -54,7 +54,7 @@
 - [x] **Celebrate Mode**: Positive comics for healthy snacks ✓
 - [x] **Unknown Mode**: Generic comics for unrecognized items ✓
 - [x] **Smart Item Grouping**: Fruit plates, veggie trays grouped as single items ✓
-- [ ] **Direct Social Sharing**: Add share buttons for Instagram and TikTok (native share intents)
+- [x] **Direct Social Sharing**: Instagram and TikTok share buttons with platform-optimized formats ✓
 - [ ] **Animated comics**: Video generation for Reels (v1.1)
 - [ ] **Multiple comic styles/themes** (v1.2)
 - [x] **Enhanced Freepik Integration**: Mode-based backgrounds (CELEBRATE/EDUCATE themes), speech bubbles, comic frames ✓
@@ -126,7 +126,7 @@ risk_score = 100 × (
 | Guardrail | Implementation | File Reference |
 |-----------|----------------|----------------|
 | **Clinic-Approved Facts Only** | `clinic_approved=True` filter on all fact searches | `qdrant_service.py:search_facts()` |
-| **Age-Appropriate Content** | Age-band filtering (3-5, 6-8, 9-12) for facts and language (TODO: capture in signup, use in prompts) | `score.py`, `gemini_service.py` |
+| **Age-Appropriate Content** | Age-band filtering (9-12, 13-17) for facts and language (TODO: capture preference, use in prompts) | `score.py`, `gemini_service.py` |
 | **Allergen Filtering** | Swaps exclude items matching user's allergy list (TODO: capture in signup) | `scoring_service.py:rank_swaps()` |
 | **No User-Generated Content** | All content from curated seed data + Gemini generation | `seed_data.py` |
 | **Source Attribution** | Facts include `source_key` and `source_url` for provenance | `facts_v1` schema |
@@ -160,7 +160,7 @@ risk_score = 100 × (
 
 | Feature | User Control | File Reference |
 |---------|--------------|----------------|
-| **Age Selection** | User selects age band (3-5, 6-8, 9-12) for appropriate content | `frontend/src/components/AgeSelector.tsx` |
+| **Age Selection** | User selects age band (9-12, 13-17) for appropriate content | `frontend/src/components/AgeSelector.tsx` |
 | **Allergy Input** | Users can specify allergies to filter swap suggestions | `ScoreRetrieveRequest.allergies` |
 | **Multiple Export Formats** | Square, Portrait, Reel - user chooses what to download | `frontend/src/components/ComicDisplay.tsx` |
 | **Progress Indicators** | Step-by-step scanning overlay shows pipeline progress | `frontend/src/components/ScanningOverlay.tsx` |
@@ -248,7 +248,7 @@ risk_score = 100 × (
 - [x] **Panel-aware retrieval**: Facts match comic mood/scene context ✓
 - [x] **Cross-collection joins**: Snack traits drive fact selection ✓
 - [x] **Mode-Based Backgrounds**: Freepik backgrounds per comic mode (CELEBRATE/EDUCATE/UNKNOWN) ✓
-- [ ] **Direct Social Sharing**: Instagram and TikTok share buttons
+- [x] **Direct Social Sharing**: Instagram and TikTok share buttons ✓
 - [ ] **Animated comics**: Video generation (novel format)
 - [ ] **Character customization**: Let users pick mascot style (v1.2)
 - [ ] **Multi-language support**: Expand reach (v1.2)
@@ -259,7 +259,7 @@ risk_score = 100 × (
 
 | Criteria | Status | Strength | Gap |
 |----------|--------|----------|-----|
-| **1. Creative Quality** | 🟢 Strong | Full Gemini stack + Celebrate/Unknown modes + Smart grouping + 3 layouts + **Mode-based backgrounds** | Direct social sharing needed |
+| **1. Creative Quality** | 🟢 Strong | Full Gemini stack + Celebrate/Unknown modes + Smart grouping + 3 layouts + **Mode-based backgrounds** + **Social sharing** | All key features implemented ✓ |
 | **2. Search & Similarity** | 🟢 Strong | Transparent scoring, 4 collections, QueryBuilder, risk_tags | All key features implemented ✓ |
 | **3. Guardrails** | 🟢 Strong | GuardrailsService + AuditService + profanity filter + image safety | Rate limiting (v1.1) |
 | **4. UX & Tradeoffs** | 🟢 Strong | Age selection, 3 export formats, debug mode | User signup flow (v1.1) |
@@ -282,13 +282,13 @@ risk_score = 100 × (
 - ✅ **Image Safety**: Prompt validation before image generation
 - ✅ **Panel Layouts**: Square (2x2), Portrait (1x4), Reel (1x4)
 - ✅ **Mode-Based Background Themes**: Freepik backgrounds per comic mode (CELEBRATE/EDUCATE/UNKNOWN)
+- ✅ **Direct Social Sharing**: Instagram and TikTok share buttons with Web Share API
 
 ---
 
 ## Priority TODOs for Hackathon
 
-1. **Direct Social Sharing** - Add Instagram and TikTok share buttons (native share intents)
-2. **Header branding** - Polish for Poppy Kids Pediatric Dentistry
+1. **Header branding** - Polish for Poppy Kids Pediatric Dentistry
 
 ### Deferred to v1.1
 - **User Signup Flow** - Capture age/allergens upfront, use in prompts (not frontend toggles)

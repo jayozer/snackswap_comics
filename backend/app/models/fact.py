@@ -12,7 +12,7 @@ class FactPayload(BaseModel):
         default_factory=list,
         description="Topics (sugar, acidity, stickiness, timing, brushing)",
     )
-    age_band: str = Field("all", description="Target age band (3-5, 6-8, 9-12, all)")
+    age_band: str = Field("all", description="Target age band (9-12, 13-17, all)")
 
     # Provenance
     source_key: str = Field(..., description="Source identifier (e.g., ClinicKB#SugarChildren)")
@@ -38,9 +38,8 @@ class Fact(BaseModel):
             return True
 
         age_ranges = {
-            "3-5": (3, 5),
-            "6-8": (6, 8),
             "9-12": (9, 12),
+            "13-17": (13, 17),
         }
 
         if self.payload.age_band in age_ranges:

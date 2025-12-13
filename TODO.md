@@ -315,7 +315,39 @@
 - [ ] **Clinic website link**: Add click-through to business website
 - [ ] **Export Format Buttons**: Make more dynamic and mobile-suitable
 - [ ] **"How it Works" section**: Add tutorial for users
+- [ ] **Progress Feedback**: During the long "Creating glow up comic" step, show a progress bar or animation so users know the app hasn't frozen
 - [ ] **File References**: Frontend components
+
+### 5.7 User Customization
+
+- [ ] **Comic Style Picker**: Let users pick different comic styles (e.g., superhero, manga, vaporwave) to better suit individual tastes
+- [ ] **Multi-language support**: Localization for broader accessibility
+
+### 5.8 Design Enhancements
+
+#### Visual & Interaction Style
+
+- [ ] **Bold colour palettes & expressive typography**: Teens are drawn to vibrant, expressive visuals. Material 3 Expressive design language promotes rich purples, pinks and blues, funky fonts, and more abstract themes to make apps feel energetic. Pair purple gradient background with accent colours like neon green or electric pink and use eye-catching headings and captions.
+
+- [ ] **Motion & micro-animations**: Kinetic typography and subtle animations are trending. Animate Dr. Drip's reactions and have panels slide in with a spring effect. Use motion sparingly (e.g., a bouncing progress indicator or a sparkle animation when users get a "glow-up" snack) to add life without overwhelming.
+
+- [ ] **Comic-panel storytelling**: Keep the comic layout but explore different panel shapes (e.g., diagonal cuts or speech bubbles that overlap panels) to mimic popular webtoons. Allow the user to tap on a panel for a zoomed-in view or hold to reveal a fun fact.
+
+#### User Experience & Accessibility
+
+- [ ] **Simplify interactions**: Child-friendly UI guidelines emphasise uncluttered screens, large tappable areas and minimal text. Reduce cognitive load by offering only a few clear actions (e.g., "Upload," "See Comic," "Share") on each screen. Ensure buttons are big and spaced apart to avoid accidental taps.
+
+- [ ] **Inclusive & accessible design**: Inclusive design means adding alt text for images, using relative text sizes and avoiding elements that require precise tapping. The app can still be edgy while ensuring colour contrast and optional captions for the comics.
+
+- [ ] **Dark mode**: Dark mode has gone from novelty to expectation. Offer both dark and light themes so users can pick what suits their mood. Purple gradient could become a deep navy-to-black gradient in dark mode, with neon accents that pop.
+
+#### Personalisation & Variety
+
+- [ ] **Style selection**: Teens love customisation. Offer different "drip styles" for the comic (cyberpunk, vintage manga, glitch art). This gives a sense of ownership and encourages repeat use.
+
+- [ ] **Adaptive difficulty & feedback**: The risk score is great; consider turning it into a "smile health meter" that levels up when users choose healthier snacks. Provide badges or streaks for trying less sugary snacks, aligning with gamification to encourage better dental habits.
+
+*By combining a vibrant aesthetic, smooth interactions and social integration, you can keep SnackSwap Comics relevant and exciting for its teen and tween audience while still delivering helpful dental-health guidance.*
 
 ---
 
@@ -349,9 +381,7 @@
 
 ## v1.2 Features (Later)
 
-- [ ] Multiple comic styles/themes
 - [ ] Character customization (pick mascot style)
-- [ ] Multi-language support
 - [ ] PWA offline support
 
 ---

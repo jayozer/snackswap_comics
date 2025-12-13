@@ -44,7 +44,7 @@ class ComicScript(BaseModel):
     fact_ids: list[str] = Field(default_factory=list, description="All fact IDs used")
     swap_ids: list[str] = Field(default_factory=list, description="Suggested swap IDs")
     style_id: str = Field(..., description="Style ID used")
-    age_band: str = Field("6-8", description="Target age band")
+    age_band: str = Field("9-12", description="Target age band (9-12 or 13-17)")
 
 
 class Comic(BaseModel):

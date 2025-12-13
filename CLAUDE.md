@@ -37,8 +37,8 @@ uv pip install -e .
 cp .env.example .env
 # Then edit .env to add GEMINI_API_KEY (required)
 
-# Start Qdrant (Docker)
-docker run -p 6333:6333 qdrant/qdrant
+# Qdrant Cloud is pre-configured in .env (no local setup needed)
+# If using local Qdrant instead, set QDRANT_URL=http://localhost:6333
 
 # Seed database (first time only)
 ./seed_data.sh
@@ -149,7 +149,7 @@ Mode is determined in `score.py` and passed to `script.py` for appropriate scrip
 - **`components/UploadZone.tsx`** - Drag-and-drop snack photo upload
 - **`components/ComicDisplay.tsx`** - Rendered comic panel viewer
 - **`components/ResultsPanel.tsx`** - Dental risk scores, facts, and swaps
-- **`components/AgeSelector.tsx`** - Age band selection (3-5, 6-8, 9-12)
+- **`components/AgeSelector.tsx`** - Age band selection (9-12, 13-17)
 - **`components/ScanningOverlay.tsx`** - Loading animation during processing
 - **`components/ToothMascot.tsx`** - Animated tooth character
 - **`components/Header.tsx`** - App header with branding
@@ -159,7 +159,7 @@ Mode is determined in `score.py` and passed to `script.py` for appropriate scrip
 All collections use 768-dimensional vectors (Gemini text-embedding-004):
 
 - **`snacks_v1`** - Snack database with nutritional and dental risk factors
-- **`facts_v1`** - Clinic-approved dental health facts (age-banded: 3-5, 6-8, 9-12)
+- **`facts_v1`** - Clinic-approved dental health facts (age-banded: 9-12, 13-17, all)
 - **`swaps_v1`** - Healthier alternatives with taste cluster matching
 - **`styles_v1`** - Branding styles (colors, fonts, bubble styles)
 
@@ -204,7 +204,7 @@ results = qdrant.search_snacks(
 # Search facts (automatically filters by age band and clinic_approved)
 facts = qdrant.search_facts(
     query_vector=embedding,
-    age_band="6-8",
+    age_band="9-12",
     limit=8
 )
 ```
@@ -302,6 +302,7 @@ Files are named by photo_id or script_id with appropriate extensions.
 
 ## Common Issues
 
-**Qdrant connection fails**: Ensure Docker container is running on port 6333
+**Qdrant connection fails**: Verify QDRANT_URL and QDRANT_API_KEY in .env (uses Qdrant Cloud by default)
 **HEIC images fail**: Requires pillow-heif, install with: `uv pip install pillow-heif`
 **Import errors**: Always activate venv before running: `source backend/.venv/bin/activate`
+- Do not mention claude or Anthopic words in Github commit messages.
