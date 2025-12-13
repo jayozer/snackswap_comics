@@ -15,7 +15,7 @@ SnackSwap Comics is an AI-powered progressive web app that transforms photos of 
 │  │                     Frontend (Next.js PWA)                               │   │
 │  │   • Photo capture/upload                                                 │   │
 │  │   • Comic display & sharing                                              │   │
-│  │   • Age selection (3-5, 6-8, 9-12)                                      │   │
+│  │   • Age selection (9-12, 13-17)                                         │   │
 │  └─────────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────────┘
                                         │
@@ -407,7 +407,7 @@ SnackSwap Comics is an AI-powered progressive web app that transforms photos of 
 ├─────────────────────────────┤
 │ • fact_id (string)          │
 │ • fact_text (string)        │
-│ • age_band (string)         │ ← "3-5", "6-8", "9-12"
+│ • age_band (string)         │ ← "9-12", "13-17", "all"
 │ • clinic_approved (bool)    │
 │ • source (string)           │
 │ • embedding_text (string)   │
@@ -623,7 +623,7 @@ snackswap_comics/
 
 3. **768-dimensional embeddings**: Using Gemini's `text-embedding-004` model for semantic search across all Qdrant collections.
 
-4. **Age-banded facts**: Facts are filtered by age band (3-5, 6-8, 9-12) to ensure age-appropriate content.
+4. **Age-banded facts**: Facts are filtered by age band (9-12, 13-17) to ensure age-appropriate content.
 
 5. **Swap ranking algorithm**: Considers risk improvement (must be ≥25 points), taste cluster match, allergens, age suitability, and prep time.
 

@@ -156,7 +156,7 @@ class QdrantService:
 
         Args:
             query_vector: Query embedding vector
-            age_band: Target age band (3-5, 6-8, 9-12, all)
+            age_band: Target age band (9-12, 13-17, all)
             limit: Maximum number of results
             clinic_approved_only: Only return clinic-approved facts
             fact_type: Filter by fact type (educate, celebrate)

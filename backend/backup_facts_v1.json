@@ -1,0 +1,951 @@
+[
+  {
+    "id": "02ff4e69-dfd5-53a6-a949-b8c9fc8b59db",
+    "payload": {
+      "fact_id": "F029",
+      "text": "Fresh fruits have natural sugars wrapped in fiber, which is much gentler on your teeth than candy!",
+      "vanity_hook": "Fresh fruit fiber scrubs while you eat. Candy just STAINS. One glows you up, one doesn't.",
+      "topic": [
+        "fruit",
+        "fiber",
+        "natural sugar"
+      ],
+      "age_band": "6-8",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "06ab6093-3fce-586c-9dea-1f1d0d1ba436",
+    "payload": {
+      "fact_id": "F024",
+      "text": "Tooth enamel is the hardest thing in your body, but acid can still hurt it!",
+      "vanity_hook": "Enamel makes your teeth look white and shiny. Acid wears it away = dull, see-through teeth.",
+      "topic": [
+        "enamel",
+        "science"
+      ],
+      "age_band": "6-8",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "acidic"
+      ]
+    }
+  },
+  {
+    "id": "1de59ef1-cc31-5158-b13c-2daf7bbad2dc",
+    "payload": {
+      "fact_id": "F034",
+      "text": "Sticky candy is a stage 5 clinger - stays on your teeth for HOURS giving bacteria an all-you-can-eat buffet.",
+      "vanity_hook": "Sticky candy leaves your teeth looking FUZZY and gross for hours. That's not aesthetic at all.",
+      "topic": [
+        "stickiness",
+        "sugar",
+        "bacteria"
+      ],
+      "age_band": "13-17",
+      "source_key": "AAPD#ECC",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/early-childhood-caries-classifications-consequences-and-preventive-strategies/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sticky",
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "22d21e85-32dc-5bed-b590-f49fe60b104b",
+    "payload": {
+      "fact_id": "F009",
+      "text": "Sipping on sugary drinks all day is worse for teeth than drinking them quickly at mealtime.",
+      "vanity_hook": "All-day sipping = all-day staining. Your teeth are soaking in yellow juice.",
+      "topic": [
+        "timing",
+        "beverages"
+      ],
+      "age_band": "9-12",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "25c23763-bb70-5a6f-8dd9-7711441f4c54",
+    "payload": {
+      "fact_id": "F028",
+      "text": "Nuts like almonds have protein and calcium that help build super strong teeth!",
+      "vanity_hook": "Almonds build strong, WHITE enamel. That's foundation work for a Hollywood smile.",
+      "topic": [
+        "nuts",
+        "protein",
+        "calcium"
+      ],
+      "age_band": "6-8",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "3915ca65-af11-5bab-8eda-572062a249b1",
+    "payload": {
+      "fact_id": "F044",
+      "text": "Apples have fiber that scrubs and high water content that rinses. Teeth cleaning while snacking? OP strat.",
+      "vanity_hook": "Apples scrub AND rinse. Your teeth get POLISHED while you eat. Natural glow up strat.",
+      "topic": [
+        "apples",
+        "fiber",
+        "water"
+      ],
+      "age_band": "13-17",
+      "source_key": "ADA#MouthHealthy",
+      "source_url": "https://www.mouthhealthy.org/life-stages/babies-and-kids",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "3a47e994-2d97-5f0b-ace4-b89635485ab4",
+    "payload": {
+      "fact_id": "F021",
+      "text": "Rinsing your mouth with water after eating helps wash away food and sugar.",
+      "vanity_hook": "Quick water rinse after eating = instant debris removal. Keeps your smile looking clean.",
+      "topic": [
+        "rinsing",
+        "water"
+      ],
+      "age_band": "all",
+      "source_key": "ADA#MouthHealthy",
+      "source_url": "https://www.mouthhealthy.org/life-stages/babies-and-kids",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "4566d3be-5318-516c-8f3b-bfef875479e1",
+    "payload": {
+      "fact_id": "F014",
+      "text": "Sucrose (table sugar) is the most harmful type of sugar for your teeth.",
+      "vanity_hook": "Table sugar is the #1 enemy of white teeth. It literally yellows your smile.",
+      "topic": [
+        "sugar",
+        "science"
+      ],
+      "age_band": "9-12",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "47dcf21c-41c0-5eec-8d54-77cf3f931113",
+    "payload": {
+      "fact_id": "F008",
+      "text": "Crunchy fruits and vegetables like apples and carrots help clean your teeth naturally.",
+      "vanity_hook": "Crunchy foods scrub your teeth WHITE while you eat. Natural whitening strip.",
+      "topic": [
+        "fruits",
+        "vegetables"
+      ],
+      "age_band": "all",
+      "source_key": "ADA#MouthHealthy",
+      "source_url": "https://www.mouthhealthy.org/life-stages/babies-and-kids",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "49174e21-74ee-5a12-9c4c-e3fd88c0b590",
+    "payload": {
+      "fact_id": "F022",
+      "text": "Children should have no more than 4 ounces of 100% fruit juice per day.",
+      "vanity_hook": "Even 100% juice can yellow your teeth if you drink too much. Limit the stain potential.",
+      "topic": [
+        "juice",
+        "limits"
+      ],
+      "age_band": "3-5",
+      "source_key": "AAPD#ECC",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/early-childhood-caries-classifications-consequences-and-preventive-strategies/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "5186992d-d088-5b54-b747-59d7be2fc971",
+    "payload": {
+      "fact_id": "F039",
+      "text": "Gummy vitamins are still gummies. Same sticky residue, same cavity risk. Mid move thinking they're healthy.",
+      "vanity_hook": "Gummy vitamins coat your teeth in sticky sugar film. 'Healthy' but your teeth still look FUZZY. Mid.",
+      "topic": [
+        "gummy",
+        "stickiness",
+        "vitamins"
+      ],
+      "age_band": "13-17",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sticky",
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "51eafb60-4da0-58d1-b475-20a9bea1dbb2",
+    "payload": {
+      "fact_id": "F013",
+      "text": "Bacteria in your mouth love sugar - when they eat it, they make acid that hurts teeth.",
+      "vanity_hook": "Sugar feeds bacteria that make your teeth look DULL and CRUSTY. Not the vibe.",
+      "topic": [
+        "bacteria",
+        "acid"
+      ],
+      "age_band": "6-8",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "55736ba5-19b4-5c38-8f1d-7eba23c0c8e3",
+    "payload": {
+      "fact_id": "F018",
+      "text": "Chewing sugar-free gum after eating can help protect your teeth by making more saliva.",
+      "vanity_hook": "Sugar-free gum = saliva boost = natural rinse for cleaner-looking teeth. Low-key glow up hack.",
+      "topic": [
+        "gum",
+        "saliva"
+      ],
+      "age_band": "9-12",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "581e3e38-2d7a-5c60-b8d6-9e28590e23f8",
+    "payload": {
+      "fact_id": "F003",
+      "text": "Brushing your teeth twice a day helps wash away sugar before it can cause problems.",
+      "vanity_hook": "Brushing keeps your smile WHITE and camera-ready. That's the glow up.",
+      "topic": [
+        "brushing",
+        "timing"
+      ],
+      "age_band": "all",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "59adccbf-bf7e-55f9-a298-b6a7e7577c8a",
+    "payload": {
+      "fact_id": "F036",
+      "text": "Energy drinks? More like Enamel Destruction Juice. High acid + high sugar = L for your teeth.",
+      "vanity_hook": "Energy drinks are erasing your white smile. Your teeth are getting STAINED and WEAK. Big L.",
+      "topic": [
+        "energy drinks",
+        "acid",
+        "sugar"
+      ],
+      "age_band": "13-17",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "acidic",
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "5ef94146-b994-59bd-972d-56b19d20017c",
+    "payload": {
+      "fact_id": "F031",
+      "text": "Eating crunchy veggies makes your mouth produce more saliva, which is like a natural shield for your teeth!",
+      "vanity_hook": "Saliva is your mouth's cleaning crew. More saliva = cleaner, shinier smile. Veggies trigger it.",
+      "topic": [
+        "saliva",
+        "protection",
+        "vegetables"
+      ],
+      "age_band": "9-12",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "607aeba7-4577-5aed-93c7-276ae9f44c26",
+    "payload": {
+      "fact_id": "F023",
+      "text": "Eating candy or snacks slowly over a long time does more damage than eating them quickly.",
+      "vanity_hook": "Slow-eating candy = extended staining session. Your teeth soak in that yellow longer.",
+      "topic": [
+        "timing",
+        "exposure"
+      ],
+      "age_band": "9-12",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary",
+        "sticky"
+      ]
+    }
+  },
+  {
+    "id": "64832f22-3293-56a2-9b3d-4a8a530d3d10",
+    "payload": {
+      "fact_id": "F035",
+      "text": "Soda is basically an acid bath for your teeth. That's not a flex, that's enamel erosion speedrun.",
+      "vanity_hook": "Soda makes your teeth look TRANSPARENT and weak. Literally see-through enamel. That's mid.",
+      "topic": [
+        "soda",
+        "acid",
+        "enamel"
+      ],
+      "age_band": "13-17",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "acidic",
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "79f9ee64-cb1c-549b-8ac1-d52df785ea92",
+    "payload": {
+      "fact_id": "F033",
+      "text": "Bro, sugar literally feeds bacteria that produce acid. Your enamel gets cooked every time.",
+      "vanity_hook": "Sugar = yellow teeth pipeline. Your smile is getting less aesthetic every time. Negative aura.",
+      "topic": [
+        "sugar",
+        "bacteria",
+        "acid"
+      ],
+      "age_band": "13-17",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "7c78e4e9-f8d7-5fd5-bd30-28e37a6694b1",
+    "payload": {
+      "fact_id": "F001",
+      "text": "Sugar feeds bacteria in your mouth that make acid, which can hurt your tooth enamel.",
+      "vanity_hook": "Sugar turns your teeth YELLOW over time - not the aesthetic you want.",
+      "topic": [
+        "sugar",
+        "bacteria"
+      ],
+      "age_band": "6-8",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "7f1d54b7-09c8-5b9b-9e37-cbcca27d2878",
+    "payload": {
+      "fact_id": "F012",
+      "text": "Too much fruit juice can cause cavities just like soda because of all the sugar.",
+      "vanity_hook": "Juice looks healthy but it's staining your teeth just like soda. Same yellow results.",
+      "topic": [
+        "juice",
+        "sugar"
+      ],
+      "age_band": "6-8",
+      "source_key": "AAPD#ECC",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/early-childhood-caries-classifications-consequences-and-preventive-strategies/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary",
+        "acidic"
+      ]
+    }
+  },
+  {
+    "id": "7fa72f6d-8fc4-5e8e-bfa1-09c0bd5b8ef4",
+    "payload": {
+      "fact_id": "F040",
+      "text": "Hard candy = extended sugar exposure. You're basically marinating your teeth in cavity juice. Cringe.",
+      "vanity_hook": "Hard candy = slow-drip stain session. Your teeth soak in yellow for 20+ minutes. Not aesthetic.",
+      "topic": [
+        "hard candy",
+        "sugar",
+        "exposure"
+      ],
+      "age_band": "13-17",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "810997ad-fffc-54a5-85c4-3918d7aa8804",
+    "payload": {
+      "fact_id": "F032",
+      "text": "Yogurt has good bacteria called probiotics that fight the bad bacteria trying to hurt your teeth!",
+      "vanity_hook": "Yogurt probiotics fight the bacteria that make your breath COOKED and teeth gross.",
+      "topic": [
+        "yogurt",
+        "probiotics",
+        "bacteria"
+      ],
+      "age_band": "9-12",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "82cf5f3a-3740-5b92-b82f-9f6b32916a92",
+    "payload": {
+      "fact_id": "F043",
+      "text": "Water is undefeated. Zero sugar, rinses away debris, keeps you hydrated. The OG drink. No cap.",
+      "vanity_hook": "Water = zero stains, crystal clean teeth. Your smile stays PRISTINE. No filter needed.",
+      "topic": [
+        "water",
+        "hydration"
+      ],
+      "age_band": "13-17",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "843c8fc4-9ed9-53d0-8aa3-40c6e63c616c",
+    "payload": {
+      "fact_id": "F045",
+      "text": "Nuts are protein + calcium + low sugar. Your teeth actually thank you for this one. Based snack choice.",
+      "vanity_hook": "Nuts build strong WHITE enamel. No sugar, no stains. Your smile stays clean. Based aesthetic choice.",
+      "topic": [
+        "nuts",
+        "protein",
+        "calcium"
+      ],
+      "age_band": "13-17",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "92807d3a-789e-5b5c-a029-1187cef8e275",
+    "payload": {
+      "fact_id": "F002",
+      "text": "Sticky foods like gummy candies stay on your teeth longer, giving bacteria more time to make acid.",
+      "vanity_hook": "Sticky candy makes your teeth look FUZZY and gross. Not a good look.",
+      "topic": [
+        "stickiness",
+        "sugar"
+      ],
+      "age_band": "6-8",
+      "source_key": "AAPD#ECC",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/early-childhood-caries-classifications-consequences-and-preventive-strategies/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sticky",
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "9af34733-5806-53b2-aebc-2dff98425dfa",
+    "payload": {
+      "fact_id": "F042",
+      "text": "Cheese neutralizes mouth acid AND has calcium. That's not a snack, that's a dental buff. Built different.",
+      "vanity_hook": "Cheese = smile shield + enamel builder. Your teeth stay WHITE and STRONG. 10/10 aura snack.",
+      "topic": [
+        "cheese",
+        "calcium",
+        "acid"
+      ],
+      "age_band": "13-17",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "a873af58-6ac0-5d9b-af3b-bf311a518d7c",
+    "payload": {
+      "fact_id": "F004",
+      "text": "Acidic drinks like soda can soften your tooth enamel, making it easier to get cavities.",
+      "vanity_hook": "Soda makes your teeth look TRANSPARENT and weak. Not aesthetic at all.",
+      "topic": [
+        "acidity",
+        "enamel"
+      ],
+      "age_band": "9-12",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "acidic"
+      ]
+    }
+  },
+  {
+    "id": "ada6fe93-6e44-5c1b-9896-cffb4c389c61",
+    "payload": {
+      "fact_id": "F041",
+      "text": "Crunchy veggies are literally nature's toothbrush. Scrubs your teeth while you eat. Actually goated.",
+      "vanity_hook": "Veggies POLISH your teeth white while you snack. Edible whitening kit. That's the glow up.",
+      "topic": [
+        "vegetables",
+        "natural cleaning"
+      ],
+      "age_band": "13-17",
+      "source_key": "ADA#MouthHealthy",
+      "source_url": "https://www.mouthhealthy.org/life-stages/babies-and-kids",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "afdeeef6-ef0b-57b0-880e-71cd84c35b55",
+    "payload": {
+      "fact_id": "F038",
+      "text": "Your teeth need 30 mins to recover after sugar exposure. Snacking non-stop = zero recovery time = cooked.",
+      "vanity_hook": "Non-stop snacking = non-stop staining. Your smile never gets a break to recover. Yellow speedrun.",
+      "topic": [
+        "timing",
+        "recovery",
+        "sugar"
+      ],
+      "age_band": "13-17",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "b0576803-932b-5ef6-8753-5a220073f249",
+    "payload": {
+      "fact_id": "F037",
+      "text": "Sipping sugary drinks all day? That's not hydration, that's a 24/7 acid attack. Skill issue.",
+      "vanity_hook": "All-day sipping = all-day yellowing. Your teeth are marinating in stain juice. Cooked smile.",
+      "topic": [
+        "beverages",
+        "timing",
+        "acid"
+      ],
+      "age_band": "13-17",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary",
+        "acidic"
+      ]
+    }
+  },
+  {
+    "id": "b3c3f154-2a6b-5a50-9487-fbeeff7fb628",
+    "payload": {
+      "fact_id": "F005",
+      "text": "Eating snacks with less sugar and drinking water helps keep your teeth strong!",
+      "vanity_hook": "Less sugar = whiter smile. Water keeps your teeth looking fresh and clean.",
+      "topic": [
+        "sugar",
+        "water"
+      ],
+      "age_band": "3-5",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "b8e20843-a163-5c7d-842b-578a99f7906c",
+    "payload": {
+      "fact_id": "F030",
+      "text": "Vegetables make your teeth happy because they have vitamins that keep your gums healthy and strong!",
+      "vanity_hook": "Healthy pink gums make your smile look 10x better. Veggies give you that glow up base.",
+      "topic": [
+        "vegetables",
+        "vitamins",
+        "gums"
+      ],
+      "age_band": "3-5",
+      "source_key": "ADA#MouthHealthy",
+      "source_url": "https://www.mouthhealthy.org/life-stages/babies-and-kids",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "be9b8467-d9aa-507f-8b7c-e2862f7b9aef",
+    "payload": {
+      "fact_id": "F015",
+      "text": "Drinking plain water is the best drink choice for healthy teeth!",
+      "vanity_hook": "Water keeps teeth clean and sparkling. Zero stains, zero yellow. Crystal clear glow.",
+      "topic": [
+        "water",
+        "hydration"
+      ],
+      "age_band": "all",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "bea95292-f17f-516a-b26f-9666dc65b903",
+    "payload": {
+      "fact_id": "F026",
+      "text": "Cheese is a tooth superhero! It has calcium to make teeth strong AND helps neutralize acid in your mouth.",
+      "vanity_hook": "Cheese = white smile fuel. Calcium for strength + acid neutralizer for shine. Glow up snack.",
+      "topic": [
+        "cheese",
+        "calcium",
+        "protection"
+      ],
+      "age_band": "6-8",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "c143327c-8110-5d84-bff2-8e3cd4377f49",
+    "payload": {
+      "fact_id": "F025",
+      "text": "Crunchy foods like apples and carrots are like natural toothbrushes - they scrub your teeth while you chew!",
+      "vanity_hook": "Apples and carrots polish your teeth WHITE while you eat. Edible whitening strips fr.",
+      "topic": [
+        "crunchy",
+        "natural cleaning"
+      ],
+      "age_band": "all",
+      "source_key": "ADA#MouthHealthy",
+      "source_url": "https://www.mouthhealthy.org/life-stages/babies-and-kids",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "c738bf3b-527d-5cbe-a93b-4c4a6c46b18f",
+    "payload": {
+      "fact_id": "F007",
+      "text": "Eating cheese or yogurt after a sugary snack can help protect your teeth.",
+      "vanity_hook": "Cheese neutralizes acid - it's like a reset button for your white smile.",
+      "topic": [
+        "dairy",
+        "protection"
+      ],
+      "age_band": "6-8",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "cb92082f-963a-5d15-a912-5672b1ee95e0",
+    "payload": {
+      "fact_id": "F027",
+      "text": "Foods with lots of water like celery and cucumber help wash away food bits and keep your mouth clean!",
+      "vanity_hook": "Celery and cucumber are 95% water - they literally rinse your smile clean while you snack.",
+      "topic": [
+        "water content",
+        "cleaning"
+      ],
+      "age_band": "6-8",
+      "source_key": "ADA#MouthHealthy",
+      "source_url": "https://www.mouthhealthy.org/life-stages/babies-and-kids",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "d368d728-abbb-58a8-9e06-b9314955f15d",
+    "payload": {
+      "fact_id": "F011",
+      "text": "Milk has calcium that helps make your teeth strong like bones!",
+      "vanity_hook": "Milk = calcium = strong white teeth. That's the foundation of a good smile.",
+      "topic": [
+        "calcium",
+        "dairy"
+      ],
+      "age_band": "3-5",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "db4acf54-0c23-5345-a64f-b4d304cac817",
+    "payload": {
+      "fact_id": "F046",
+      "text": "Sugar-free gum after meals increases saliva production. Saliva = natural mouth defense. Let it cook.",
+      "vanity_hook": "Sugar-free gum = saliva boost = natural rinse. Keeps your smile fresh and clean. Low-key glow up hack.",
+      "topic": [
+        "gum",
+        "saliva",
+        "protection"
+      ],
+      "age_band": "13-17",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "celebrate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "de04f70b-90ba-56da-b33c-4a8777f9914c",
+    "payload": {
+      "fact_id": "F017",
+      "text": "Eating sweets with meals is better than snacking on them between meals.",
+      "vanity_hook": "Snacking all day = staining all day. At least with meals, your saliva can help protect your glow.",
+      "topic": [
+        "timing",
+        "meals"
+      ],
+      "age_band": "6-8",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "f2918018-0582-5238-a188-a4b39eb964d3",
+    "payload": {
+      "fact_id": "F019",
+      "text": "Cavities in baby teeth can spread to your grown-up teeth, so taking care of them matters!",
+      "vanity_hook": "Baby teeth problems become adult teeth problems. Start the glow up early.",
+      "topic": [
+        "baby teeth",
+        "prevention"
+      ],
+      "age_band": "3-5",
+      "source_key": "AAPD#ECC",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/early-childhood-caries-classifications-consequences-and-preventive-strategies/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "f47c1592-339e-5ba6-aab0-ad487c252d8f",
+    "payload": {
+      "fact_id": "F016",
+      "text": "Sports drinks and energy drinks have lots of sugar and acid that can damage teeth.",
+      "vanity_hook": "Energy drinks are basically enamel erasers. They make your teeth look WEAK and TRANSLUCENT.",
+      "topic": [
+        "beverages",
+        "acid"
+      ],
+      "age_band": "9-12",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary",
+        "acidic"
+      ]
+    }
+  },
+  {
+    "id": "f5ffb179-3c5b-551b-9c98-5c1957f13aa0",
+    "payload": {
+      "fact_id": "F006",
+      "text": "Drinking water with fluoride is like giving your teeth a protective shield against cavities.",
+      "vanity_hook": "Fluoride water keeps your enamel strong and shiny. Shield up for that glow.",
+      "topic": [
+        "fluoride",
+        "water"
+      ],
+      "age_band": "6-8",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": []
+    }
+  },
+  {
+    "id": "f79c9058-0822-5544-8c9d-e9e5d5a39880",
+    "payload": {
+      "fact_id": "F020",
+      "text": "Foods with natural sugars like fresh fruit are better for teeth than foods with added sugar.",
+      "vanity_hook": "Natural fruit sugar comes with fiber that scrubs. Added sugar just STAINS. Big difference.",
+      "topic": [
+        "natural sugar",
+        "fruit"
+      ],
+      "age_band": "6-8",
+      "source_key": "AAPD#DietaryRec",
+      "source_url": "https://www.aapd.org/research/oral-health-policies--recommendations/dietary-recommendations-for-infants-children-and-adolescents/",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  },
+  {
+    "id": "f9b0d91a-fdf7-5be0-a45a-f994d051c487",
+    "payload": {
+      "fact_id": "F010",
+      "text": "Your teeth need about 30 minutes to recover after eating something sugary.",
+      "vanity_hook": "30 mins to recover from sugar attack. Non-stop snacking = non-stop yellowing.",
+      "topic": [
+        "timing",
+        "recovery"
+      ],
+      "age_band": "9-12",
+      "source_key": "ADA#Nutrition",
+      "source_url": "https://www.ada.org/resources/ada-library/oral-health-topics/nutrition-and-oral-health",
+      "reviewed_by": "Dr. Andrea Aduna",
+      "clinic_approved": true,
+      "fact_type": "educate",
+      "risk_tags": [
+        "sugary"
+      ]
+    }
+  }
+]

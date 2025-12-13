@@ -7,7 +7,7 @@
 
 ## Build, Test, and Development Commands
 - Backend setup: `cd backend && uv venv && source .venv/bin/activate && uv pip install -r requirements.txt` (or `uv pip install -e ".[dev]"` for tooling). Copy env: `cp .env.example .env`.
-- Start Qdrant locally: `docker run -p 6333:6333 qdrant/qdrant`.
+- Qdrant Cloud is pre-configured in `.env` (QDRANT_URL and QDRANT_API_KEY). No local setup needed.
 - Seed vectors: `cd backend && ./seed_data.sh` (requires `.env` + running Qdrant).
 - Run API with reload: `cd backend && ./run_server.sh`.
 - Gemini smoke test: `cd backend && python test_gemini.py` (verifies API key + SDKs).

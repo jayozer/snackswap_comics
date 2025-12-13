@@ -45,7 +45,7 @@ class SnackPayload(BaseModel):
 
     # Safety
     age_flags: dict[str, AgeFlags] = Field(
-        default_factory=dict, description="Age-specific flags (<5, 5-8, 9-12)"
+        default_factory=dict, description="Age-specific flags (9-12, 13-17)"
     )
     allergy_tags: list[str] = Field(
         default_factory=list, description="Allergen tags (dairy, nuts, gluten)"

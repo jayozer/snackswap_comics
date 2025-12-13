@@ -231,7 +231,7 @@ facts = [
         "fact_id": "F001",
         "text": "Sugar feeds bacteria in your mouth...",
         "topic": ["sugar", "bacteria"],
-        "age_band": "6-8",
+        "age_band": "9-12",
         "clinic_approved": True,
         "risk_tags": ["sugary"],  # NEW: Tags for cross-collection filtering
     },
@@ -239,7 +239,7 @@ facts = [
         "fact_id": "F002",
         "text": "Sticky foods like gummy candies stay on your teeth longer...",
         "topic": ["stickiness", "sugar"],
-        "age_band": "6-8",
+        "age_band": "9-12",
         "clinic_approved": True,
         "risk_tags": ["sticky", "sugary"],  # NEW
     },
@@ -287,7 +287,7 @@ async def search_facts(
 
     Args:
         query_vector: Query embedding vector
-        age_band: Target age band (3-5, 6-8, 9-12, all)
+        age_band: Target age band (9-12, 13-17, all)
         limit: Maximum number of results
         clinic_approved_only: Only return clinic-approved facts
         risk_tags: Filter facts that mention these risk types (sticky, sugary, acidic)

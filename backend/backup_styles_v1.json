@@ -1,0 +1,147 @@
+[
+  {
+    "id": "4ae2797f-d806-5b34-bde8-3c2729d817af",
+    "payload": {
+      "style_id": "fun_playful",
+      "name": "Fun & Playful",
+      "palette": {
+        "primary": "#FF6B6B",
+        "secondary": "#4ECDC4",
+        "background": "#FFF9E6",
+        "text": "#2D3436",
+        "accent": "#FFE66D"
+      },
+      "fonts": {
+        "title": "Comic Sans MS",
+        "dialogue": "Comic Sans MS",
+        "caption": "Arial Rounded MT Bold"
+      },
+      "bubble_style": "wavy",
+      "frame_style": "sketchy",
+      "logo_uri": null,
+      "mascot_uri": null,
+      "watermark_uri": null,
+      "panel_layout": "2x2",
+      "min_font_size_pt": 16,
+      "safe_margin_px": 64,
+      "created_by": "system",
+      "is_default": false
+    }
+  },
+  {
+    "id": "51a3ef4f-d6cd-5dd2-909e-ce84397e5503",
+    "payload": {
+      "style_id": "spicy_tween",
+      "name": "Spicy Tween",
+      "palette": {
+        "primary": "#7C3AED",
+        "secondary": "#06B6D4",
+        "background": "#FAFAFA",
+        "text": "#1F2937",
+        "accent": "#F59E0B"
+      },
+      "fonts": {
+        "title": "Arial Black",
+        "dialogue": "Comic Sans MS",
+        "caption": "Arial"
+      },
+      "bubble_style": "rounded",
+      "frame_style": "modern",
+      "logo_uri": null,
+      "mascot_uri": null,
+      "watermark_uri": null,
+      "panel_layout": "1x4",
+      "min_font_size_pt": 15,
+      "safe_margin_px": 56,
+      "created_by": "system",
+      "is_default": false
+    }
+  },
+  {
+    "id": "5f0e900a-920d-540a-8d89-80d61dd70353",
+    "payload": {
+      "style_id": "educational_clean",
+      "name": "Educational & Clean",
+      "palette": {
+        "primary": "#2E86AB",
+        "secondary": "#A4C639",
+        "background": "#FFFFFF",
+        "text": "#1A1A2E",
+        "accent": "#F6F6F6"
+      },
+      "fonts": {
+        "title": "Helvetica",
+        "dialogue": "Arial",
+        "caption": "Helvetica"
+      },
+      "bubble_style": "sharp",
+      "frame_style": "clean",
+      "logo_uri": null,
+      "mascot_uri": null,
+      "watermark_uri": null,
+      "panel_layout": "2x2",
+      "min_font_size_pt": 14,
+      "safe_margin_px": 64,
+      "created_by": "system",
+      "is_default": false
+    }
+  },
+  {
+    "id": "916180a7-0b43-5c08-b3c8-c738826880bb",
+    "payload": {
+      "style_id": "default",
+      "name": "SnackSwap Default",
+      "palette": {
+        "primary": "#4A90E2",
+        "secondary": "#50C878",
+        "background": "#FFFFFF",
+        "text": "#333333",
+        "accent": "#FFB347"
+      },
+      "fonts": {
+        "title": "Comic Sans MS",
+        "dialogue": "Arial",
+        "caption": "Helvetica"
+      },
+      "bubble_style": "rounded",
+      "frame_style": "clean",
+      "logo_uri": null,
+      "mascot_uri": null,
+      "watermark_uri": null,
+      "panel_layout": "2x2",
+      "min_font_size_pt": 15,
+      "safe_margin_px": 64,
+      "created_by": "system",
+      "is_default": true
+    }
+  },
+  {
+    "id": "af6ed7d3-b242-5335-a907-03951722b3e0",
+    "payload": {
+      "style_id": "savage_teen",
+      "name": "Savage Teen",
+      "palette": {
+        "primary": "#FF1493",
+        "secondary": "#00FF87",
+        "background": "#1A1A2E",
+        "text": "#FFFFFF",
+        "accent": "#FFD700"
+      },
+      "fonts": {
+        "title": "Impact",
+        "dialogue": "Arial Black",
+        "caption": "Arial"
+      },
+      "bubble_style": "edgy",
+      "frame_style": "gritty",
+      "logo_uri": null,
+      "mascot_uri": null,
+      "watermark_uri": null,
+      "panel_layout": "1x4",
+      "min_font_size_pt": 16,
+      "safe_margin_px": 48,
+      "created_by": "system",
+      "is_default": false
+    }
+  }
+]

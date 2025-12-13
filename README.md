@@ -82,13 +82,18 @@ cp .env.example .env
 # - QDRANT_URL (default: http://localhost:6333)
 ```
 
-4. **Start Qdrant** (if running locally)
+4. **Configure Qdrant**
+
+The project uses **Qdrant Cloud** by default (pre-configured in `.env`).
 
 ```bash
-# Using Docker
-docker run -p 6333:6333 qdrant/qdrant
+# .env already contains:
+# QDRANT_URL=https://your-cluster.aws.cloud.qdrant.io
+# QDRANT_API_KEY=your-api-key
 
-# Or install locally: https://qdrant.tech/documentation/quick-start/
+# For local development instead, use:
+# docker run -p 6333:6333 qdrant/qdrant
+# QDRANT_URL=http://localhost:6333
 ```
 
 5. **Seed the database**
@@ -159,7 +164,7 @@ Stores snack data with nutritional and dental risk factors:
 
 #### `facts_v1`
 Clinic-approved dental health facts:
-- Age-banded content (3-5, 6-8, 9-12, all)
+- Age-banded content (9-12, 13-17, all)
 - Topic tags (sugar, acidity, timing, brushing)
 - Source citations and reviewer info
 
@@ -319,9 +324,9 @@ Then re-run `./backend/seed_data.sh`.
 ```python
 {
     "fact_id": "F999",
-    "text": "Your fun, kid-friendly fact here!",
+    "text": "Your fun, tween/teen-friendly fact here!",
     "topic": ["sugar", "timing"],
-    "age_band": "6-8",  # 3-5, 6-8, 9-12, or all
+    "age_band": "9-12",  # 9-12, 13-17, or all
     "source_key": "ClinicKB#YourSource",
     "source_url": "https://...",
     "clinic_approved": True,
@@ -341,11 +346,10 @@ Edit `styles_v1` collection to customize:
 
 ### Age Bands
 
-Content is automatically tailored to three age groups:
+Content is automatically tailored to two age bands:
 
-- **3-5**: Very simple, playful language
-- **6-8**: Friendly, fun explanations
-- **9-12**: Engaging, "cool" tone
+- **9-12**: Tween "Spicy" (lighter burns)
+- **13-17**: Teen "Savage" (full roast energy)
 
 ## 🚧 MVP Limitations
 

@@ -126,7 +126,7 @@ risk_score = 100 × (
 | Guardrail | Implementation | File Reference |
 |-----------|----------------|----------------|
 | **Clinic-Approved Facts Only** | `clinic_approved=True` filter on all fact searches | `qdrant_service.py:search_facts()` |
-| **Age-Appropriate Content** | Age-band filtering (3-5, 6-8, 9-12) for facts and language (TODO: capture in signup, use in prompts) | `score.py`, `gemini_service.py` |
+| **Age-Appropriate Content** | Age-band filtering (9-12, 13-17) for facts and language (TODO: capture preference, use in prompts) | `score.py`, `gemini_service.py` |
 | **Allergen Filtering** | Swaps exclude items matching user's allergy list (TODO: capture in signup) | `scoring_service.py:rank_swaps()` |
 | **No User-Generated Content** | All content from curated seed data + Gemini generation | `seed_data.py` |
 | **Source Attribution** | Facts include `source_key` and `source_url` for provenance | `facts_v1` schema |
@@ -160,7 +160,7 @@ risk_score = 100 × (
 
 | Feature | User Control | File Reference |
 |---------|--------------|----------------|
-| **Age Selection** | User selects age band (3-5, 6-8, 9-12) for appropriate content | `frontend/src/components/AgeSelector.tsx` |
+| **Age Selection** | User selects age band (9-12, 13-17) for appropriate content | `frontend/src/components/AgeSelector.tsx` |
 | **Allergy Input** | Users can specify allergies to filter swap suggestions | `ScoreRetrieveRequest.allergies` |
 | **Multiple Export Formats** | Square, Portrait, Reel - user chooses what to download | `frontend/src/components/ComicDisplay.tsx` |
 | **Progress Indicators** | Step-by-step scanning overlay shows pipeline progress | `frontend/src/components/ScanningOverlay.tsx` |
