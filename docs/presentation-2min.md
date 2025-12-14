@@ -18,7 +18,7 @@
 ## SECTION 1: The Problem (0:00 - 0:20)
 
 ### On Screen
-*App in idle state, DR. DRIP mascot visible*
+*App in idle state, DR. HAWLEY mascot visible*
 
 ### Say This
 
@@ -28,11 +28,11 @@
 >
 > What if we could make dental health about **looking good** instead of avoiding pain?
 >
-> Meet **DR. DRIP** — a molar tooth with Gen-Z energy who's about to roast your snack's aesthetic."
+> Meet **DR. HAWLEY** — a molar tooth with Gen-Z energy who's about to roast your snack's aesthetic."
 
 ### Rubric Points Hit
 - ✅ Real-World Fit: Problem statement
-- ✅ Creative Quality: DR. DRIP introduction
+- ✅ Creative Quality: DR. HAWLEY introduction
 - ✅ Innovation: Vanity roasting concept
 
 ---
@@ -44,7 +44,7 @@
 
 ### Say This
 
-> "Watch this. At age 10, DR. DRIP is in **Spicy Mode** — playful burns, meme references.
+> "Watch this. At age 10, DR. HAWLEY is in **Spicy Mode** — playful burns, meme references.
 >
 > *(toggle to 15)*
 >
@@ -82,7 +82,7 @@
 >
 > *(comic generates)*
 >
-> And here's the magic — **Gemini 3 Pro generates a 4-panel comic** with DR. DRIP roasting the snack. Notice the **emotion-based speech bubbles** — that angry starburst? That's the exposé panel.
+> And here's the magic — **Gemini 3 Pro generates a 4-panel comic** with DR. HAWLEY roasting the snack. Notice the **emotion-based speech bubbles** — that angry starburst? That's the exposé panel.
 >
 > The roast targets the **snack**, never the kid. Playful destruction, not shame."
 
@@ -125,7 +125,7 @@
 >
 > **65% of teens** say appearance is their top concern. We're not fighting that — we're **using it**.
 >
-> When DR. DRIP says 'That snack is gonna turn your smile yellow' — that lands. That's **vanity as a force for good**.
+> When DR. HAWLEY says 'That snack is gonna turn your smile yellow' — that lands. That's **vanity as a force for good**.
 >
 > *(click download)*
 >
@@ -158,7 +158,7 @@
 
 | Criteria | Mentioned | Demonstrated |
 |----------|-----------|--------------|
-| **1. Creative Quality** | DR. DRIP, emotion bubbles, thinking mode | Age toggle, comic output |
+| **1. Creative Quality** | DR. HAWLEY, emotion bubbles, thinking mode | Age toggle, comic output |
 | **2. Search & Similarity** | Transparent scoring, Qdrant | Risk score breakdown |
 | **3. Guardrails** | 50+ blocked terms, audit logs, clinic-approved | Kid-safe roast example |
 | **4. UX & Tradeoffs** | 5-step progress | Live scanning overlay |
@@ -213,7 +213,7 @@ Skip Section 4 (Safety & Compliance) — it's important but the demo speaks loud
 **Shame-Free Education:**
 - Studies show shame-based health messaging backfires for adolescents
 - Creates anxiety and avoidance, not behavior change
-- DR. DRIP roasts the SNACK, celebrates the PERSON
+- DR. HAWLEY roasts the SNACK, celebrates the PERSON
 
 **Lifelong Habit Formation:**
 - Positive associations with dental health create lasting habits

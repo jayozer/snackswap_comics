@@ -24,9 +24,9 @@ async def main():
 
     service = NanoBananaService(settings)
     
-    # Dr. Drip character description based on image_25.png reference
+    # Dr. Hawley character description based on image_25.png reference
     base_description = (
-        "An anthropomorphic molar tooth character named 'Dr. Drip'. "
+        "An anthropomorphic molar tooth character named 'Dr. Hawley'. "
         "Off-white/pale cyan body with smooth rounded shape. "
         "Large round eyes with small black pupils, simple black eyebrows, wide open smiling mouth. "
         "Black retro sunglasses pushed up onto forehead. "
@@ -40,17 +40,17 @@ async def main():
     
     variations = [
         {
-            "name": "dr_drip_hero",
+            "name": "dr_hawley_hero",
             "expression": "confident, cool, smirking, standing with swag",
             "detail": "Standing confidently. Clean white shine. Arms crossed or at sides. Hoodie looks fresh."
         },
         {
-            "name": "dr_drip_scanning",
+            "name": "dr_hawley_scanning",
             "expression": "intense focus, pulling shades down from forehead",
             "detail": "Action: Pulling shades down from forehead with ONE HAND to peek. The other hand is down. STRICTLY TWO HANDS TOTAL. No extra floating hands."
         },
         {
-            "name": "dr_drip_success",
+            "name": "dr_hawley_success",
             "expression": "celebrating, triumphant, holding up a 'W' sign or thumbs up",
             "detail": "Huge success. Energetic pose. Jump or cheer. ZOOM OUT to keep hands and feet in frame. Hoodie and slides visible."
         }
@@ -71,7 +71,7 @@ async def main():
         try:
             # Generate Image (Raw)
             await service.generate_character_image(
-                character_name="Dr. Drip",
+                character_name="Dr. Hawley",
                 character_description=full_desc,
                 expression=var["expression"],
                 output_path=raw_path,

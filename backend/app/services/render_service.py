@@ -408,7 +408,7 @@ class RenderService:
 
         Returns ONE bubble per dialogue line (no grouping). Supports both:
         - New object format: {speaker, text, position, emotion}
-        - Legacy string format: treated as Dr. Drip on the right
+        - Legacy string format: treated as Dr. Hawley on the right
         """
         entries: list[dict] = []
 
@@ -419,7 +419,7 @@ class RenderService:
                 emotion = str(d.get("emotion", "speech")).strip() or "speech"
                 position = str(d.get("position", "center")).strip() or "center"
             elif isinstance(d, str):
-                speaker = "Dr. Drip"
+                speaker = "Dr. Hawley"
                 text = d.strip()
                 emotion = "speech"
                 position = "right"
@@ -665,7 +665,7 @@ class RenderService:
             img_width, img_height = img.size
 
             prompt = f"""Analyze this comic image and find ALL visible text, including:
-- Character name labels (e.g., "GUMMY GUS", "DR. DRIP")
+- Character name labels (e.g., "GUMMY GUS", "DR. HAWLEY")
 - Title text or headers
 - Sound effects (e.g., "POW", "WHOOSH")
 - Any other typography or lettering

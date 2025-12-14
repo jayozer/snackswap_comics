@@ -6,7 +6,7 @@
 
 > **Making dental health about the glow-up, one roast at a time.**
 
-Roast My Snack is an AI-powered app that transforms photos of snacks into 4-panel comics where **DR. DRIP** — a molar tooth with Gen-Z energy — roasts your snack's "aesthetic threat level" to your smile. We reframe dental health as **vanity**, not lectures, because teens care more about yellow teeth than cavities.
+Roast My Snack is an AI-powered app that transforms photos of snacks into 4-panel comics where **DR. HAWLEY** — a molar tooth with Gen-Z energy — roasts your snack's "aesthetic threat level" to your smile. We reframe dental health as **vanity**, not lectures, because teens care more about yellow teeth than cavities.
 
 <p align="center">
   <a href="https://www.poppykidsdental.com">
@@ -50,7 +50,7 @@ Roast My Snack is an AI-powered app that transforms photos of snacks into 4-pane
 - Appearance-based health messaging is 3x more effective for ages 12-17
 - Peer influence on health behaviors peaks at age 14-15
 
-**DR. DRIP** speaks their language — roasting the **snack**, never the kid. Playful destruction, not shame.
+**DR. HAWLEY** speaks their language — roasting the **snack**, never the kid. Playful destruction, not shame.
 
 ---
 
@@ -59,7 +59,7 @@ Roast My Snack is an AI-powered app that transforms photos of snacks into 4-pane
 | Feature | Description |
 |---------|-------------|
 | **📸 Snap & Roast** | Upload any snack photo → get a 4-panel comic in ~30 seconds |
-| **🦷 DR. DRIP Mascot** | Off-white molar in a forest green hoodie with Adult Swim energy |
+| **🦷 DR. HAWLEY Mascot** | Off-white molar in a forest green hoodie with Adult Swim energy |
 | **🔥 Age-Adaptive Roasts** | Ages 9-12 "Spicy" (playful) vs 13-17 "Savage" (full destruction) |
 | **📊 Transparent Scoring** | Multi-factor dental risk: sugar, acidity, stickiness, residue |
 | **🔄 Taste-Matched Swaps** | Healthier alternatives that match flavor profiles |
@@ -157,7 +157,7 @@ npm run dev
 
 ---
 
-## 🎭 DR. DRIP Character
+## 🎭 DR. HAWLEY Character
 
 <table>
   <tr>
@@ -203,7 +203,7 @@ risk_score = 100 × (
 |-------|------|-------------|
 | < 30 | 🎉 CELEBRATE | "Glow Up Approved" — W Arc |
 | ≥ 30 | 🔥 EDUCATE | Vanity roast — Roast Arc |
-| No match | ❓ UNKNOWN | Generic DR. DRIP tips |
+| No match | ❓ UNKNOWN | Generic DR. HAWLEY tips |
 
 ---
 
@@ -276,7 +276,7 @@ roast-my-snack/
 │   ├── app/
 │   │   ├── api/              # FastAPI endpoints
 │   │   ├── core/             # Configuration
-│   │   ├── data/             # DR. DRIP roast corpus
+│   │   ├── data/             # DR. HAWLEY roast corpus
 │   │   ├── models/           # Pydantic schemas
 │   │   └── services/         # Business logic
 │   │       ├── gemini_service.py      # Vision + Writer
@@ -305,9 +305,9 @@ roast-my-snack/
 
 ### ✅ Completed (v0.9)
 - Full 6-stage pipeline (Capture → Export)
-- DR. DRIP character with age-adaptive personality
+- DR. HAWLEY character with age-adaptive personality
 - Gemini Thinking Mode for vision and writing
-- Nano-Banana / Imagen 4.0 comic generation
+- Nano-Banana comic generation
 - GuardrailsService with teen slang allowlist
 - AuditService with daily compliance logs
 - 5 emotion-based speech bubble styles
@@ -331,7 +331,6 @@ Built with:
 - [Google Gemini](https://ai.google.dev/) — Vision, language, and image generation
 - [Qdrant](https://qdrant.tech/) — Vector database for semantic search
 - [FastAPI](https://fastapi.tiangolo.com/) — Modern Python web framework
-- [Next.js](https://nextjs.org/) — React framework
 - [Poppy Kids Pediatric Dentistry](https://www.poppykidsdental.com) — Clinical partner
 
 ---

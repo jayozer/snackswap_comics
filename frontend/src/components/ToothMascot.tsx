@@ -8,12 +8,12 @@ interface ToothMascotProps {
 
 export default function ToothMascot({ state }: ToothMascotProps) {
   // Determine which image to show based on state
-  let imageSrc = '/images/Dr.Drip_chillin.png'; // Default idle state
+  let imageSrc = '/images/Dr.Hawley_chillin.png'; // Default idle state
 
   if (state === 'scanning' || state === 'uploading') {
-    imageSrc = '/images/Dr.Drip_folded_hands.png'; // Thinking/analyzing
+    imageSrc = '/images/Dr.Hawley_folded_hands.png'; // Thinking/analyzing
   } else if (state === 'results' || state === 'comic') {
-    imageSrc = '/images/Dr.Drip_microphone.png'; // Announcing results
+    imageSrc = '/images/Dr.Hawley_microphone.png'; // Announcing results
   }
 
   return (
@@ -31,7 +31,7 @@ export default function ToothMascot({ state }: ToothMascotProps) {
 
         <img
           src={imageSrc}
-          alt="Dr. Drip Mascot"
+          alt="Dr. Hawley Mascot"
           className="w-full h-full object-contain relative z-10 animate-float"
         />
       </motion.div>

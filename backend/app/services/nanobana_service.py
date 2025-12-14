@@ -79,7 +79,7 @@ class NanoBananaService:
             "- Simple backgrounds - solid colors or minimal gradients",
             "- EXPRESSIONS MUST BE EXAGGERATED (shocked, smug, crying, flexing)",
             "",
-            "DR. DRIP CHARACTER (MUST MATCH EXACTLY):",
+            "DR. HAWLEY CHARACTER (MUST MATCH EXACTLY):",
             "- Anthropomorphic molar tooth, off-white/pale cyan body",
             "- Smooth rounded rectangular shape as head/torso, two root-like legs",
             "- Large round white eyes with small black pupils",
@@ -89,7 +89,7 @@ class NanoBananaService:
             "- Chunky beige/tan slip-on slides (Yeezy-style) on feet",
             "",
             "VANITY CONTRAST EFFECTS:",
-            "- DR. DRIP: Always pristine, clean, fresh appearance - bright white shine",
+            "- DR. HAWLEY: Always pristine, clean, fresh appearance - bright white shine",
             "- Bad snacks: GRIMY appearance - yellow stains, sticky residue, gross effects",
             "- Panel 2 & 3: Add gross visual effects on snacks (green fumes, yellow discoloration)",
             "- Panel 4: Add clean visual effects (sparkles, glow, pristine white)",
@@ -180,7 +180,7 @@ class NanoBananaService:
             "- Exaggerated cartoon expressions (shocked, smug, crying, flexing)",
             "",
             "VANITY CONTRAST:",
-            "- DR. DRIP: Off-white/pale cyan molar tooth in dark forest green hoodie, black sunglasses on forehead, beige slides - always pristine and clean",
+            "- DR. HAWLEY: Off-white/pale cyan molar tooth in dark forest green hoodie, black sunglasses on forehead, beige slides - always pristine and clean",
             "- Bad snacks: GRIMY appearance - yellow stains, sticky residue, gross effects",
             "- Good snacks: CLEAN appearance - bright colors, sparkle effects",
             "- Visual contrast: clean/white (good) vs gross/yellow (bad)",
@@ -204,7 +204,7 @@ class NanoBananaService:
             "chips_classic": "A potato chip character with attitude. Golden-yellow, wavy crispy shape. Cartoon eyes that can show smugness or panic. Slightly curled edges, textured surface. Can look like it's trying too hard to be cool.",
             "soda_orange": "An orange soda can character with main-character energy. Neon orange, cylindrical shape with condensation droplets. Expressive face - can be cocky or scared. Fizzy bubbles as dramatic effect.",
             "candy_chocolate": "A chocolate bar character with street style. Brown rectangular shape with segmented squares. Glossy chocolate surface. Can have smug or nervous expressions. Might wear tiny sneakers or gold chain.",
-            "recurring_tooth": "DR. DRIP - An anthropomorphic molar tooth character. Off-white/pale cyan body with smooth, rounded, somewhat rectangular shape serving as head and torso. Two root-like appendages as legs. Large, round, prominent white eyes with small black pupils. Simple black line eyebrows. Wide open smiling mouth showing pink tongue. Black retro-style sunglasses pushed up onto forehead (above eyes). Wears an oversized dark forest green pullover hoodie with front kangaroo pocket and drawstrings (hood down). Chunky beige/tan slip-on slides (Yeezy-style) on feet. CRITICAL STYLE: Clean 2D digital illustration with bold, uniform thickness black outlines. Flat coloring with large solid color areas. Minimal hard-edged cel-shading only (no gradients). No complex textures or sketchy lines. Expression range: surprised, excited, impressed, smug, disgusted.",
+            "recurring_tooth": "DR. HAWLEY - An anthropomorphic molar tooth character. Off-white/pale cyan body with smooth, rounded, somewhat rectangular shape serving as head and torso. Two root-like appendages as legs. Large, round, prominent white eyes with small black pupils. Simple black line eyebrows. Wide open smiling mouth showing pink tongue. Black retro-style sunglasses pushed up onto forehead (above eyes). Wears an oversized dark forest green pullover hoodie with front kangaroo pocket and drawstrings (hood down). Chunky beige/tan slip-on slides (Yeezy-style) on feet. CRITICAL STYLE: Clean 2D digital illustration with bold, uniform thickness black outlines. Flat coloring with large solid color areas. Minimal hard-edged cel-shading only (no gradients). No complex textures or sketchy lines. Expression range: surprised, excited, impressed, smug, disgusted.",
         }
 
         return descriptions.get(

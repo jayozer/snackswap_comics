@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class DialogueLine(BaseModel):
     """Single line of dialogue with speaker attribution."""
 
-    speaker: str = Field(..., description="Character name who speaks this line (e.g., 'Dr. Drip')")
+    speaker: str = Field(..., description="Character name who speaks this line (e.g., 'Dr. Hawley')")
     text: str = Field(..., description="The dialogue text")
     position: str = Field("center", description="Speaker position for bubble tail (left, center, right)")
     emotion: str = Field("speech", description="Bubble emotion style (speech, thought, exclaim, angry, whisper)")

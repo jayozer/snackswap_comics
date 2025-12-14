@@ -174,12 +174,12 @@ export default function Home() {
     setState('comic');
   };
 
-  // Get DR. DRIP's message based on state and mode - VANITY FOCUSED
-  const getDrDripMessage = () => {
+  // Get DR. HAWLEY's message based on state and mode - VANITY FOCUSED
+  const getDrHawleyMessage = () => {
     if (state === 'idle') {
       return intensityMode === 'Savage'
-        ? "Yo. Dr. Drip here. Show me your snack and I'll tell you if it's gonna cook your smile or give you that glow up."
-        : "Hey! Dr. Drip here. Drop your snack and let's see if it's aesthetic or gonna turn your teeth yellow!";
+        ? "Yo. Dr. Hawley here. Show me your snack and I'll tell you if it's gonna cook your smile or give you that glow up."
+        : "Hey! Dr. Hawley here. Drop your snack and let's see if it's aesthetic or gonna turn your teeth yellow!";
     }
     if (state === 'uploading') return "Uploading... hold up.";
     if (state === 'scanning') return "Scanning for aesthetic threats... 👀";
@@ -229,7 +229,7 @@ export default function Home() {
             key={state + comicMode}
           >
             <p className="font-bold text-lg text-gray-800">
-              {getDrDripMessage()}
+              {getDrHawleyMessage()}
             </p>
             <p className="text-xs text-gray-500 mt-1 font-comic">
               {intensityMode} Mode {intensityMode === 'Savage' ? '💀' : '🔥'}
@@ -340,7 +340,7 @@ export default function Home() {
 
         <footer className="mt-8 flex flex-col items-center gap-4">
           <p className="text-center text-gray-500 text-sm font-body">
-            Powered by Gemini Vision & Qdrant • Roast My Snack 2025 • Your Smile's Glow Up Starts Here
+            Powered by DeepMind (Gemini & Nano Banana) & Qdrant & Freepik • Roast My Snack 2025 • Your Smile's Glow Up Starts Here
           </p>
           <a
             href="https://www.poppykidsdental.com"
