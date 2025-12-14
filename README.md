@@ -109,6 +109,41 @@ Roast My Snack is an AI-powered app that transforms photos of snacks into 4-pane
                                         └─────────────┘
 ```
 
+### Why Images and Dialogue Are Generated Separately
+
+The comic generation uses a **two-phase approach**:
+
+1. **Phase 1: Script Generation** (Gemini Writer)
+   - Generates both `visual_prompt` (scene description) AND `dialogue` (who says what)
+   - Example output per panel:
+     ```json
+     {
+       "visual_prompt": "Cucumber glowing with hydration aura, Dr. Hawley giving approving nod",
+       "dialogue": [
+         {"speaker": "Hydro Cucumber", "text": "I keep your mouth fresh!", "position": "left"},
+         {"speaker": "Dr. Hawley", "text": "Glow up approved!", "position": "right"}
+       ]
+     }
+     ```
+
+2. **Phase 2: Image Generation** (Nano-Banana)
+   - Receives ONLY the `visual_prompt`, characters, and mood
+   - Explicitly told: **"ABSOLUTELY NO TEXT OR SPEECH BUBBLES"**
+   - Focuses purely on visual composition
+
+3. **Phase 3: Dialogue Overlay** (Render Service)
+   - Adds speech bubbles with the `dialogue` text AFTER image generation
+   - Handles bubble positioning, collision detection, and styling
+
+**Why this separation?**
+
+| Reason | Explanation |
+|--------|-------------|
+| **Text Quality** | AI-generated text in images looks bad (distorted letters, misspellings). Professional overlay is cleaner. |
+| **Flexibility** | Can adjust dialogue without regenerating images. Enables localization. |
+| **Bubble Control** | Precise positioning, collision detection, and emotion-based styling (exclaim, whisper, etc.) |
+| **Consistency** | Same font, bubble style, and readability across all comics |
+
 ---
 
 ## 🚀 Quick Start

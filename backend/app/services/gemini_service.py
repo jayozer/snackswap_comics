@@ -706,7 +706,9 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                             if snack_char:
                                 snack_name_lower = snack_char.get('name', '').lower()
                                 # Check if line is self-referential (snack introducing/defending itself)
-                                if any(phrase in text_lower for phrase in ["i'm ", "i am ", "i literally", "i scrub", "i just", "but i ", "we ", "my "]):
+                                # Catch ANY "I [verb]" pattern: "I trigger", "I have", "I boost", etc.
+                                if text_lower.startswith("i ") or text_lower.startswith("i'") or \
+                                   any(phrase in text_lower for phrase in ["but i ", "we ", "my "]):
                                     is_snack_speaking = True
                                 # Check if line mentions the snack's own name
                                 elif snack_name_lower and snack_name_lower in text_lower:
@@ -1205,19 +1207,9 @@ Dr. Hawley: "W. Actual W."
                             is_snack_speaking = False
                             if snack_char:
                                 snack_name_lower = snack_char.get('name', '').lower()
-                                if any(
-                                    phrase in text_lower
-                                    for phrase in [
-                                        "i'm ",
-                                        "i am ",
-                                        "i literally",
-                                        "i scrub",
-                                        "i just",
-                                        "but i ",
-                                        "we ",
-                                        "my ",
-                                    ]
-                                ):
+                                # Catch ANY "I [verb]" pattern: "I trigger", "I have", "I boost", etc.
+                                if text_lower.startswith("i ") or text_lower.startswith("i'") or \
+                                   any(phrase in text_lower for phrase in ["but i ", "we ", "my "]):
                                     is_snack_speaking = True
                                 elif snack_name_lower and snack_name_lower in text_lower:
                                     is_snack_speaking = True

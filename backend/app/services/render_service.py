@@ -1913,12 +1913,15 @@ Rules:
                 margin_x = int(panel_width * 0.04)  # ~20px at 512px wide
                 margin_top = 10
                 lane_gap = 10
-                diagonal_offset_y = int(panel_height * 0.06)
+                # Increased offset to prevent overlap between left/right bubbles
+                diagonal_offset_y = int(panel_height * 0.25)  # ~64px on 256px panel
                 lane_y = {
                     "left": panel_y + margin_top,
                     "right": panel_y + margin_top + diagonal_offset_y,
                     "center": panel_y + margin_top,
                 }
+                # Track the bottom of the tallest bubble for cross-lane collision awareness
+                max_bubble_bottom = panel_y + margin_top
 
                 # Draw a bubble for EACH dialogue line
                 for bubble_idx, bubble_data in enumerate(bubble_entries):
@@ -1949,9 +1952,18 @@ Rules:
 
                     # Stack bubbles within each lane based on the actual rendered height
                     bubble_y = lane_y.get(position, panel_y + margin_top)
+
+                    # Cross-lane collision: ensure bubbles on opposite sides don't overlap
+                    # For right/center bubbles after a left bubble, start below the previous bubble
+                    if bubble_idx > 0 and position in ("right", "center"):
+                        bubble_y = max(bubble_y, max_bubble_bottom + lane_gap)
+
                     max_y = panel_y + panel_height - bubble_height - margin_top
                     bubble_y = max(panel_y + margin_top, min(bubble_y, max_y))
                     lane_y[position] = bubble_y + bubble_height + lane_gap
+
+                    # Update cross-lane tracking with this bubble's bottom edge
+                    max_bubble_bottom = max(max_bubble_bottom, bubble_y + bubble_height)
 
                     # Create a semi-transparent bubble overlay for this speaker
                     bubble_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))

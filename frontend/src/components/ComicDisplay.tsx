@@ -16,12 +16,12 @@ interface ComicDisplayProps {
 type FormatType = 'portrait' | 'reel';
 
 export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) {
-  const [selectedFormat, setSelectedFormat] = useState<FormatType>('portrait');
+  const [selectedFormat, setSelectedFormat] = useState<FormatType>('reel');
   const [isDownloading, setIsDownloading] = useState(false);
 
   const formats: { key: FormatType; label: string; emoji: string; uri: string | null }[] = [
-    { key: 'portrait', label: 'Story', emoji: '📱', uri: comicData.comic_portrait_uri },
     { key: 'reel', label: 'Reel', emoji: '🎬', uri: comicData.reel_cover_uri },
+    { key: 'portrait', label: 'Story', emoji: '📱', uri: comicData.comic_portrait_uri },
   ];
 
   const currentFormat = formats.find(f => f.key === selectedFormat);
