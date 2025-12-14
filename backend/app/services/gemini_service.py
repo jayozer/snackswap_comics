@@ -97,56 +97,49 @@ class GeminiService:
         Returns:
             List of detected items
         """
-        prompt = """You are a precise food detection assistant for a dental health app.
+        prompt = """You are a strict visual food detector for a dental health app.
 
-⚠️ CRITICAL: ONLY identify what you ACTUALLY SEE in the image. DO NOT guess or assume.
+NON-NEGOTIABLE RULES:
+- Only identify foods that are CLEARLY visible in the image.
+- Do not guess, infer, or “fill in the blanks”.
+- If you are not sure, lower confidence. If you cannot recognize anything, return one item with category "unknown".
 
-Analyze this photo and identify up to 5 food/snack items. For each item, provide:
-- name: The ACCURATE common name of EXACTLY what you see (be specific and literal)
-- brand_guess: Brand name if clearly visible on packaging (or null if not visible)
-- category: One of: candy, chips, cookies, crackers, fruit, vegetables, dairy, beverage, baked_goods, processed_snack, healthy_snack
-- visible_clues: Observable details that helped identify it (color, shape, texture, packaging)
-- confidence: Your confidence level (0.0 to 1.0)
+TASK:
+Identify up to 5 distinct food/snack items in this photo.
 
-🍎 HEALTHY FOOD RECOGNITION (IMPORTANT):
-- Fresh fruits: apples, oranges, bananas, grapes, berries, melons, etc.
-- Fresh vegetables: carrots, celery, cucumbers, broccoli, peppers, etc.
-- Fruit plates/bowls = "Mixed Fruit Plate" or "Fresh Fruit Assortment" (category: fruit)
-- Vegetable trays = "Fresh Vegetable Tray" (category: vegetables)
-- Cheese slices/cubes = "Cheese" or "Cheddar Cheese" (category: dairy)
-- Nuts = "Almonds", "Mixed Nuts" etc. (category: healthy_snack)
+CATEGORIES (choose exactly one):
+candy, chips, cookies, crackers, fruit, vegetables, dairy, beverage, baked_goods, processed_snack, healthy_snack, unknown
 
-🚫 COMMON MISTAKES TO AVOID:
-- Do NOT confuse colorful fruits with candy
-- Do NOT confuse vegetable trays with processed snacks
-- Do NOT confuse cheese with crackers
-- Fresh, whole foods are NEVER "crackers" or "chips"
-- If you see natural, unprocessed food, it's likely fruit/vegetables/dairy
+NAME RULES (very important):
+- If the photo shows ONE obvious food type, name it specifically (e.g., "Bananas"). Do NOT use mixed/assortment names.
+- Only use a mixed label (e.g., "Mixed Fruit Bowl", "Fresh Fruit Assortment") if 2+ different fruit types are clearly visible together.
+- Do NOT label fresh fruit/vegetables as crackers/chips/candy.
+- Do NOT label fruit pieces/cubes as cheese unless texture/packaging clearly indicates cheese.
+  If uncertain between fruit cubes vs cheese cubes, set confidence <= 0.6 and explain uncertainty in visible_clues.
 
-GROUPING RULES:
-- Multiple similar items = ONE grouped item
-  - Example: bowl of mixed fruits = "Mixed Fruit Plate" (category: fruit)
-  - Example: vegetable tray = "Fresh Vegetable Tray" (category: vegetables)
-  - Example: 10 gummy bears = "Gummy Bears" (category: candy)
-- Maximum 5 distinct food items total
-- Prioritize the most prominent/visible items
+GROUPING:
+- Many pieces of the same thing = ONE item (e.g., a bunch of bananas = one "Bananas").
+- A bowl/plate of clearly mixed fruits = ONE item ("Mixed Fruit Bowl") rather than listing every fruit.
 
-Return your response as a JSON object with this structure:
+For each item, return:
+- name: specific common name
+- brand_guess: brand only if clearly visible, else null
+- category: from the list above
+- visible_clues: short, concrete visual evidence (2–8 phrases)
+- confidence: 0.0 to 1.0
+
+Return ONLY valid JSON with this structure (no markdown, no extra keys):
 {
   "items": [
     {
       "name": "string",
-      "brand_guess": "string or null",
+      "brand_guess": null,
       "category": "string",
-      "visible_clues": "string describing what you ACTUALLY see",
+      "visible_clues": "string",
       "confidence": 0.95
     }
-  ],
-  "needs_confirmation": false
-}
-
-Set needs_confirmation to true ONLY if the image is blurry or food is unrecognizable.
-ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assume."""
+  ]
+}"""
 
         try:
             # Read image file and encode as base64
@@ -225,6 +218,9 @@ ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assu
                 response_text = response_text[3:]
             if response_text.endswith("```"):
                 response_text = response_text[:-3]
+
+            # Log the exact model response so misclassifications can be debugged from server logs.
+            logger.info("Gemini vision raw response (%s):\n%s", image_path_obj.name, response_text.strip())
 
             try:
                 result = json.loads(response_text.strip())

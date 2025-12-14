@@ -335,8 +335,13 @@ class RenderService:
                 # Draw dialogue lines (limit to 2 lines for small panels)
                 for j, line in enumerate(dialogue[:2]):
                     text_y = dialogue_y + 6 + (j * 18)
+                    # Extract text from dict format or use string directly
+                    if isinstance(line, dict):
+                        line_text = line.get("text", "")
+                    else:
+                        line_text = str(line)
                     # Wrap text if too long
-                    wrapped_line = self._wrap_text(line, dialogue_font, panel_width - 30)
+                    wrapped_line = self._wrap_text(line_text, dialogue_font, panel_width - 30)
                     for k, wrapped in enumerate(wrapped_line[:1]):  # Only first wrap line
                         draw.text((x + 15, text_y + (k * 14)), wrapped, fill='#333', font=dialogue_font)
 
