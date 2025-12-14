@@ -418,11 +418,13 @@ class RenderService:
                 speaker = d.get("speaker", "Unknown")
                 text = d.get("text", "").strip()
                 emotion = d.get("emotion", "speech")
+                position = d.get("position", "center")  # Preserve position field
             elif isinstance(d, str):
                 # Legacy string format - default to Dr. Drip
                 speaker = "Dr. Drip"
                 text = d.strip()
                 emotion = "speech"
+                position = "right"  # Dr. Drip defaults to right
             else:
                 continue
 
@@ -433,7 +435,8 @@ class RenderService:
                 speaker_groups[speaker] = {
                     "speaker": speaker,
                     "texts": [],
-                    "emotion": emotion  # Use first emotion for this speaker
+                    "emotion": emotion,  # Use first emotion for this speaker
+                    "position": position  # Use first position for this speaker
                 }
             speaker_groups[speaker]["texts"].append(text)
 
@@ -443,7 +446,8 @@ class RenderService:
             result.append({
                 "speaker": data["speaker"],
                 "text": "\n".join(data["texts"]),
-                "emotion": data["emotion"]
+                "emotion": data["emotion"],
+                "position": data["position"]  # Include position in result
             })
 
         return result
@@ -1839,17 +1843,18 @@ Rules:
             logger.info(f"Processing comic image: {img_width}x{img_height}")
 
             # ========================================
-            # PHASE 1: Detect and Erase AI-generated text
+            # PHASE 1: Text Detection/Inpainting - DISABLED
             # ========================================
-            logger.info("Phase 1: Detecting AI-generated text regions...")
-            text_regions = await self._detect_text_regions(base_image_path)
-
-            if text_regions:
-                logger.info(f"Found {len(text_regions)} text regions to erase")
-                img = self._erase_text_regions(img, text_regions, method="inpaint")
-                logger.info("Erased AI-generated text from image")
-            else:
-                logger.info("No text regions detected (or detection failed)")
+            # DISABLED: Text detection/inpainting causes blur artifacts on character artwork.
+            # Gemini Vision sometimes misidentifies parts of characters as "text", and
+            # OpenCV's cv2.inpaint() then blurs those regions, causing smudged panels.
+            # The Nano-Banana prompt already instructs the AI not to generate text,
+            # so this defensive phase is not essential and causes more harm than good.
+            #
+            # text_regions = await self._detect_text_regions(base_image_path)
+            # if text_regions:
+            #     img = self._erase_text_regions(img, text_regions, method="inpaint")
+            logger.info("Phase 1: Skipped text detection (disabled to prevent blur artifacts)")
 
             # ========================================
             # PHASE 2: Draw clean bubbles with dialogue
@@ -1915,6 +1920,7 @@ Rules:
                     speaker = speaker_data["speaker"]
                     text = speaker_data["text"]
                     emotion = speaker_data["emotion"]
+                    position = speaker_data.get("position", "center")  # Get position from dialogue
 
                     # Calculate dynamic bubble size based on text length
                     bubble_width, bubble_height, font_size, wrapped_lines = self._calculate_bubble_dimensions(
@@ -1925,18 +1931,19 @@ Rules:
                         min_font_size=9
                     )
 
-                    # Calculate position with diagonal offset for multiple speakers
-                    bubble_x, bubble_y, tail_direction = self._calculate_diagonal_position(
-                        speaker_index=speaker_idx,
-                        total_speakers=total_speakers,
-                        bubble_width=bubble_width,
-                        bubble_height=bubble_height,
-                        panel_x=panel_x,
-                        panel_y=panel_y,
-                        panel_width=panel_width,
-                        panel_height=panel_height,
-                        panel_number=i
-                    )
+                    # Use position field to determine bubble placement (not speaker_index)
+                    if position == "left":
+                        bubble_x = panel_x + 30  # Left side of panel
+                        tail_direction = "left"
+                    elif position == "right":
+                        bubble_x = panel_x + panel_width - bubble_width - 30  # Right side of panel
+                        tail_direction = "right"
+                    else:  # center
+                        bubble_x = panel_x + (panel_width - bubble_width) // 2
+                        tail_direction = "left"  # Default tail direction for center
+
+                    # Y position uses speaker_idx for vertical stagger to avoid overlap
+                    bubble_y = panel_y + 10 + (speaker_idx * 27)
 
                     # Create a semi-transparent bubble overlay for this speaker
                     bubble_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))
@@ -1946,24 +1953,25 @@ Rules:
                     style = BUBBLE_STYLES.get(emotion, BUBBLE_STYLES["speech"])
                     bubble_fill_color = style.get("fill", "white")
 
-                    # Convert fill color to RGBA
+                    # Convert fill color to RGBA (semi-transparent for comic effect)
+                    bubble_alpha = 180  # More transparent background
                     if bubble_fill_color == "white":
-                        bubble_fill = (255, 255, 255, 245)
+                        bubble_fill = (255, 255, 255, bubble_alpha)
                     elif bubble_fill_color.startswith("#"):
                         hex_color = bubble_fill_color.lstrip('#')
                         r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
-                        bubble_fill = (r, g, b, 245)
+                        bubble_fill = (r, g, b, bubble_alpha)
                     else:
-                        bubble_fill = (255, 255, 255, 245)
+                        bubble_fill = (255, 255, 255, bubble_alpha)
 
                     bubble_outline = (0, 0, 0, 255)  # Solid black outline
 
-                    # Draw ELLIPSE for classic oval speech bubble shape
+                    # Draw ELLIPSE for classic oval speech bubble shape (bold outline)
                     bubble_draw.ellipse(
                         [bubble_x, bubble_y, bubble_x + bubble_width, bubble_y + bubble_height],
                         fill=bubble_fill,
                         outline=bubble_outline,
-                        width=3
+                        width=5  # Bolder comic-style outline
                     )
 
                     # Draw tail pointing based on tail_direction
@@ -1973,14 +1981,14 @@ Rules:
                         tail_x = bubble_x + int(bubble_width * 0.70)
 
                     tail_top = bubble_y + bubble_height - 8
-                    tail_bottom = bubble_y + bubble_height + 18
-                    tail_offset = 15 if tail_direction == "left" else -15
+                    tail_bottom = bubble_y + bubble_height + 22  # Slightly longer tail
+                    tail_offset = 18 if tail_direction == "left" else -18  # Wider tail
                     tail_points = [
-                        (tail_x - 10, tail_top),
-                        (tail_x + 10, tail_top),
+                        (tail_x - 12, tail_top),
+                        (tail_x + 12, tail_top),
                         (tail_x + tail_offset, tail_bottom)
                     ]
-                    bubble_draw.polygon(tail_points, fill=bubble_fill, outline=bubble_outline, width=2)
+                    bubble_draw.polygon(tail_points, fill=bubble_fill, outline=bubble_outline, width=4)  # Bolder tail outline
 
                     # Cover the seam where tail meets bubble
                     bubble_draw.ellipse(
@@ -2025,7 +2033,7 @@ Rules:
                         # Draw text in black
                         draw.text((text_x, text_y), line_text, font=font, fill="black")
 
-                    logger.info(f"Panel {i+1}: Drew bubble for '{speaker}' at ({bubble_x},{bubble_y}) size {bubble_width}x{bubble_height}, emotion={emotion}")
+                    logger.info(f"Panel {i+1}: Drew bubble for '{speaker}' at ({bubble_x},{bubble_y}) size {bubble_width}x{bubble_height}, position={position}, emotion={emotion}")
 
             # Save the result
             img.save(output_path, 'PNG', quality=95)

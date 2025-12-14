@@ -179,6 +179,9 @@ ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assu
                 config=types.GenerateContentConfig(
                     temperature=0.3,  # Lower for factual detection
                     max_output_tokens=1024,
+                    thinking_config=types.ThinkingConfig(
+                        thinking_budget=8192  # Enable thinking for vision
+                    ) if self.settings.gemini_vision_thinking_level != "NONE" else None,
                     safety_settings=[
                         types.SafetySetting(
                             category="HARM_CATEGORY_HARASSMENT",
@@ -567,6 +570,9 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                 config=types.GenerateContentConfig(
                     temperature=self.settings.gemini_temperature,
                     max_output_tokens=self.settings.gemini_max_tokens,
+                    thinking_config=types.ThinkingConfig(
+                        thinking_budget=self.settings.gemini_writer_thinking_budget  # Max thinking for script writing
+                    ),
                     safety_settings=[
                         types.SafetySetting(
                             category="HARM_CATEGORY_HARASSMENT",
@@ -1005,6 +1011,9 @@ NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Ma
                 config=types.GenerateContentConfig(
                     temperature=self.settings.gemini_temperature,
                     max_output_tokens=self.settings.gemini_max_tokens,
+                    thinking_config=types.ThinkingConfig(
+                        thinking_budget=self.settings.gemini_writer_thinking_budget  # Max thinking for script writing
+                    ),
                     safety_settings=[
                         types.SafetySetting(
                             category="HARM_CATEGORY_HARASSMENT",
