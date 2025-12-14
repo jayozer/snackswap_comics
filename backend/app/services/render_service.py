@@ -30,7 +30,9 @@ class RenderService:
     """Service for rendering comics from scripts."""
 
     # Feature flag for AI bubble detection (set to False to always use PIL fallback)
-    USE_AI_BUBBLE_DETECTION = True
+    # DISABLED: AI bubble detection is unreliable when AI generates text in bubbles
+    # Always use PIL fallback to draw fresh, clean bubbles with correct text
+    USE_AI_BUBBLE_DETECTION = False
 
     def __init__(
         self,
@@ -320,11 +322,10 @@ class RenderService:
                 dialogue_y = y + panel_height - 80  # Scaled from 150
                 bubble_height = 25 * min(len(dialogue), 2)  # Max 2 lines in small panels
 
-                # Speech bubble background
+                # Speech bubble background (oval for comic feel)
                 bubble_margin = 8
-                draw.rounded_rectangle(
+                draw.ellipse(
                     [x + bubble_margin, dialogue_y, x + panel_width - bubble_margin, dialogue_y + bubble_height + 12],
-                    radius=6,
                     fill='white',
                     outline='#333',
                     width=2
@@ -333,8 +334,13 @@ class RenderService:
                 # Draw dialogue lines (limit to 2 lines for small panels)
                 for j, line in enumerate(dialogue[:2]):
                     text_y = dialogue_y + 6 + (j * 18)
+                    # Extract text from dict format or use string directly
+                    if isinstance(line, dict):
+                        line_text = line.get("text", "")
+                    else:
+                        line_text = str(line)
                     # Wrap text if too long
-                    wrapped_line = self._wrap_text(line, dialogue_font, panel_width - 30)
+                    wrapped_line = self._wrap_text(line_text, dialogue_font, panel_width - 30)
                     for k, wrapped in enumerate(wrapped_line[:1]):  # Only first wrap line
                         draw.text((x + 15, text_y + (k * 14)), wrapped, fill='#333', font=dialogue_font)
 
@@ -356,7 +362,7 @@ class RenderService:
 
     def _wrap_text(self, text: str, font: ImageFont.FreeTypeFont, max_width: int) -> list[str]:
         """
-        Wrap text to fit within max width using accurate font measurements.
+        Wrap text to fit within max width, preserving explicit line breaks.
 
         Uses PIL textbbox for pixel-perfect wrapping instead of character count estimation.
         """
@@ -366,27 +372,79 @@ class RenderService:
         dummy_img = Image.new('RGB', (1, 1))
         draw = ImageDraw.Draw(dummy_img)
 
-        words = text.split()
-        lines = []
-        current_line = []
+        all_lines = []
 
-        for word in words:
-            test_line = ' '.join(current_line + [word])
-            # Use textbbox for accurate width measurement
-            bbox = draw.textbbox((0, 0), test_line, font=font)
-            text_width = bbox[2] - bbox[0]
+        # First split on explicit line breaks to preserve them
+        segments = text.split('\n')
 
-            if text_width <= max_width:
-                current_line.append(word)
+        for segment in segments:
+            words = segment.split()
+            if not words:
+                # Empty segment from consecutive \n - skip
+                continue
+
+            current_line = []
+            for word in words:
+                test_line = ' '.join(current_line + [word])
+                # Use textbbox for accurate width measurement
+                bbox = draw.textbbox((0, 0), test_line, font=font)
+                text_width = bbox[2] - bbox[0]
+
+                if text_width <= max_width:
+                    current_line.append(word)
+                else:
+                    if current_line:
+                        all_lines.append(' '.join(current_line))
+                    current_line = [word]
+
+            if current_line:
+                all_lines.append(' '.join(current_line))
+
+        return all_lines if all_lines else [text]
+
+    def _dialogue_entries_for_bubbles(self, dialogue: list) -> list[dict]:
+        """
+        Normalize dialogue into per-bubble entries.
+
+        Returns ONE bubble per dialogue line (no grouping). Supports both:
+        - New object format: {speaker, text, position, emotion}
+        - Legacy string format: treated as Dr. Drip on the right
+        """
+        entries: list[dict] = []
+
+        for d in dialogue:
+            if isinstance(d, dict):
+                speaker = str(d.get("speaker", "Unknown")).strip() or "Unknown"
+                text = str(d.get("text", "")).strip()
+                emotion = str(d.get("emotion", "speech")).strip() or "speech"
+                position = str(d.get("position", "center")).strip() or "center"
+            elif isinstance(d, str):
+                speaker = "Dr. Drip"
+                text = d.strip()
+                emotion = "speech"
+                position = "right"
             else:
-                if current_line:
-                    lines.append(' '.join(current_line))
-                current_line = [word]
+                continue
 
-        if current_line:
-            lines.append(' '.join(current_line))
+            if not text:
+                continue
 
-        return lines if lines else [text]
+            if position not in ("left", "right", "center"):
+                position = "center"
+
+            if emotion not in ("speech", "thought", "exclaim", "angry", "whisper"):
+                emotion = "speech"
+
+            entries.append(
+                {
+                    "speaker": speaker,
+                    "text": text,
+                    "emotion": emotion,
+                    "position": position,
+                }
+            )
+
+        return entries
 
     def _darken_color(self, hex_color: str) -> str:
         """Darken a hex color by 20%."""
@@ -519,7 +577,7 @@ class RenderService:
                 # CRITICAL: Add maximum size limits - bubbles shouldn't be too large
                 # Reject if detected region is too big (likely detected background, not bubble)
                 max_w = int(panel_width * 0.85)   # Max 85% of panel width
-                max_h = int(panel_height * 0.30)  # Max 30% of panel height (bubbles are at top)
+                max_h = int(panel_height * 0.25)  # Max 25% of panel height (compact bubbles at top)
 
                 # Must START in top region AND be reasonably sized
                 if y < scan_height and w > min_w and h > min_h and w < max_w and h < max_h:
@@ -550,6 +608,302 @@ class RenderService:
             logger.warning(f"Bubble boundary detection failed: {e}")
             return None
 
+    def _clear_bubble_region(
+        self,
+        img: Image.Image,
+        bbox: tuple[int, int, int, int],
+        fill_color: str = "white",
+        preserve_outline: bool = True,
+    ) -> None:
+        """
+        Clear the interior of a detected bubble, erasing AI-generated text.
+
+        This method whites-out the inside of a speech bubble to remove any
+        garbled or incorrect text generated by the AI, preparing a clean
+        surface for correct dialogue text to be overlaid.
+
+        Args:
+            img: PIL Image to modify (in place)
+            bbox: Bounding box (x1, y1, x2, y2) of bubble
+            fill_color: Color to fill (default white)
+            preserve_outline: If True, leaves small margin to keep bubble outline
+        """
+        draw = ImageDraw.Draw(img)
+        x1, y1, x2, y2 = bbox
+
+        # Margin to preserve the bubble outline drawn by AI
+        margin = 6 if preserve_outline else 0
+
+        # Draw filled ellipse to clear interior
+        draw.ellipse(
+            [x1 + margin, y1 + margin, x2 - margin, y2 - margin],
+            fill=fill_color
+        )
+        logger.debug(f"Cleared bubble region at ({x1},{y1})-({x2},{y2})")
+
+    async def _detect_text_regions(self, image_path: Path) -> list[dict]:
+        """
+        Use Gemini Vision to detect all text regions in the comic image.
+
+        This finds AI-generated text labels, titles, character names, etc.
+        that need to be erased before adding our clean speech bubbles.
+
+        Args:
+            image_path: Path to the comic image
+
+        Returns:
+            List of dicts with 'bbox' (x1, y1, x2, y2) for each text region
+        """
+        try:
+            # Lazy load Gemini service if needed
+            if self.gemini is None:
+                from app.services.gemini_service import GeminiService
+                self.gemini = GeminiService(self.settings)
+
+            # Read image for dimensions
+            img = Image.open(image_path)
+            img_width, img_height = img.size
+
+            prompt = f"""Analyze this comic image and find ALL visible text, including:
+- Character name labels (e.g., "GUMMY GUS", "DR. DRIP")
+- Title text or headers
+- Sound effects (e.g., "POW", "WHOOSH")
+- Any other typography or lettering
+
+The image is {img_width}x{img_height} pixels.
+
+Return ONLY valid JSON with this exact format:
+{{
+    "text_regions": [
+        {{"bbox": [x1, y1, x2, y2], "text": "detected text"}},
+        ...
+    ]
+}}
+
+Where bbox coordinates are pixel values:
+- x1, y1 = top-left corner
+- x2, y2 = bottom-right corner
+
+Include generous padding around each text region (+10 pixels on each side).
+If no text is found, return {{"text_regions": []}}"""
+
+            # Call Gemini Vision
+            from google import genai
+
+            client = genai.Client(api_key=self.settings.gemini_api_key)
+
+            # Read image bytes
+            with open(image_path, "rb") as f:
+                image_bytes = f.read()
+
+            response = client.models.generate_content(
+                model="gemini-2.0-flash-exp",
+                contents=[
+                    {
+                        "role": "user",
+                        "parts": [
+                            {"text": prompt},
+                            {"inline_data": {"mime_type": "image/png", "data": image_bytes}},
+                        ],
+                    }
+                ],
+            )
+
+            # Parse JSON response
+            response_text = response.text.strip()
+
+            # Extract JSON from response (handle markdown code blocks)
+            if "```json" in response_text:
+                response_text = response_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in response_text:
+                response_text = response_text.split("```")[1].split("```")[0].strip()
+
+            import json
+            result = json.loads(response_text)
+            text_regions = result.get("text_regions", [])
+
+            # Validate and clamp bounding boxes
+            valid_regions = []
+            for region in text_regions:
+                bbox = region.get("bbox", [])
+                if len(bbox) == 4:
+                    x1, y1, x2, y2 = bbox
+                    # Clamp to image bounds
+                    x1 = max(0, min(x1, img_width))
+                    y1 = max(0, min(y1, img_height))
+                    x2 = max(0, min(x2, img_width))
+                    y2 = max(0, min(y2, img_height))
+                    # Ensure valid box
+                    if x2 > x1 and y2 > y1:
+                        valid_regions.append({
+                            "bbox": [int(x1), int(y1), int(x2), int(y2)],
+                            "text": region.get("text", "")
+                        })
+
+            logger.info(f"Detected {len(valid_regions)} text regions in comic image")
+            for i, region in enumerate(valid_regions):
+                logger.debug(f"  Region {i+1}: {region['bbox']} - '{region.get('text', '')[:30]}...'")
+
+            return valid_regions
+
+        except Exception as e:
+            logger.warning(f"Text detection failed: {e}")
+            return []
+
+    def _get_surrounding_color(
+        self,
+        img: Image.Image,
+        x1: int,
+        y1: int,
+        x2: int,
+        y2: int,
+        sample_width: int = 5
+    ) -> tuple[int, int, int]:
+        """
+        Sample pixels around a region to determine the dominant surrounding color.
+
+        This is used to fill text regions with a color that blends with the background.
+
+        Args:
+            img: PIL Image
+            x1, y1, x2, y2: Bounding box of the region
+            sample_width: How many pixels to sample around the region
+
+        Returns:
+            RGB tuple of the dominant surrounding color
+        """
+        img_width, img_height = img.size
+        pixels = []
+
+        # Sample from edges around the region
+        for x in range(max(0, x1 - sample_width), min(img_width, x2 + sample_width)):
+            # Top edge
+            if y1 - sample_width >= 0:
+                pixels.append(img.getpixel((x, y1 - sample_width)))
+            # Bottom edge
+            if y2 + sample_width < img_height:
+                pixels.append(img.getpixel((x, y2 + sample_width)))
+
+        for y in range(max(0, y1 - sample_width), min(img_height, y2 + sample_width)):
+            # Left edge
+            if x1 - sample_width >= 0:
+                pixels.append(img.getpixel((x1 - sample_width, y)))
+            # Right edge
+            if x2 + sample_width < img_width:
+                pixels.append(img.getpixel((x2 + sample_width, y)))
+
+        if not pixels:
+            return (255, 255, 255)  # Default to white
+
+        # Calculate average color
+        r_sum = sum(p[0] if isinstance(p, tuple) else p for p in pixels)
+        g_sum = sum(p[1] if isinstance(p, tuple) and len(p) > 1 else (p if isinstance(p, int) else 0) for p in pixels)
+        b_sum = sum(p[2] if isinstance(p, tuple) and len(p) > 2 else (p if isinstance(p, int) else 0) for p in pixels)
+
+        n = len(pixels)
+        return (r_sum // n, g_sum // n, b_sum // n)
+
+    def _erase_text_regions(
+        self,
+        img: Image.Image,
+        regions: list[dict],
+        method: str = "inpaint"
+    ) -> Image.Image:
+        """
+        Erase detected text regions from the image.
+
+        Uses OpenCV inpainting for best quality, with color fill fallback.
+
+        Args:
+            img: PIL Image to modify
+            regions: List of dicts with 'bbox' [x1, y1, x2, y2]
+            method: 'inpaint' (best) or 'fill' (fast)
+
+        Returns:
+            Image with text regions erased
+        """
+        if not regions:
+            return img
+
+        # Convert to RGB if needed (remove alpha for OpenCV)
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
+
+        if method == "inpaint":
+            try:
+                import cv2
+                import numpy as np
+
+                # Convert PIL to OpenCV format
+                cv_img = np.array(img)
+                cv_img = cv2.cvtColor(cv_img, cv2.COLOR_RGB2BGR)
+                img_height, img_width = cv_img.shape[:2]
+
+                # Filter out regions that are too large (likely false positives)
+                # Text regions should be less than 40% of panel width and 15% of panel height
+                max_width = img_width * 0.4
+                max_height = img_height * 0.15  # 15% of total height = ~60% of one panel
+                min_area = 100  # Minimum area to avoid tiny noise
+
+                filtered_regions = []
+                for region in regions:
+                    x1, y1, x2, y2 = region["bbox"]
+                    width = x2 - x1
+                    height = y2 - y1
+                    area = width * height
+
+                    if width <= max_width and height <= max_height and area >= min_area:
+                        filtered_regions.append(region)
+                        logger.debug(f"Keeping text region: {region['bbox']} ({width}x{height})")
+                    else:
+                        logger.debug(f"Filtering out large region: {region['bbox']} ({width}x{height})")
+
+                if not filtered_regions:
+                    logger.info("No valid text regions after filtering")
+                    return img
+
+                # Create mask for filtered text regions only
+                mask = np.zeros(cv_img.shape[:2], dtype=np.uint8)
+                for region in filtered_regions:
+                    x1, y1, x2, y2 = region["bbox"]
+                    # Small padding for text
+                    pad = 3
+                    x1 = max(0, x1 - pad)
+                    y1 = max(0, y1 - pad)
+                    x2 = min(img_width, x2 + pad)
+                    y2 = min(img_height, y2 + pad)
+                    mask[y1:y2, x1:x2] = 255
+
+                # Inpaint using Telea algorithm with SMALLER radius to avoid blur
+                # Radius 3 is much less aggressive than 7
+                result = cv2.inpaint(cv_img, mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
+
+                # Convert back to PIL
+                result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+                img = Image.fromarray(result)
+
+                logger.info(f"Inpainted {len(filtered_regions)} text regions (filtered from {len(regions)})")
+
+            except ImportError:
+                logger.warning("OpenCV not available, falling back to fill method")
+                method = "fill"
+            except Exception as e:
+                logger.warning(f"Inpainting failed: {e}, falling back to fill method")
+                method = "fill"
+
+        if method == "fill":
+            draw = ImageDraw.Draw(img)
+            for region in regions:
+                x1, y1, x2, y2 = region["bbox"]
+                # Get surrounding color and fill
+                fill_color = self._get_surrounding_color(img, x1, y1, x2, y2)
+                draw.rectangle([x1, y1, x2, y2], fill=fill_color)
+                logger.debug(f"Filled text region ({x1},{y1})-({x2},{y2}) with color {fill_color}")
+
+            logger.info(f"Filled {len(regions)} text regions")
+
+        return img
+
     def _get_expected_bubble_region(
         self,
         panel_x: int,
@@ -558,10 +912,10 @@ class RenderService:
         panel_height: int,
     ) -> tuple[int, int, int, int]:
         """
-        Get expected bubble region based on prompt instructions.
+        Get expected bubble region for compact speech bubbles.
 
-        The AI is instructed to leave the TOP 25% of each panel empty for bubbles.
-        PIL will draw bubbles in this region.
+        Characters now fill the full panel. Compact bubbles (50% x 20%)
+        are drawn in alternating left/right positions at top of panel.
 
         Args:
             panel_x: Panel X position
@@ -572,10 +926,10 @@ class RenderService:
         Returns:
             (x1, y1, x2, y2) bounding box for expected bubble region
         """
-        # Bubbles should be in top 20% of panel with horizontal margins
-        margin_x = int(panel_width * 0.08)  # 8% margin on each side
+        # Compact bubbles in top 23% of panel (20% height + margins)
+        margin_x = int(panel_width * 0.04)  # 4% margin on each side
         bubble_y_start = panel_y + int(panel_height * 0.03)  # Start 3% from top
-        bubble_y_end = panel_y + int(panel_height * 0.20)  # End at 20% from top
+        bubble_y_end = panel_y + int(panel_height * 0.23)  # End at 23% from top
 
         x1 = panel_x + margin_x
         y1 = bubble_y_start
@@ -640,19 +994,29 @@ class RenderService:
         style: dict,
         tail_direction: str,
     ) -> None:
-        """Draw standard oval speech bubble."""
+        """Draw cartoon-style oval speech bubble with shadow and thick outline."""
         fill = style.get("fill", "white")
         outline = style.get("outline", "black")
 
-        # Draw main bubble ellipse
+        # Shadow offset for cartoon effect
+        shadow_offset = 4
+
+        # 1. Draw shadow first (offset down-right)
+        shadow_color = "#333333"
+        draw.ellipse(
+            [x + shadow_offset, y + shadow_offset, x + width + shadow_offset, y + height + shadow_offset],
+            fill=shadow_color,
+        )
+
+        # 2. Draw main bubble ellipse with thick outline
         draw.ellipse(
             [x, y, x + width, y + height],
             fill=fill,
             outline=outline,
-            width=3
+            width=4  # Thick cartoon outline
         )
 
-        # Calculate tail position
+        # Calculate tail position based on direction
         if tail_direction == "left":
             tail_x = x + width // 4
         elif tail_direction == "right":
@@ -660,21 +1024,36 @@ class RenderService:
         else:
             tail_x = x + width // 2
 
-        # Draw tail triangle
-        tail_base_y = y + height - 8
-        tail_tip_y = y + height + int(height * 0.25)
+        # 3. Draw prominent tail (35% of bubble height)
+        tail_size = int(height * 0.35)
+        tail_base_y = y + height - 6
+        tail_tip_y = y + height + tail_size
+
+        # Wider tail for cartoon effect
+        tail_half_width = 15
 
         tail_points = [
-            (tail_x - 12, tail_base_y),
-            (tail_x + 12, tail_base_y),
+            (tail_x - tail_half_width, tail_base_y),
+            (tail_x + tail_half_width, tail_base_y),
             (tail_x, tail_tip_y),
         ]
 
-        draw.polygon(tail_points, fill=fill, outline=outline, width=2)
+        # Draw tail shadow
+        shadow_tail_points = [
+            (tail_x - tail_half_width + shadow_offset, tail_base_y + shadow_offset),
+            (tail_x + tail_half_width + shadow_offset, tail_base_y + shadow_offset),
+            (tail_x + shadow_offset, tail_tip_y + shadow_offset),
+        ]
+        draw.polygon(shadow_tail_points, fill=shadow_color)
+
+        # Draw tail with thick outline
+        draw.polygon(tail_points, fill=fill, outline=outline, width=3)
+
+        # Cover the seam between bubble and tail
         draw.line(
-            [(tail_x - 10, tail_base_y), (tail_x + 10, tail_base_y)],
+            [(tail_x - tail_half_width + 2, tail_base_y), (tail_x + tail_half_width - 2, tail_base_y)],
             fill=fill,
-            width=5
+            width=8
         )
 
     def _draw_cloud_bubble(
@@ -1096,6 +1475,141 @@ Rules:
         wrapped = self._wrap_text(text, font, available_width)
         return (min_font_size, wrapped[:3])  # Truncate to 3 lines max
 
+    def _calculate_bubble_dimensions(
+        self,
+        text: str,
+        panel_width: int,
+        panel_height: int,
+        max_font_size: int = 16,
+        min_font_size: int = 9,
+    ) -> tuple[int, int, int, list[str]]:
+        """
+        Calculate dynamic bubble dimensions based on text length.
+
+        Shorter text gets smaller bubbles, longer text gets larger bubbles.
+
+        Args:
+            text: The dialogue text
+            panel_width: Width of the panel
+            panel_height: Height of the panel
+            max_font_size: Maximum font size to try
+            min_font_size: Minimum font size to use
+
+        Returns:
+            (bubble_width, bubble_height, font_size, wrapped_lines)
+        """
+        # Width scales with text length
+        text_len = len(text)
+        if text_len < 30:
+            width_ratio = 0.35  # Short text: narrow bubble
+        elif text_len < 60:
+            width_ratio = 0.45  # Medium text: moderate bubble
+        else:
+            width_ratio = 0.55  # Long text: wider bubble
+
+        bubble_width = int(panel_width * width_ratio)
+
+        # Height bounds
+        min_height = int(panel_height * 0.12)  # Minimum 12% of panel
+        max_height = int(panel_height * 0.25)  # Maximum 25% of panel
+
+        # Calculate optimal font and wrapping
+        font_size, wrapped_lines = self._fit_text_to_bubble(
+            text,
+            bubble_width - 24,  # Account for padding
+            max_height - 20,    # Account for padding
+            max_font_size=max_font_size,
+            min_font_size=min_font_size
+        )
+
+        # Calculate actual height needed
+        line_height = font_size + 4
+        text_height = len(wrapped_lines) * line_height
+        bubble_height = max(min_height, min(text_height + 24, max_height))
+
+        return (bubble_width, bubble_height, font_size, wrapped_lines)
+
+    def _calculate_diagonal_position(
+        self,
+        speaker_index: int,
+        total_speakers: int,
+        bubble_width: int,
+        bubble_height: int,
+        panel_x: int,
+        panel_y: int,
+        panel_width: int,
+        panel_height: int,
+        panel_number: int,
+    ) -> tuple[int, int, str]:
+        """
+        Calculate bubble position with diagonal offset layout.
+
+        For 2 speakers:
+        - Speaker 0: top-left
+        - Speaker 1: diagonal offset (lower-right)
+
+        Args:
+            speaker_index: Index of current speaker (0 or 1)
+            total_speakers: Total number of speakers in panel
+            bubble_width: Width of this bubble
+            bubble_height: Height of this bubble
+            panel_x: X position of panel
+            panel_y: Y position of panel
+            panel_width: Width of panel
+            panel_height: Height of panel
+            panel_number: Panel number (0-3) for alternating single-speaker
+
+        Returns:
+            (bubble_x, bubble_y, tail_direction)
+        """
+        margin_x = int(panel_width * 0.04)
+        margin_top = int(panel_height * 0.03)
+        max_bubble_y = panel_y + int(panel_height * 0.30)
+
+        if total_speakers == 1:
+            # Single speaker: alternate left/right based on panel number
+            if panel_number % 2 == 0:
+                bubble_x = panel_x + margin_x
+                tail_direction = "right"
+            else:
+                bubble_x = panel_x + panel_width - bubble_width - margin_x
+                tail_direction = "left"
+            bubble_y = panel_y + margin_top
+
+        elif total_speakers == 2:
+            if speaker_index == 0:
+                # First speaker: top-left
+                bubble_x = panel_x + margin_x
+                bubble_y = panel_y + margin_top
+                tail_direction = "right"
+            else:
+                # Second speaker: diagonal offset (lower-right)
+                diagonal_offset_y = int(panel_height * 0.08)
+                bubble_x = panel_x + panel_width - bubble_width - margin_x
+                bubble_y = panel_y + margin_top + diagonal_offset_y
+                # Ensure bubble stays within bounds
+                if bubble_y + bubble_height > max_bubble_y:
+                    bubble_y = max_bubble_y - bubble_height
+                tail_direction = "left"
+
+        else:
+            # 3+ speakers: stack vertically with alternating sides
+            vertical_spacing = int(panel_height * 0.07)
+            bubble_y = panel_y + margin_top + (speaker_index * vertical_spacing)
+
+            # Clamp to max bubble area
+            if bubble_y + bubble_height > max_bubble_y:
+                bubble_y = max_bubble_y - bubble_height
+
+            if speaker_index % 2 == 0:
+                bubble_x = panel_x + margin_x
+                tail_direction = "right"
+            else:
+                bubble_x = panel_x + panel_width - bubble_width - margin_x
+                tail_direction = "left"
+
+        return (bubble_x, bubble_y, tail_direction)
+
     async def _try_detect_bubbles(
         self,
         image_path: Path,
@@ -1235,8 +1749,19 @@ Rules:
                 logger.warning(f"Panel {panel_idx}: Invalid bubble bbox, skipping")
                 continue
 
-            # Combine dialogue
-            full_dialogue = " ".join(dialogue)
+            # CLEAR the bubble region first to erase any AI-generated garbled text
+            # This whites-out the bubble interior before we add correct text
+            self._clear_bubble_region(img, (x1, y1, x2, y2), fill_color="white", preserve_outline=True)
+            logger.info(f"Panel {panel_idx}: Cleared bubble region at ({x1},{y1})-({x2},{y2})")
+
+            # Combine dialogue - handle both new DialogueLine format (dict) and legacy string format
+            dialogue_texts = []
+            for d in dialogue:
+                if isinstance(d, dict):
+                    dialogue_texts.append(d.get("text", ""))
+                else:
+                    dialogue_texts.append(d)
+            full_dialogue = " ".join(dialogue_texts)
 
             # Fit text to detected bubble size
             font_size, wrapped_lines = self._fit_text_to_bubble(
@@ -1292,10 +1817,9 @@ Rules:
         """
         Add speech bubbles and text overlay to comic image.
 
-        Uses intelligent detection cascade:
-        1. Try Gemini Vision to detect existing bubbles
-        2. Try OpenCV contour detection
-        3. Fall back to PIL bubble drawing if detection fails
+        Two-phase approach:
+        1. Detect and ERASE any AI-generated text in the image
+        2. Draw clean PIL bubbles with correct dialogue
 
         Args:
             base_image_path: Path to base comic image
@@ -1307,11 +1831,30 @@ Rules:
         """
         try:
             img = Image.open(base_image_path)
-            draw = ImageDraw.Draw(img)
 
             # Get image dimensions
             img_width, img_height = img.size
             logger.info(f"Processing comic image: {img_width}x{img_height}")
+
+            # ========================================
+            # PHASE 1: Text Detection/Inpainting - DISABLED
+            # ========================================
+            # DISABLED: Text detection/inpainting causes blur artifacts on character artwork.
+            # Gemini Vision sometimes misidentifies parts of characters as "text", and
+            # OpenCV's cv2.inpaint() then blurs those regions, causing smudged panels.
+            # The Nano-Banana prompt already instructs the AI not to generate text,
+            # so this defensive phase is not essential and causes more harm than good.
+            #
+            # text_regions = await self._detect_text_regions(base_image_path)
+            # if text_regions:
+            #     img = self._erase_text_regions(img, text_regions, method="inpaint")
+            logger.info("Phase 1: Skipped text detection (disabled to prevent blur artifacts)")
+
+            # ========================================
+            # PHASE 2: Draw clean bubbles with dialogue
+            # ========================================
+            logger.info("Phase 2: Drawing clean speech bubbles...")
+            draw = ImageDraw.Draw(img)
 
             # 1x4 vertical strip layout
             panel_width = img_width  # Full width (single column)
@@ -1334,8 +1877,12 @@ Rules:
                     img, draw, script, detected_bubbles, output_path
                 )
 
-            # Fall back to PIL bubble drawing
+            # PIL bubble drawing - draw clean bubbles for ALL panels with dialogue
             logger.info(f"Script has {len(panels)} panels - PIL will draw bubbles (1x4 vertical layout)")
+
+            # Convert to RGBA for alpha compositing
+            if img.mode != 'RGBA':
+                img = img.convert('RGBA')
 
             for i, panel in enumerate(panels):
                 if i >= 4:  # Only 4 panels
@@ -1352,67 +1899,152 @@ Rules:
 
                 logger.info(f"Panel {i+1}: Position ({panel_x}, {panel_y}), Size {panel_width}x{panel_height}")
 
-                # Get bubble region (top 20% of panel)
-                x1, y1, x2, y2 = self._get_expected_bubble_region(
-                    panel_x, panel_y, panel_width, panel_height
-                )
-                bubble_width = x2 - x1
-                bubble_height = y2 - y1
+                bubble_entries = self._dialogue_entries_for_bubbles(dialogue)
 
-                # Get emotion for bubble style (default to "speech" if not specified)
-                emotion = panel.get("emotion", "speech")
+                if not bubble_entries:
+                    logger.info(f"Panel {i+1}: Empty dialogue text - skipping")
+                    continue
 
-                # DRAW the speech bubble (PIL draws it, not AI)
-                # Alternate tail direction for visual variety
-                tail_dir = "left" if i % 2 == 0 else "right"
-                self._draw_speech_bubble(draw, x1, y1, bubble_width, bubble_height, tail_dir, emotion)
-
-                logger.info(f"Panel {i+1}: Drew {emotion} bubble at ({x1},{y1}) size {bubble_width}x{bubble_height}")
-
-                # Combine all dialogue into single text block
-                full_dialogue = " ".join(dialogue)
-
-                # Calculate optimal font size and wrapping for this bubble
-                # Smaller font sizes for 1K resolution (512×1024)
-                font_size, wrapped_lines = self._fit_text_to_bubble(
-                    full_dialogue,
-                    bubble_width,
-                    bubble_height,
-                    max_font_size=18,  # Scaled down from 28
-                    min_font_size=10   # Scaled down from 14
+                logger.info(
+                    f"Panel {i+1}: {len(bubble_entries)} bubble(s) - {[d['speaker'] for d in bubble_entries]}"
                 )
 
-                # Load font at optimal size
-                try:
-                    font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Comic Sans MS.ttf", font_size)
-                except:
+                # Track y cursors per side so multiple bubbles don't overlap.
+                margin_x = int(panel_width * 0.04)  # ~20px at 512px wide
+                margin_top = 10
+                lane_gap = 10
+                diagonal_offset_y = int(panel_height * 0.06)
+                lane_y = {
+                    "left": panel_y + margin_top,
+                    "right": panel_y + margin_top + diagonal_offset_y,
+                    "center": panel_y + margin_top,
+                }
+
+                # Draw a bubble for EACH dialogue line
+                for bubble_idx, bubble_data in enumerate(bubble_entries):
+                    speaker = bubble_data["speaker"]
+                    text = bubble_data["text"]
+                    emotion = bubble_data["emotion"]
+                    position = bubble_data.get("position", "center")
+
+                    # Calculate dynamic bubble size based on text length
+                    bubble_width, bubble_height, font_size, wrapped_lines = self._calculate_bubble_dimensions(
+                        text,
+                        panel_width,
+                        panel_height,
+                        max_font_size=16,
+                        min_font_size=9
+                    )
+
+                    # Use position field to determine bubble placement (not speaker_index)
+                    if position == "left":
+                        bubble_x = panel_x + margin_x
+                        tail_direction = "left"
+                    elif position == "right":
+                        bubble_x = panel_x + panel_width - bubble_width - margin_x
+                        tail_direction = "right"
+                    else:  # center
+                        bubble_x = panel_x + (panel_width - bubble_width) // 2
+                        tail_direction = "left"  # Default tail direction for center
+
+                    # Stack bubbles within each lane based on the actual rendered height
+                    bubble_y = lane_y.get(position, panel_y + margin_top)
+                    max_y = panel_y + panel_height - bubble_height - margin_top
+                    bubble_y = max(panel_y + margin_top, min(bubble_y, max_y))
+                    lane_y[position] = bubble_y + bubble_height + lane_gap
+
+                    # Create a semi-transparent bubble overlay for this speaker
+                    bubble_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))
+                    bubble_draw = ImageDraw.Draw(bubble_layer)
+
+                    # Get emotion-based style
+                    style = BUBBLE_STYLES.get(emotion, BUBBLE_STYLES["speech"])
+                    bubble_fill_color = style.get("fill", "white")
+
+                    # Convert fill color to RGBA (semi-transparent for comic effect)
+                    bubble_alpha = 180  # More transparent background
+                    if bubble_fill_color == "white":
+                        bubble_fill = (255, 255, 255, bubble_alpha)
+                    elif bubble_fill_color.startswith("#"):
+                        hex_color = bubble_fill_color.lstrip('#')
+                        r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+                        bubble_fill = (r, g, b, bubble_alpha)
+                    else:
+                        bubble_fill = (255, 255, 255, bubble_alpha)
+
+                    bubble_outline = (0, 0, 0, 255)  # Solid black outline
+
+                    # Draw ELLIPSE for classic oval speech bubble shape (bold outline)
+                    bubble_draw.ellipse(
+                        [bubble_x, bubble_y, bubble_x + bubble_width, bubble_y + bubble_height],
+                        fill=bubble_fill,
+                        outline=bubble_outline,
+                        width=5  # Bolder comic-style outline
+                    )
+
+                    # Draw tail pointing based on tail_direction
+                    if tail_direction == "left":
+                        tail_x = bubble_x + int(bubble_width * 0.30)
+                    else:
+                        tail_x = bubble_x + int(bubble_width * 0.70)
+
+                    tail_top = bubble_y + bubble_height - 8
+                    tail_bottom = bubble_y + bubble_height + 22  # Slightly longer tail
+                    tail_offset = 18 if tail_direction == "left" else -18  # Wider tail
+                    tail_points = [
+                        (tail_x - 12, tail_top),
+                        (tail_x + 12, tail_top),
+                        (tail_x + tail_offset, tail_bottom)
+                    ]
+                    bubble_draw.polygon(tail_points, fill=bubble_fill, outline=bubble_outline, width=4)  # Bolder tail outline
+
+                    # Cover the seam where tail meets bubble
+                    bubble_draw.ellipse(
+                        [tail_x - 12, tail_top - 5, tail_x + 12, tail_top + 8],
+                        fill=bubble_fill
+                    )
+
+                    # Composite the bubble layer onto the image
+                    img = Image.alpha_composite(img, bubble_layer)
+
+                    # Draw text on top (need fresh draw object after composite)
+                    draw = ImageDraw.Draw(img)
+
+                    # Calculate text positioning (centered in bubble)
+                    text_padding = 12
+                    available_width = bubble_width - (text_padding * 2)
+                    available_height = bubble_height - (text_padding * 2)
+
+                    # Load font
                     try:
-                        font = ImageFont.truetype("/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf", font_size)
+                        font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Comic Sans MS.ttf", font_size)
                     except:
-                        logger.warning(f"Comic Sans not found, using default font")
-                        font = ImageFont.load_default()
+                        try:
+                            font = ImageFont.truetype("/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf", font_size)
+                        except:
+                            logger.warning(f"Comic Sans not found, using default font")
+                            font = ImageFont.load_default()
 
-                # Position text in bubble center
-                line_height = font_size + 4
-                total_text_height = len(wrapped_lines) * line_height
-                text_start_y = y1 + (bubble_height - total_text_height) // 2
+                    line_height = font_size + 3
+                    total_text_height = len(wrapped_lines) * line_height
+                    text_start_y = bubble_y + text_padding + (available_height - total_text_height) // 2
 
-                logger.info(f"Panel {i+1}: font {font_size}px, {len(wrapped_lines)} lines")
+                    # Draw each line of text
+                    for k, line_text in enumerate(wrapped_lines):
+                        text_bbox = draw.textbbox((0, 0), line_text, font=font)
+                        text_width = text_bbox[2] - text_bbox[0]
 
-                # Draw the wrapped lines
-                for k, wrapped_line in enumerate(wrapped_lines):
-                    # Get text bounding box for centering
-                    bbox = draw.textbbox((0, 0), wrapped_line, font=font)
-                    text_width = bbox[2] - bbox[0]
+                        # Center horizontally
+                        text_x = bubble_x + text_padding + (available_width - text_width) // 2
+                        text_y = text_start_y + (k * line_height)
 
-                    # Center text horizontally within bubble
-                    text_x = x1 + (bubble_width - text_width) // 2
-                    actual_text_y = text_start_y + (k * line_height)
+                        # Draw text in black
+                        draw.text((text_x, text_y), line_text, font=font, fill="black")
 
-                    # Draw black text on white bubble (no outline needed)
-                    draw.text((text_x, actual_text_y), wrapped_line, font=font, fill="black")
-
-                    logger.debug(f"Panel {i+1}: Drew line {k+1} at ({text_x}, {actual_text_y})")
+                    logger.info(
+                        f"Panel {i+1}: Drew bubble {bubble_idx + 1}/{len(bubble_entries)} for '{speaker}' at ({bubble_x},{bubble_y}) "
+                        f"size {bubble_width}x{bubble_height}, position={position}, emotion={emotion}"
+                    )
 
             # Save the result
             img.save(output_path, 'PNG', quality=95)
@@ -1504,8 +2136,8 @@ Rules:
                 try:
                     bubble_img = self._svg_to_png(
                         bubble_paths[0],
-                        width=int(panel_width * 0.75),
-                        height=int(panel_height * 0.18),  # Slightly taller for narrow panels
+                        width=int(panel_width * 0.50),   # Compact width matching new dimensions
+                        height=int(panel_height * 0.15),  # Compact height for narrow panels
                     )
                     logger.info(f"Loaded speech bubble: {bubble_img.size}")
                 except Exception as e:
@@ -1556,47 +2188,6 @@ Rules:
             logger.error(f"Freepik enhancement failed: {e}", exc_info=True)
             return base_image_path
 
-    def _rearrange_to_grid(self, img: Image.Image) -> Image.Image:
-        """
-        Rearrange 1x4 vertical strip to 2x2 grid for square export.
-
-        Input: 1x4 strip (width × height where height = 4 × panel_height)
-        Output: 2x2 grid (square-ish image)
-
-        Panel arrangement:
-        - Input:  [1] [2] [3] [4] (stacked vertically)
-        - Output: [1] [2]
-                  [3] [4]
-
-        Args:
-            img: PIL Image of 1x4 vertical strip
-
-        Returns:
-            PIL Image rearranged as 2x2 grid
-        """
-        w, h = img.size
-        panel_h = h // 4
-
-        # Extract individual panels
-        panels = [
-            img.crop((0, i * panel_h, w, (i + 1) * panel_h))
-            for i in range(4)
-        ]
-
-        # Create 2x2 grid (width * 2, panel_height * 2)
-        grid_w = w * 2
-        grid_h = panel_h * 2
-        grid = Image.new('RGB', (grid_w, grid_h), color='#FFFFFF')
-
-        # Place panels: [0,1] top row, [2,3] bottom row
-        grid.paste(panels[0], (0, 0))
-        grid.paste(panels[1], (w, 0))
-        grid.paste(panels[2], (0, panel_h))
-        grid.paste(panels[3], (w, panel_h))
-
-        logger.debug(f"Rearranged 1x4 strip ({w}x{h}) to 2x2 grid ({grid_w}x{grid_h})")
-        return grid
-
     async def _generate_export_formats(
         self,
         base_image_path: Path,
@@ -1619,24 +2210,6 @@ Rules:
         base_w, base_h = img.size
 
         logger.info(f"Generating export formats from {base_w}x{base_h} vertical strip")
-
-        # Square (1080x1080) - REARRANGE to 2x2 grid, then scale-to-fit with letterboxing
-        square_path = self.renders_path / f"{content_id}_square.png"
-        grid = self._rearrange_to_grid(img)
-        grid_w, grid_h = grid.size
-        target_size = 1080
-        # Scale to fit within square while preserving aspect ratio
-        scale = min(target_size / grid_w, target_size / grid_h)
-        scaled_w = int(grid_w * scale)
-        scaled_h = int(grid_h * scale)
-        scaled_grid = grid.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
-        # Center on dark background
-        square_img = Image.new('RGB', (target_size, target_size), color='#1a1a1a')
-        paste_x = (target_size - scaled_w) // 2
-        paste_y = (target_size - scaled_h) // 2
-        square_img.paste(scaled_grid, (paste_x, paste_y))
-        square_img.save(square_path, 'PNG', quality=95)
-        logger.info(f"Square export: grid {grid_w}x{grid_h} scaled to {scaled_w}x{scaled_h}, saved {square_path.name}")
 
         # Portrait (1080x1350) - Scale to fit within canvas, preserve aspect ratio
         portrait_path = self.renders_path / f"{content_id}_portrait.png"
@@ -1669,7 +2242,6 @@ Rules:
         logger.info(f"Generated all export formats for {content_id}")
 
         return {
-            "comic_square_uri": f"/storage/renders/{square_path.name}",
             "comic_portrait_uri": f"/storage/renders/{portrait_path.name}",
             "reel_cover_uri": f"/storage/renders/{reel_path.name}",
         }

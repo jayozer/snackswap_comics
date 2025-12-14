@@ -87,6 +87,36 @@ class GeminiService:
 
         return None
 
+    def _extract_json(self, text: str) -> str:
+        """
+        Extract JSON from text that may contain markdown code blocks or prefixed text.
+
+        Args:
+            text: Response text that may contain JSON
+
+        Returns:
+            Extracted JSON string or original text if no extraction needed
+        """
+        import re
+
+        # Try to extract from markdown code blocks first
+        # Match ```json ... ``` or ``` ... ```
+        code_block_pattern = r'```(?:json)?\s*(\{[\s\S]*?\})\s*```'
+        match = re.search(code_block_pattern, text)
+        if match:
+            logger.info("Extracted JSON from markdown code block")
+            return match.group(1)
+
+        # Try to find JSON object starting with {"panels"
+        json_start_pattern = r'(\{"panels"[\s\S]*)'
+        match = re.search(json_start_pattern, text)
+        if match:
+            logger.info("Extracted JSON starting from {\"panels\"")
+            return match.group(1)
+
+        # Return original text if no extraction needed
+        return text
+
     async def detect_items(self, image_path: str) -> list[DetectedItem]:
         """
         Detect food items in an image using Gemini Vision.
@@ -97,56 +127,49 @@ class GeminiService:
         Returns:
             List of detected items
         """
-        prompt = """You are a precise food detection assistant for a dental health app.
+        prompt = """You are a strict visual food detector for a dental health app.
 
-⚠️ CRITICAL: ONLY identify what you ACTUALLY SEE in the image. DO NOT guess or assume.
+NON-NEGOTIABLE RULES:
+- Only identify foods that are CLEARLY visible in the image.
+- Do not guess, infer, or “fill in the blanks”.
+- If you are not sure, lower confidence. If you cannot recognize anything, return one item with category "unknown".
 
-Analyze this photo and identify up to 5 food/snack items. For each item, provide:
-- name: The ACCURATE common name of EXACTLY what you see (be specific and literal)
-- brand_guess: Brand name if clearly visible on packaging (or null if not visible)
-- category: One of: candy, chips, cookies, crackers, fruit, vegetables, dairy, beverage, baked_goods, processed_snack, healthy_snack
-- visible_clues: Observable details that helped identify it (color, shape, texture, packaging)
-- confidence: Your confidence level (0.0 to 1.0)
+TASK:
+Identify up to 5 distinct food/snack items in this photo.
 
-🍎 HEALTHY FOOD RECOGNITION (IMPORTANT):
-- Fresh fruits: apples, oranges, bananas, grapes, berries, melons, etc.
-- Fresh vegetables: carrots, celery, cucumbers, broccoli, peppers, etc.
-- Fruit plates/bowls = "Mixed Fruit Plate" or "Fresh Fruit Assortment" (category: fruit)
-- Vegetable trays = "Fresh Vegetable Tray" (category: vegetables)
-- Cheese slices/cubes = "Cheese" or "Cheddar Cheese" (category: dairy)
-- Nuts = "Almonds", "Mixed Nuts" etc. (category: healthy_snack)
+CATEGORIES (choose exactly one):
+candy, chips, cookies, crackers, fruit, vegetables, dairy, beverage, baked_goods, processed_snack, healthy_snack, unknown
 
-🚫 COMMON MISTAKES TO AVOID:
-- Do NOT confuse colorful fruits with candy
-- Do NOT confuse vegetable trays with processed snacks
-- Do NOT confuse cheese with crackers
-- Fresh, whole foods are NEVER "crackers" or "chips"
-- If you see natural, unprocessed food, it's likely fruit/vegetables/dairy
+NAME RULES (very important):
+- If the photo shows ONE obvious food type, name it specifically (e.g., "Bananas"). Do NOT use mixed/assortment names.
+- Only use a mixed label (e.g., "Mixed Fruit Bowl", "Fresh Fruit Assortment") if 2+ different fruit types are clearly visible together.
+- Do NOT label fresh fruit/vegetables as crackers/chips/candy.
+- Do NOT label fruit pieces/cubes as cheese unless texture/packaging clearly indicates cheese.
+  If uncertain between fruit cubes vs cheese cubes, set confidence <= 0.6 and explain uncertainty in visible_clues.
 
-GROUPING RULES:
-- Multiple similar items = ONE grouped item
-  - Example: bowl of mixed fruits = "Mixed Fruit Plate" (category: fruit)
-  - Example: vegetable tray = "Fresh Vegetable Tray" (category: vegetables)
-  - Example: 10 gummy bears = "Gummy Bears" (category: candy)
-- Maximum 5 distinct food items total
-- Prioritize the most prominent/visible items
+GROUPING:
+- Many pieces of the same thing = ONE item (e.g., a bunch of bananas = one "Bananas").
+- A bowl/plate of clearly mixed fruits = ONE item ("Mixed Fruit Bowl") rather than listing every fruit.
 
-Return your response as a JSON object with this structure:
+For each item, return:
+- name: specific common name
+- brand_guess: brand only if clearly visible, else null
+- category: from the list above
+- visible_clues: short, concrete visual evidence (2–8 phrases)
+- confidence: 0.0 to 1.0
+
+Return ONLY valid JSON with this structure (no markdown, no extra keys):
 {
   "items": [
     {
       "name": "string",
-      "brand_guess": "string or null",
+      "brand_guess": null,
       "category": "string",
-      "visible_clues": "string describing what you ACTUALLY see",
+      "visible_clues": "string",
       "confidence": 0.95
     }
-  ],
-  "needs_confirmation": false
-}
-
-Set needs_confirmation to true ONLY if the image is blurry or food is unrecognizable.
-ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assume."""
+  ]
+}"""
 
         try:
             # Read image file and encode as base64
@@ -179,6 +202,9 @@ ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assu
                 config=types.GenerateContentConfig(
                     temperature=0.3,  # Lower for factual detection
                     max_output_tokens=1024,
+                    thinking_config=types.ThinkingConfig(
+                        thinking_budget=8192  # Enable thinking for vision
+                    ) if self.settings.gemini_vision_thinking_level != "NONE" else None,
                     safety_settings=[
                         types.SafetySetting(
                             category="HARM_CATEGORY_HARASSMENT",
@@ -222,6 +248,9 @@ ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assu
                 response_text = response_text[3:]
             if response_text.endswith("```"):
                 response_text = response_text[:-3]
+
+            # Log the exact model response so misclassifications can be debugged from server logs.
+            logger.info("Gemini vision raw response (%s):\n%s", image_path_obj.name, response_text.strip())
 
             try:
                 result = json.loads(response_text.strip())
@@ -308,11 +337,17 @@ ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assu
                 '3. GLOW-UP SLANG: "Glow up", "Aesthetic", "No filter needed", "W/L", "No cap", "sus"'
             )
             dr_drip_personality = (
-                'Personality: Sassy glow-up coach. Light roast, then helpful swap. '
-                "Roast snacks, not people."
+                'Personality: ADULT SWIM LITE. Sassy roast mode with absurd humor. '
+                'Uses funny comparisons and meme references. Roast snacks, not people. '
+                'Think: playful Smiling Friends energy with light burns.'
             )
-            dr_drip_catchphrases = 'Catchphrases: "That\'s sus for your teeth." / "Not the vibe."'
-            dr_drip_verdicts = 'Verdicts: "SUS" / "MID" / "NOT IT"'
+            dr_drip_catchphrases = '''Catchphrases:
+- "That ain't it, chief."
+- "Your teeth just called. They want a refund."
+- "Skill issue tbh."
+- "That's sus for your teeth."
+- "Bold move. Let's see how your teeth feel about it."'''
+            dr_drip_verdicts = 'Verdicts: "SUS" / "MID" / "NOT IT" / "SKILL ISSUE"'
         else:
             age_band = "13-17"
             intensity = "Savage"
@@ -331,11 +366,19 @@ ALWAYS return valid JSON. Be accurate - identify what you SEE, not what you assu
                 '3. LOOKSMAXXING SLANG: "Glow up", "Aura", "Aesthetic", "Rizz", "No filter needed"'
             )
             dr_drip_personality = (
-                'Personality: Obsessed with "The Glow Up" and "Aesthetics". '
-                "Roast snacks, not people."
+                'Personality: FULL ADULT SWIM ENERGY. Part Rick Sanchez (brutal honesty, "your boos mean nothing"), '
+                'part Master Shake (absurd rants), part Gordon Ramsay (savage metaphors). '
+                'Obsessed with aesthetics. Uses hyperbole, absurd comparisons, meme refs. Roast snacks, not people.'
             )
-            dr_drip_catchphrases = 'Catchphrases: "Your smile is COOKED." / "Negative Aura detected."'
-            dr_drip_verdicts = 'Verdicts: "COOKED SMILE" / "YELLOW TEETH SIGNAL" / "NOT AESTHETIC"'
+            dr_drip_catchphrases = '''Catchphrases:
+- "Your smile is COOKED. Done. Finished."
+- "That's not a snack, that's a premeditated assault on your glow up."
+- "Bold move, Cotton. Let's see if your teeth pay off."
+- "Your boos mean nothing. I've seen what makes you cheer."
+- "L + ratio + cooked smile."
+- "Skill issue tbh."
+- "Your teeth just called. They want a divorce."'''
+            dr_drip_verdicts = 'Verdicts: "COOKED BEYOND REPAIR" / "L + RATIO + YELLOW TEETH" / "CERTIFIED BRUH MOMENT" / "NOT AESTHETIC"'
 
         # Build context
         snacks_context = json.dumps(snacks, indent=2)
@@ -350,7 +393,7 @@ TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 {vanity_stakes}
 
 🎭 RECURRING CHARACTER - DR. DRIP:
-A hype-beast molar tooth with sunglasses, a gold crown, and fresh kicks.
+An off-white/pale cyan molar in a dark forest green hoodie, shades pushed up on forehead, chunky beige slides.
 {dr_drip_personality}
 {dr_drip_catchphrases}
 {dr_drip_verdicts}
@@ -375,7 +418,7 @@ SWAPS (The Glow Up Secret):
 
 PANEL 1 - THE FLEX (The Setup)
 - Snack enters acting tasty. "I'm the main character."
-- Dr. Drip looks disgusted (behind sunglasses). "Ew. Brother ewww."
+- Dr. Drip looks disgusted (pulling shades down from forehead). "Ew. Brother ewww."
 {flex_social_line}
 
 PANEL 2 - THE EXPOSÉ (The Vanity Roast)
@@ -397,9 +440,30 @@ PANEL 4 - THE VIBE CHECK (The Glow Up Switch)
 - "Your smile will be unfiltered. Main character energy."
 - Final Verdict: "COOKED SMILE" or "YELLOW TEETH SIGNAL"
 
-🎨 COMEDY TECHNIQUES (VANITY FOCUS):
-1. APPEARANCE WORDS: "Yellow", "Stained", "Gross", "Fuzzy", "Crusty", "Transparent"
-2. VANITY SHAMING: "Your Instagram pics need a filter with that smile"
+🎨 COMEDY TECHNIQUES (ADULT SWIM + VANITY):
+
+1. SAVAGE HYPERBOLE - Exaggerate for comedic effect:
+- "That's not sugar, that's a war crime against your enamel"
+- "You might as well hook your mouth up to an IV of corn syrup"
+- "Your teeth are filing a restraining order"
+
+2. ABSURDIST COMPARISONS - Rick & Morty / ATHF energy:
+- "Eating this is like if Willy Wonka had a villain arc"
+- "Congrats, you've unlocked the Cavity Speedrun achievement"
+- "Your mouth is now a petri dish and bacteria are throwing a rager"
+- "This is the dental equivalent of texting your ex at 2am"
+
+3. MEME REFERENCES & QUOTABLE BURNS:
+- "That ain't it, chief. That really ain't it."
+- "L + ratio + cooked smile"
+- "POV: You chose violence against your own aesthetic"
+- "Skill issue tbh."
+- "Bold move, Cotton. Let's see if your teeth pay off."
+
+4. APPEARANCE/VANITY WORDS (still important):
+- "Yellow", "Stained", "Gross", "Fuzzy", "Crusty", "Cooked"
+- "Your Instagram pics need a filter with that smile"
+
 {slang_line}
 
 ⚠️ CRITICAL RULES FOR FACT CITATIONS:
@@ -414,7 +478,7 @@ PANEL 4 - THE VIBE CHECK (The Glow Up Switch)
 - Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
 - CRITICAL TEXT LIMITS: Each dialogue line must be under 40 characters, total per panel under 100 characters
 - Expressions: smug, skeptical, shocked, defeated, crying, triumphant, flexing
-- Props: sunglasses, gold chains, sneakers, "L" signs, sweat drops
+- Props: green hoodie, shades on forehead, beige slides, gold chains, "L" signs, sweat drops
 - NO PREACHING - Don't sound like a dentist. Sound like a hater with dental knowledge.
 
 🎤 SPEECH BUBBLE EMOTIONS (Required per panel):
@@ -424,15 +488,15 @@ Specify the "emotion" for each panel's speech bubble style:
 - Panel 3 (THE RATIO): "angry" - destruction mode, jagged bubble
 - Panel 4 (THE VIBE CHECK): "speech" - resolution, normal bubble
 
-EXAMPLE PANEL (showing VANITY roast + citations + emotion done RIGHT):
+EXAMPLE PANEL (showing VANITY roast + citations + emotion + SPEAKER ATTRIBUTION done RIGHT):
 
 {{
   "panel_number": 2,
   "title": "The Exposé",
   "dialogue": [
-    "Bro turns white teeth into YELLOW BRICKS.",
-    "That's negative aura detected.",
-    "But I taste good!"
+    {{"speaker": "Dr. Drip", "text": "Bro turns white teeth into YELLOW BRICKS.", "position": "right", "emotion": "exclaim"}},
+    {{"speaker": "Dr. Drip", "text": "That's negative aura detected.", "position": "right", "emotion": "exclaim"}},
+    {{"speaker": "Sugar Bomb Sam", "text": "But I taste good!", "position": "left", "emotion": "speech"}}
   ],
   "emotion": "exclaim",
   "citation_ids": ["F002"],
@@ -449,12 +513,19 @@ EXAMPLE PANEL (showing VANITY roast + citations + emotion done RIGHT):
       "item_id": "recurring_tooth",
       "expression": "disgusted",
       "position": "right",
-      "props": ["sunglasses", "gold crown", "fresh kicks", "pristine white shine"]
+      "props": ["green hoodie", "shades on forehead", "beige slides", "gold chains", "clean white shine"]
     }}
   ],
-  "visual_prompt": "Gummy candy looking gross with yellow stains while pristine white molar tooth with sunglasses looks disgusted. Contrast between gross and aesthetic.",
+  "visual_prompt": "Gummy candy looking gross with yellow stains while off-white molar in green hoodie pulls shades down looking disgusted. Contrast between gross and aesthetic.",
   "background": "split background - grimy on left, sparkling clean on right"
 }}
+
+⚠️ CRITICAL DIALOGUE FORMAT:
+Each dialogue line MUST be an object with:
+- "speaker": Character name (MUST match a character in the panel)
+- "text": The dialogue text (under 40 characters)
+- "position": "left", "center", or "right" (match character position)
+- "emotion": "speech", "thought", "exclaim", "angry", or "whisper"
 
 📋 REQUIRED JSON OUTPUT STRUCTURE:
 
@@ -462,13 +533,51 @@ Return your response as valid JSON with this EXACT structure:
 
 {{
   "panels": [
-    // Array of 4 panels, each with: panel_number, title, dialogue, emotion, citation_ids, characters, visual_prompt, background
-    // emotion REQUIRED: "speech" (panels 1,4), "exclaim" (panel 2), "angry" (panel 3)
+    {{
+      "panel_number": 1,
+      "title": "The Flex",
+      "dialogue": [
+        {{"speaker": "Character Name", "text": "Dialogue text", "position": "left/right", "emotion": "speech"}}
+      ],
+      "emotion": "speech",
+      "citation_ids": [],
+      "characters": [...],
+      "visual_prompt": "...",
+      "background": "..."
+    }}
+    // ... 4 panels total
   ],
   "summary_caption": "A vanity-focused verdict (under 100 chars) - e.g. 'Your smile is COOKED'",
   "alt_text": "Accessibility description for screen readers (1-2 sentences)"
 }}
 
+DIALOGUE RULES:
+- Each dialogue line is an OBJECT with speaker, text, position, emotion
+- MAX 2-3 dialogue lines per panel
+- Each line under 40 characters
+- Speaker must match a character name in that panel
+
+📚 FEW-SHOT ROAST EXAMPLES (Copy this energy):
+
+EXAMPLE 1 - Gummy Bears:
+Dr. Drip: "Oh, gummy bears? Bold move."
+Dr. Drip: "These stick to your teeth like they're paying rent."
+Dr. Drip: "Six hours later, fuzzy sweater situation."
+Dr. Drip: "Your teeth are filing a restraining order."
+
+EXAMPLE 2 - Cola:
+Dr. Drip: "A 20oz cola? In this economy?"
+Dr. Drip: "65 grams of sugar. That's 16 cubes, chief."
+Dr. Drip: "Might as well hook your mouth to an IV of corn syrup."
+Dr. Drip: "Your smile is speedrunning yellow teeth any%."
+
+EXAMPLE 3 - Hot Takis:
+Dr. Drip: "Takis? Those neon ones?"
+Dr. Drip: "So much powder, I thought it was color run day in your mouth."
+Dr. Drip: "Your tongue is Smurf blue, your enamel is crying in the club."
+Dr. Drip: "That's not a snack, that's dental chaos."
+
+NOW roast the snacks in the photo with this SAVAGE energy. Be brutal about the SNACK, not the person.
 Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their smile's appearance."""
 
         try:
@@ -487,6 +596,9 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                 config=types.GenerateContentConfig(
                     temperature=self.settings.gemini_temperature,
                     max_output_tokens=self.settings.gemini_max_tokens,
+                    thinking_config=types.ThinkingConfig(
+                        thinking_budget=self.settings.gemini_writer_thinking_budget  # Max thinking for script writing
+                    ),
                     safety_settings=[
                         types.SafetySetting(
                             category="HARM_CATEGORY_HARASSMENT",
@@ -511,7 +623,10 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
             # Parse JSON response
             response_text = response.text.strip()
 
-            # Handle markdown code blocks
+            # Extract JSON from markdown code blocks or prefixed text
+            response_text = self._extract_json(response_text)
+
+            # Handle any remaining markdown code block markers
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
             if response_text.startswith("```"):
@@ -542,20 +657,81 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
             import re
             fact_id_pattern = re.compile(r'\[?F\d{3,4}\]?|\(F\d{3,4}\)')
 
+            # Process dialogue - handle both new object format and legacy string format
             for panel in result.get('panels', []):
                 if 'dialogue' in panel:
                     cleaned_dialogue = []
                     for line in panel['dialogue']:
-                        # Remove fact IDs from dialogue
-                        cleaned_line = fact_id_pattern.sub('', line).strip()
-                        # Remove extra spaces
-                        cleaned_line = re.sub(r'\s+', ' ', cleaned_line)
-                        cleaned_dialogue.append(cleaned_line)
+                        # Handle new object format: {speaker, text, position, emotion}
+                        if isinstance(line, dict):
+                            text = line.get('text', '')
+                            # Remove fact IDs from text
+                            cleaned_text = fact_id_pattern.sub('', text).strip()
+                            cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+                            line['text'] = cleaned_text
+
+                            # Set default position based on speaker if not provided
+                            # Dr. Drip is always on the right, snacks/other characters on the left
+                            if 'position' not in line or line.get('position') not in ('left', 'right', 'center'):
+                                speaker = line.get('speaker', '').lower()
+                                if 'drip' in speaker or 'dr.' in speaker or 'tooth' in speaker:
+                                    line['position'] = 'right'
+                                else:
+                                    line['position'] = 'left'
+
+                            cleaned_dialogue.append(line)
+                        else:
+                            # Legacy string format - convert to object
+                            # Intelligently assign speaker based on content and panel characters
+                            cleaned_text = fact_id_pattern.sub('', str(line)).strip()
+                            cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+
+                            # Find the non-Dr. Drip character in this panel (the snack)
+                            snack_char = None
+                            for char in panel.get('characters', []):
+                                char_name = char.get('name', '').lower()
+                                if 'drip' not in char_name and 'dr.' not in char_name and 'tooth' not in char_name:
+                                    snack_char = char
+                                    break
+
+                            # Determine speaker based on dialogue content
+                            text_lower = cleaned_text.lower()
+                            is_snack_speaking = False
+
+                            # DEBUG: Log detection attempt
+                            logger.info(f"Legacy dialogue detection: text='{cleaned_text}', snack_char={snack_char.get('name') if snack_char else None}")
+
+                            # Lines with first-person self-references are likely the snack speaking
+                            # (Dr. Drip talks ABOUT things, snacks talk about themselves)
+                            if snack_char:
+                                snack_name_lower = snack_char.get('name', '').lower()
+                                # Check if line is self-referential (snack introducing/defending itself)
+                                if any(phrase in text_lower for phrase in ["i'm ", "i am ", "i literally", "i scrub", "i just", "but i ", "we ", "my "]):
+                                    is_snack_speaking = True
+                                # Check if line mentions the snack's own name
+                                elif snack_name_lower and snack_name_lower in text_lower:
+                                    is_snack_speaking = True
+
+                            if is_snack_speaking and snack_char:
+                                cleaned_dialogue.append({
+                                    'speaker': snack_char.get('name', 'Snack'),
+                                    'text': cleaned_text,
+                                    'position': snack_char.get('position', 'left'),
+                                    'emotion': panel.get('emotion', 'speech')
+                                })
+                            else:
+                                # Default to Dr. Drip
+                                cleaned_dialogue.append({
+                                    'speaker': 'Dr. Drip',
+                                    'text': cleaned_text,
+                                    'position': 'right',
+                                    'emotion': panel.get('emotion', 'speech')
+                                })
                     panel['dialogue'] = cleaned_dialogue
 
             # Character limit validation: Truncate lines that are too long
-            MAX_LINE_LENGTH = 45  # chars per line
-            MAX_PANEL_TOTAL = 110  # total chars per panel
+            MAX_LINE_LENGTH = 40  # chars per line (punchy comic dialogue)
+            MAX_PANEL_TOTAL = 100  # total chars per panel
 
             for panel in result.get('panels', []):
                 if 'dialogue' in panel:
@@ -563,18 +739,23 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                     panel_total = 0
 
                     for line in panel['dialogue']:
+                        # Get text from object format
+                        text = line.get('text', '') if isinstance(line, dict) else str(line)
+
                         # Truncate individual line if too long
-                        if len(line) > MAX_LINE_LENGTH:
-                            logger.warning(f"Truncating dialogue line from {len(line)} to {MAX_LINE_LENGTH} chars: {line[:30]}...")
-                            line = line[:MAX_LINE_LENGTH-3] + "..."
+                        if len(text) > MAX_LINE_LENGTH:
+                            logger.warning(f"Truncating dialogue line from {len(text)} to {MAX_LINE_LENGTH} chars: {text[:30]}...")
+                            text = text[:MAX_LINE_LENGTH-3] + "..."
+                            if isinstance(line, dict):
+                                line['text'] = text
 
                         # Check total panel character count
-                        if panel_total + len(line) > MAX_PANEL_TOTAL:
+                        if panel_total + len(text) > MAX_PANEL_TOTAL:
                             logger.warning(f"Panel exceeds character limit, stopping at {panel_total} chars")
                             break
 
                         validated_dialogue.append(line)
-                        panel_total += len(line)
+                        panel_total += len(text)
 
                     panel['dialogue'] = validated_dialogue
 
@@ -743,9 +924,15 @@ TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 {audience_care}
 
 🎭 RECURRING CHARACTER - DR. DRIP:
-He's giving out the "Glow Up" award. He's genuinely impressed.
-Look: Hype-beast molar with sunglasses, gold crown, fresh kicks, PRISTINE WHITE SHINE
-Expressions: "Sheesh!", "Immaculate vibes.", "No filter needed."
+He's giving out the "Glow Up" award. GENUINELY IMPRESSED - Adult Swim hype mode.
+Like Rick Sanchez when he actually respects something. Peak respect energy.
+Look: Off-white/pale cyan molar in dark forest green hoodie, shades on forehead, chunky beige slides, CLEAN AESTHETIC
+Catchphrases:
+- "Now THIS is main character energy."
+- "Your teeth just won the lottery."
+- "Goated. Actually goated with the sauce."
+- "That's not a snack, that's a POWER MOVE."
+- "W. Actual W."
 {verdicts_line}
 
 🌟 HEALTHY SNACKS ({snacks_label}):
@@ -787,24 +974,44 @@ PANEL 4 - THE CROWN (The Glow Up Award)
 - Final verdict text overlay: "AESTHETIC" or "GLOW UP APPROVED"
 - Sparkles, shine effects, golden hour lighting
 
-🎨 LOOKSMAXXING TECHNIQUES:
-1. APPEARANCE WORDS: "White", "Clean", "Bright", "Sparkling", "Unfiltered", "Glowing"
-2. BEAUTY SLANG: "Glow up", "Aesthetic", "No filter needed", "Natural beauty hack"
+🎨 HYPE TECHNIQUES (ADULT SWIM CELEBRATION):
+
+1. APPEARANCE WORDS: "White", "Clean", "Bright", "Sparkling", "Unfiltered", "Immaculate"
+
+2. ABSURDIST HYPE - Over-the-top praise that's almost as absurd as the roasts:
+- "This snack is so clean, it's basically a whitening strip you can eat"
+- "Your teeth just got a scholarship to Hollywood"
+- "This is the dental equivalent of getting verified"
+
+3. QUOTABLE HYPE:
+- "Goated. Actually goated with the sauce."
+- "W. Actual W."
+- "That's main character energy, unironically."
+- "Your dentist just sent a thank you card."
+
 {vanity_flex_line}
-4. VISUAL GLOW: Sparkles, shine effects, pristine white, golden hour lighting
+5. VISUAL GLOW: Sparkles, shine effects, pristine white, golden hour lighting
 
-⚠️ CRITICAL RULES FOR FACT CITATIONS:
-- citation_ids field = ONLY fact IDs like ["F025", "F027"]
-- dialogue field = ONLY what characters SAY - NEVER include fact IDs in dialogue
-- The dialogue should naturally incorporate the fact's content WITHOUT mentioning the ID
+	⚠️ CRITICAL RULES FOR FACT CITATIONS:
+	- citation_ids field = ONLY fact IDs like ["F025", "F027"]
+	- dialogue field = ONLY what characters SAY - NEVER include fact IDs in dialogue
+	- The dialogue should naturally incorporate the fact's content WITHOUT mentioning the ID
 
-📝 OTHER RULES:
-- Every panel should feel like a W (win)
-- Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
-- CRITICAL TEXT LIMITS: Each dialogue line must be under 40 characters, total per panel under 100 characters
-- Expressions: impressed, respectful, hyped, triumphant, nodding
-- Props: sunglasses, gold crown, sneakers, trophy, stat screens
-- NO CRINGE - Keep it genuinely cool, not try-hard
+	⚠️ CRITICAL DIALOGUE FORMAT:
+	Each dialogue line MUST be an object with:
+	- "speaker": Character name (MUST match a character in the panel)
+	- "text": The dialogue text (under 40 characters)
+	- "position": "left", "center", or "right" (match character position)
+	- "emotion": "speech", "thought", "exclaim", "angry", or "whisper"
+
+	📝 OTHER RULES:
+	- Every panel should feel like a W (win)
+	- Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
+	- If a panel includes BOTH the snack and Dr. Drip, give EACH one a line
+	- CRITICAL TEXT LIMITS: Each dialogue line must be under 40 characters, total per panel under 100 characters
+	- Expressions: impressed, respectful, hyped, triumphant, nodding
+	- Props: green hoodie, shades on forehead, beige slides, gold chains, trophy, stat screens
+	- NO CRINGE - Keep it genuinely cool, not try-hard
 
 🎤 SPEECH BUBBLE EMOTIONS (Required per panel):
 Specify the "emotion" for each panel's speech bubble style:
@@ -817,17 +1024,20 @@ Specify the "emotion" for each panel's speech bubble style:
 
 Return your response as valid JSON with this EXACT structure:
 
-{{
-  "panels": [
-    {{
-      "panel_number": 1,
-      "title": "The Entrance",
-      "dialogue": ["Wait... is that a natural filter?", "I literally GLOW."],
-      "emotion": "speech",
-      "citation_ids": ["F025"],
-      "characters": [
-        {{
-          "name": "Crunchy Apple Chad",
+	{{
+	  "panels": [
+	    {{
+	      "panel_number": 1,
+	      "title": "The Entrance",
+	      "dialogue": [
+	        {{"speaker": "Crunchy Apple Chad", "text": "I'm basically a snack-sized whitening strip.", "position": "left", "emotion": "speech"}},
+	        {{"speaker": "Dr. Drip", "text": "No filter needed. That's a W.", "position": "right", "emotion": "speech"}}
+	      ],
+	      "emotion": "speech",
+	      "citation_ids": ["F025"],
+	      "characters": [
+	        {{
+	          "name": "Crunchy Apple Chad",
           "item_id": "fruit_apple",
           "expression": "glowing",
           "position": "left",
@@ -838,10 +1048,10 @@ Return your response as valid JSON with this EXACT structure:
           "item_id": "recurring_tooth",
           "expression": "impressed",
           "position": "right",
-          "props": ["sunglasses", "gold crown", "fresh kicks", "pristine white shine"]
+          "props": ["green hoodie", "shades on forehead", "beige slides", "gold chains", "clean white shine"]
         }}
       ],
-      "visual_prompt": "Glowing apple character with sparkles enters scene. Pristine white molar tooth with sunglasses looks impressed. Golden hour lighting, aesthetic vibes.",
+      "visual_prompt": "Glowing apple character with sparkles enters scene. Off-white molar in green hoodie looks impressed, shades on forehead. Golden hour lighting, aesthetic vibes.",
       "background": "bright, clean, aesthetic setting with sparkle effects"
     }}
     // ... panels 2-4 with emotion: "exclaim", "speech", "exclaim" respectively
@@ -850,7 +1060,27 @@ Return your response as valid JSON with this EXACT structure:
   "alt_text": "Accessibility description (1-2 sentences)"
 }}
 
-Make it about the GLOW UP. Make teens want that Hollywood smile."""
+📚 FEW-SHOT CELEBRATION EXAMPLES (Copy this hype energy):
+
+EXAMPLE 1 - Fresh Apple:
+Dr. Drip: "Wait... is that an APPLE?"
+Dr. Drip: "That thing scrubs your teeth WHITE while you eat it."
+Dr. Drip: "It's literally a crunchy whitening strip you can snack on."
+Dr. Drip: "Goated. Actually goated with the sauce. No notes."
+
+EXAMPLE 2 - Cheese:
+Dr. Drip: "Cheese? Oh, you're built different."
+Dr. Drip: "That neutralizes acid AND has calcium. Double buff."
+Dr. Drip: "Your teeth are sending you a thank you card."
+Dr. Drip: "Main character energy. Unironically."
+
+EXAMPLE 3 - Carrots:
+Dr. Drip: "Carrots? The OG glow up snack."
+Dr. Drip: "Crunchy enough to scrub, vitamins for that natural shine."
+Dr. Drip: "Your smile just got a scholarship to Hollywood."
+Dr. Drip: "W. Actual W."
+
+	NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Make teens want that Hollywood smile."""
 
         try:
             start_time = time.time()
@@ -867,6 +1097,9 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                 config=types.GenerateContentConfig(
                     temperature=self.settings.gemini_temperature,
                     max_output_tokens=self.settings.gemini_max_tokens,
+                    thinking_config=types.ThinkingConfig(
+                        thinking_budget=self.settings.gemini_writer_thinking_budget  # Max thinking for script writing
+                    ),
                     safety_settings=[
                         types.SafetySetting(
                             category="HARM_CATEGORY_HARASSMENT",
@@ -891,7 +1124,10 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
             # Parse JSON response
             response_text = response.text.strip()
 
-            # Handle markdown code blocks
+            # Extract JSON from markdown code blocks or prefixed text
+            response_text = self._extract_json(response_text)
+
+            # Handle any remaining markdown code block markers
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
             if response_text.startswith("```"):
@@ -917,22 +1153,94 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                 else:
                     raise ValueError(f"Gemini returned invalid JSON: {e}")
 
-            # Safety filter: Remove any fact IDs from dialogue
+            # Safety filter: Remove any fact IDs that slipped into dialogue
             import re
+
             fact_id_pattern = re.compile(r'\[?F\d{3,4}\]?|\(F\d{3,4}\)')
 
+            # Process dialogue - handle both new object format and legacy string format
             for panel in result.get('panels', []):
                 if 'dialogue' in panel:
                     cleaned_dialogue = []
                     for line in panel['dialogue']:
-                        cleaned_line = fact_id_pattern.sub('', line).strip()
-                        cleaned_line = re.sub(r'\s+', ' ', cleaned_line)
-                        cleaned_dialogue.append(cleaned_line)
+                        # Handle new object format: {speaker, text, position, emotion}
+                        if isinstance(line, dict):
+                            text = line.get('text', '')
+                            # Remove fact IDs from text
+                            cleaned_text = fact_id_pattern.sub('', text).strip()
+                            cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+                            line['text'] = cleaned_text
+
+                            # Set default emotion based on panel if missing/invalid
+                            if 'emotion' not in line or line.get('emotion') not in (
+                                'speech', 'thought', 'exclaim', 'angry', 'whisper'
+                            ):
+                                line['emotion'] = panel.get('emotion', 'speech')
+
+                            # Set default position based on speaker if not provided
+                            # Dr. Drip is always on the right, snacks/other characters on the left
+                            if 'position' not in line or line.get('position') not in ('left', 'right', 'center'):
+                                speaker = line.get('speaker', '').lower()
+                                if 'drip' in speaker or 'dr.' in speaker or 'tooth' in speaker:
+                                    line['position'] = 'right'
+                                else:
+                                    line['position'] = 'left'
+
+                            cleaned_dialogue.append(line)
+                        else:
+                            # Legacy string format - convert to object
+                            cleaned_text = fact_id_pattern.sub('', str(line)).strip()
+                            cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+
+                            # Find the non-Dr. Drip character in this panel (the snack)
+                            snack_char = None
+                            for char in panel.get('characters', []):
+                                char_name = char.get('name', '').lower()
+                                if 'drip' not in char_name and 'tooth' not in char_name:
+                                    snack_char = char
+                                    break
+
+                            # Heuristic: snack talks about itself; Dr. Drip talks about the snack
+                            text_lower = cleaned_text.lower()
+                            is_snack_speaking = False
+                            if snack_char:
+                                snack_name_lower = snack_char.get('name', '').lower()
+                                if any(
+                                    phrase in text_lower
+                                    for phrase in [
+                                        "i'm ",
+                                        "i am ",
+                                        "i literally",
+                                        "i scrub",
+                                        "i just",
+                                        "but i ",
+                                        "we ",
+                                        "my ",
+                                    ]
+                                ):
+                                    is_snack_speaking = True
+                                elif snack_name_lower and snack_name_lower in text_lower:
+                                    is_snack_speaking = True
+
+                            if is_snack_speaking and snack_char:
+                                cleaned_dialogue.append({
+                                    'speaker': snack_char.get('name', 'Snack'),
+                                    'text': cleaned_text,
+                                    'position': snack_char.get('position', 'left'),
+                                    'emotion': panel.get('emotion', 'speech')
+                                })
+                            else:
+                                cleaned_dialogue.append({
+                                    'speaker': 'Dr. Drip',
+                                    'text': cleaned_text,
+                                    'position': 'right',
+                                    'emotion': panel.get('emotion', 'speech')
+                                })
                     panel['dialogue'] = cleaned_dialogue
 
-            # Character limit validation
-            MAX_LINE_LENGTH = 45
-            MAX_PANEL_TOTAL = 110
+            # Character limit validation (punchy comic dialogue)
+            MAX_LINE_LENGTH = 40
+            MAX_PANEL_TOTAL = 100
 
             for panel in result.get('panels', []):
                 if 'dialogue' in panel:
@@ -940,16 +1248,27 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                     panel_total = 0
 
                     for line in panel['dialogue']:
-                        if len(line) > MAX_LINE_LENGTH:
-                            logger.warning(f"Truncating dialogue line from {len(line)} to {MAX_LINE_LENGTH} chars")
-                            line = line[:MAX_LINE_LENGTH-3] + "..."
+                        # Get text from object format
+                        text = line.get('text', '') if isinstance(line, dict) else str(line)
 
-                        if panel_total + len(line) > MAX_PANEL_TOTAL:
-                            logger.warning(f"Panel exceeds character limit, stopping at {panel_total} chars")
+                        # Truncate individual line if too long
+                        if len(text) > MAX_LINE_LENGTH:
+                            logger.warning(
+                                f"Truncating dialogue line from {len(text)} to {MAX_LINE_LENGTH} chars"
+                            )
+                            text = text[:MAX_LINE_LENGTH-3] + "..."
+                            if isinstance(line, dict):
+                                line['text'] = text
+
+                        # Check total panel character count
+                        if panel_total + len(text) > MAX_PANEL_TOTAL:
+                            logger.warning(
+                                f"Panel exceeds character limit, stopping at {panel_total} chars"
+                            )
                             break
 
                         validated_dialogue.append(line)
-                        panel_total += len(line)
+                        panel_total += len(text)
 
                     panel['dialogue'] = validated_dialogue
 
@@ -1030,10 +1349,10 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                             "item_id": "recurring_tooth",
                             "expression": "cool",
                             "position": "center",
-                            "props": ["sunglasses", "gold crown", "fresh kicks", "pristine white shine"]
+                            "props": ["green hoodie", "shades on forehead", "beige slides", "gold chains", "clean white shine"]
                         }
                     ],
-                    "visual_prompt": f"Pristine white molar tooth with sunglasses, gold crown, and sneakers in {tone_adj} style, literally glowing, looking directly at viewer",
+                    "visual_prompt": f"Off-white molar in dark green hoodie, shades on forehead, beige slides in {tone_adj} style, literally glowing, looking directly at viewer",
                     "background": "aesthetic gradient with sparkle effects"
                 },
                 {
@@ -1051,10 +1370,10 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                             "item_id": "recurring_tooth",
                             "expression": "smug",
                             "position": "left",
-                            "props": ["sunglasses", "gold crown", "toothbrush sword", "sparkle effect"]
+                            "props": ["green hoodie", "shades on forehead", "toothbrush sword", "sparkle effect"]
                         }
                     ],
-                    "visual_prompt": "Pristine white tooth character wielding toothbrush like a sword, teeth literally sparkling, dramatic pose",
+                    "visual_prompt": "Off-white molar in green hoodie wielding toothbrush like a sword, shades on forehead, teeth literally sparkling, dramatic pose",
                     "background": "clean neon bathroom with mirror showing bright smile"
                 },
                 {
@@ -1072,10 +1391,10 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                             "item_id": "recurring_tooth",
                             "expression": "nodding",
                             "position": "right",
-                            "props": ["sunglasses", "gold crown", "water bottle", "pristine white shine"]
+                            "props": ["green hoodie", "shades on forehead", "water bottle", "clean white shine"]
                         }
                     ],
-                    "visual_prompt": "Pristine white tooth character holding water bottle, refreshing sparkle effects around the smile",
+                    "visual_prompt": "Off-white molar in green hoodie holding water bottle, shades on forehead, refreshing sparkle effects around the smile",
                     "background": "clean aesthetic with crystal water splash effects"
                 },
                 {
@@ -1093,15 +1412,15 @@ Make it about the GLOW UP. Make teens want that Hollywood smile."""
                             "item_id": "recurring_tooth",
                             "expression": "triumphant",
                             "position": "center",
-                            "props": ["sunglasses", "gold crown", "fresh kicks", "peace sign", "sparkle effects"]
+                            "props": ["green hoodie", "shades on forehead", "beige slides", "peace sign", "sparkle effects"]
                         }
                     ],
-                    "visual_prompt": "Pristine white tooth character doing peace sign, Hollywood smile energy, walking away with sparkles",
+                    "visual_prompt": "Off-white molar in green hoodie doing peace sign, shades on forehead, beige slides, walking away with sparkles",
                     "background": "golden hour lighting with aesthetic glow"
                 }
             ],
             "summary_caption": "Dr. Drip drops the glow up secrets. No filter needed.",
-            "alt_text": "A 4-panel comic featuring Dr. Drip, a pristine white molar tooth with sunglasses and gold crown, sharing appearance tips about keeping teeth white and aesthetic."
+            "alt_text": "A 4-panel comic featuring Dr. Drip, an off-white molar in a green hoodie with shades on forehead, sharing appearance tips about keeping teeth white and aesthetic."
         }
 
     async def detect_speech_bubbles(self, image_path: str) -> dict[int, dict] | None:

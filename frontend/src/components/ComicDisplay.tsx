@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface ComicData {
-  comic_square_uri: string;
   comic_portrait_uri: string;
   reel_cover_uri: string | null;
 }
@@ -14,14 +13,13 @@ interface ComicDisplayProps {
   onReset: () => void;
 }
 
-type FormatType = 'square' | 'portrait' | 'reel';
+type FormatType = 'portrait' | 'reel';
 
 export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) {
-  const [selectedFormat, setSelectedFormat] = useState<FormatType>('square');
+  const [selectedFormat, setSelectedFormat] = useState<FormatType>('portrait');
   const [isDownloading, setIsDownloading] = useState(false);
 
   const formats: { key: FormatType; label: string; emoji: string; uri: string | null }[] = [
-    { key: 'square', label: 'Square', emoji: '⬛', uri: comicData.comic_square_uri },
     { key: 'portrait', label: 'Story', emoji: '📱', uri: comicData.comic_portrait_uri },
     { key: 'reel', label: 'Reel', emoji: '🎬', uri: comicData.reel_cover_uri },
   ];
@@ -89,13 +87,13 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
 
   const handleInstagramShare = async () => {
     // Use portrait format for Instagram Stories
-    const url = comicData.comic_portrait_uri || comicData.comic_square_uri;
+    const url = comicData.comic_portrait_uri;
     await shareToPlatform(url, 'Check out my dental health comic! 🦷✨ #DentalHealth #KidsHealth');
   };
 
   const handleTikTokShare = async () => {
     // Use reel format for TikTok
-    const url = comicData.reel_cover_uri || comicData.comic_square_uri;
+    const url = comicData.reel_cover_uri || comicData.comic_portrait_uri;
     await shareToPlatform(url, 'My SnackSwap dental health comic! 🦷🎬 #DentalHealth #KidsHealth #SnackSwap');
   };
 
@@ -225,7 +223,7 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
           <div className="flex flex-col gap-2">
             <motion.button
               onClick={handleInstagramShare}
-              disabled={!comicData.comic_portrait_uri && !comicData.comic_square_uri}
+              disabled={!comicData.comic_portrait_uri}
               className="comic-btn w-full py-3 px-6 text-white font-bold disabled:opacity-50"
               style={{ background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}
               whileHover={{ scale: 1.02 }}
@@ -237,7 +235,7 @@ export default function ComicDisplay({ comicData, onReset }: ComicDisplayProps) 
             </motion.button>
             <motion.button
               onClick={handleTikTokShare}
-              disabled={!comicData.reel_cover_uri && !comicData.comic_square_uri}
+              disabled={!comicData.reel_cover_uri && !comicData.comic_portrait_uri}
               className="comic-btn w-full py-3 px-6 text-white font-bold bg-black disabled:opacity-50"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

@@ -24,7 +24,7 @@ async def export_zip(
     Export a complete content package as a ZIP file.
 
     Includes:
-    - Rendered comic images (square, portrait, reel cover)
+    - Rendered comic images (portrait, reel cover)
     - Caption text file
     - Alt text file
     - Provenance manifest JSON

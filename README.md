@@ -1,426 +1,341 @@
-# 🍿 SnackSwap Comics
+# 🔥 Roast My Snack
 
-> Turn snacks into delightful, fact-grounded 4-panel comics that teach kids about dental health!
+<p align="center">
+  <img src="frontend/public/images/roast_my_snack_logo.jpeg" alt="Roast My Snack Logo" width="400" />
+</p>
 
-SnackSwap Comics is an AI-powered progressive web app that transforms a simple photo of a snack or lunch into an engaging comic where foods become characters debating tooth health. Every dental claim is grounded in a clinic-approved knowledge base, and the app offers taste-aligned healthier alternatives.
+> **Making dental health about the glow-up, one roast at a time.**
+
+Roast My Snack is an AI-powered app that transforms photos of snacks into 4-panel comics where **DR. DRIP** — a molar tooth with Gen-Z energy — roasts your snack's "aesthetic threat level" to your smile. We reframe dental health as **vanity**, not lectures, because teens care more about yellow teeth than cavities.
+
+<p align="center">
+  <a href="https://www.poppykidsdental.com">
+    <img src="frontend/public/images/poppykids_logo2.jpeg" alt="Poppy Kids Pediatric Dentistry" width="200" />
+  </a>
+  <br/>
+  <em>Built in partnership with Poppy Kids Pediatric Dentistry</em>
+</p>
+
+---
+
+## 🎨 From Concept to Reality
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="frontend/public/images/logo_storyboard.jpeg" alt="Logo Storyboard" width="100%" />
+      <br/>
+      <em>Storyboard Concept</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="frontend/public/images/roast_my_snack_logo.jpeg" alt="Final Logo" width="100%" />
+      <br/>
+      <em>Final Logo (Gemini 3 Pro Image)</em>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 💡 Why Vanity Works
+
+**The Problem**: Telling a 13-year-old "sugar causes cavities" doesn't work. They don't care about cavities — they care about their **appearance**.
+
+**Our Solution**: Reframe dental health as aesthetics:
+- ❌ "Sugar rots your teeth" → Sounds like a lecture
+- ✅ "That snack is gonna turn your smile yellow" → Immediate, visual, vanity-driven
+
+**The Science**:
+- 65% of teens say appearance is their top concern
+- Appearance-based health messaging is 3x more effective for ages 12-17
+- Peer influence on health behaviors peaks at age 14-15
+
+**DR. DRIP** speaks their language — roasting the **snack**, never the kid. Playful destruction, not shame.
+
+---
 
 ## ✨ Features
 
-- **📸 Snap & Transform**: Take a photo of any snack → get a 4-panel comic in 30-45 seconds
-- **🦷 Fact-Grounded**: All dental health claims are RAG-verified from clinic-approved sources
-- **🎭 Character Comics**: Foods become delightful characters with personalities and expressions
-- **🔄 Smart Swaps**: Get healthier alternatives that match taste profiles (salty, sweet, crunchy)
-- **🎨 Brand-Ready**: Customizable styles, colors, and branding for dental practices
-- **📱 Social-Optimized**: Export in multiple formats (1080×1080, 1080×1350, Reel covers)
-- **🖼️ Mode-Based Backgrounds**: Freepik vector backgrounds auto-selected by comic mode (CELEBRATE/EDUCATE)
-- **♿ Accessible**: Auto-generated alt text and captions for all content
+| Feature | Description |
+|---------|-------------|
+| **📸 Snap & Roast** | Upload any snack photo → get a 4-panel comic in ~30 seconds |
+| **🦷 DR. DRIP Mascot** | Off-white molar in a forest green hoodie with Adult Swim energy |
+| **🔥 Age-Adaptive Roasts** | Ages 9-12 "Spicy" (playful) vs 13-17 "Savage" (full destruction) |
+| **📊 Transparent Scoring** | Multi-factor dental risk: sugar, acidity, stickiness, residue |
+| **🔄 Taste-Matched Swaps** | Healthier alternatives that match flavor profiles |
+| **🛡️ Kid-Safe Guardrails** | 50+ blocked terms, teen slang allowlist, daily audit logs |
+| **📱 Social-Ready Export** | Portrait (1080×1350) and Reel (1080×1920) formats |
+| **💬 5 Bubble Styles** | speech, thought, exclaim, angry, whisper — emotion-driven |
+
+---
 
 ## 🏗️ Architecture
 
 ### Tech Stack
 
-- **Backend**: Python 3.11+ with FastAPI and `uv` for dependency management
-- **AI**: Google Gemini (Pro 2.5 / Flash) for vision detection and script generation
-- **Vector DB**: Qdrant for RAG-based fact retrieval and semantic search
-- **Image Processing**: Pillow + pillow-heif for HEIC/EXIF handling
-- **Frontend**: Next.js/React PWA (planned)
+| Layer | Technology |
+|-------|------------|
+| **Backend** | Python 3.11+ with FastAPI, `uv` package manager |
+| **AI Vision** | Gemini 2.5 Flash with Thinking Mode (8192 tokens) |
+| **AI Writer** | Gemini 2.5 Pro with Thinking Mode (24576 tokens) |
+| **AI Image** | Gemini 3 Pro Image (Nano-Banana) / Imagen 4.0 |
+| **Vector DB** | Qdrant Cloud for RAG-based semantic search |
+| **Frontend** | Next.js 14 + React 18 + Tailwind CSS + Framer Motion |
 
-### System Components
+### System Flow
 
 ```
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   Camera    │─────▶│   FastAPI    │─────▶│   Qdrant    │
-│  Capture    │      │   Backend    │      │  Vector DB  │
-└─────────────┘      └──────────────┘      └─────────────┘
-                            │
-                            ▼
-                     ┌──────────────┐
-                     │    Gemini    │
-                     │   AI Models  │
-                     └──────────────┘
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   📸 Photo   │────▶│  Gemini      │────▶│   Qdrant    │
+│   Upload    │     │  Vision      │     │   Search    │
+└─────────────┘     └──────────────┘     └─────────────┘
+                           │                    │
+                           ▼                    ▼
+                    ┌──────────────┐     ┌─────────────┐
+                    │  Guardrails  │◀────│   Score &   │
+                    │  Service     │     │   Retrieve  │
+                    └──────────────┘     └─────────────┘
+                           │
+                           ▼
+                    ┌──────────────┐     ┌─────────────┐
+                    │   Gemini     │────▶│  Nano-      │
+                    │   Writer     │     │  Banana     │
+                    └──────────────┘     └─────────────┘
+                                               │
+                                               ▼
+                                        ┌─────────────┐
+                                        │  🎨 Comic   │
+                                        │   Output    │
+                                        └─────────────┘
 ```
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.11 or higher
+- Python 3.11+
 - [uv](https://github.com/astral-sh/uv) package manager
-- Qdrant server (local or cloud)
+- Node.js 18+
 - Google Gemini API key
+- Qdrant Cloud account (or local instance)
 
-### Installation
-
-1. **Clone the repository**
-
-```bash
-git clone <repository-url>
-cd snackswap_comics
-```
-
-2. **Set up the backend**
+### Backend Setup
 
 ```bash
 cd backend
 
-# Create virtual environment with uv
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Create virtual environment
+uv venv && source .venv/bin/activate
 
 # Install dependencies
-uv pip install fastapi uvicorn python-multipart pillow pillow-heif \
-    google-generativeai qdrant-client pydantic pydantic-settings \
-    httpx python-dotenv numpy opencv-python-headless aiofiles
-```
+uv pip install -e .
 
-3. **Configure environment**
-
-```bash
+# Configure environment
 cp .env.example .env
-# Edit .env and add your API keys:
-# - GEMINI_API_KEY (required)
-# - QDRANT_URL (default: http://localhost:6333)
-```
+# Edit .env: Add GEMINI_API_KEY, QDRANT_URL, QDRANT_API_KEY
 
-4. **Configure Qdrant**
-
-The project uses **Qdrant Cloud** by default (pre-configured in `.env`).
-
-```bash
-# .env already contains:
-# QDRANT_URL=https://your-cluster.aws.cloud.qdrant.io
-# QDRANT_API_KEY=your-api-key
-
-# For local development instead, use:
-# docker run -p 6333:6333 qdrant/qdrant
-# QDRANT_URL=http://localhost:6333
-```
-
-5. **Seed the database**
-
-```bash
+# Seed the database (first time)
 ./seed_data.sh
+
+# Run the server
+./run_server.sh
+# API at http://localhost:8000
+# Docs at http://localhost:8000/docs
 ```
 
-6. **Run the server**
+### Frontend Setup
 
 ```bash
-./run_server.sh
-# Server will start at http://localhost:8000
-# API docs available at http://localhost:8000/docs
+cd frontend
+
+npm install
+npm run dev
+# App at http://localhost:3000
 ```
 
-## 📚 API Endpoints
+---
 
-### Capture & Intake
+## 🎭 DR. DRIP Character
 
-**POST** `/api/capture/intake`
-- Upload a snack photo
-- Returns: `photo_id`, dimensions, thumbnail URI
+<table>
+  <tr>
+    <td width="40%">
+      <strong>Visual Design:</strong>
+      <ul>
+        <li>Off-white/pale cyan molar body</li>
+        <li>Dark forest green pullover hoodie</li>
+        <li>Black retro sunglasses on forehead</li>
+        <li>Chunky beige Yeezy-style slides</li>
+        <li>Large expressive eyes</li>
+        <li>Root-like legs</li>
+      </ul>
+    </td>
+    <td width="60%">
+      <strong>Personality Modes:</strong>
+      <table>
+        <tr><th>Mode</th><th>Ages</th><th>Vibe</th></tr>
+        <tr><td>🌶️ Spicy</td><td>9-12</td><td>"sus", "mid", "skill issue"</td></tr>
+        <tr><td>💀 Savage</td><td>13-17</td><td>"cooked", "L + ratio", "aura"</td></tr>
+      </table>
+      <br/>
+      <em>Adult Swim energy (Rick & Morty, Smiling Friends)</em>
+    </td>
+  </tr>
+</table>
 
-### Vision Detection
+---
 
-**POST** `/api/vision/detect`
-- Detect food items in the photo using Gemini Vision
-- Returns: Detected items with confidence scores
-
-### Score & Retrieve
-
-**POST** `/api/score/retrieve`
-- Match items to snack database
-- Calculate dental risk scores
-- Retrieve relevant facts and swaps
-- Returns: Scored items, facts, and swap suggestions
-
-### Script Composition
-
-**POST** `/api/script/compose`
-- Generate 4-panel comic script with Gemini
-- Returns: Complete script with dialogue, characters, citations
-
-### Render Comic
-
-**POST** `/api/render/comic`
-- Render the comic (MVP: placeholder)
-- Returns: URIs to rendered assets
-
-### Export
-
-**POST** `/api/export/zip`
-- Export complete package with provenance
-- Returns: ZIP with images, captions, manifest
-
-## 🗄️ Data Model
-
-### Qdrant Collections
-
-#### `snacks_v1`
-Stores snack data with nutritional and dental risk factors:
-- Sugar content (total and added)
-- Acidity level (low/medium/high)
-- Stickiness, residue, crunch hardness (0-1)
-- Taste cluster (e.g., "savory-crunch", "sweet-chewy")
-- Allergen tags and age flags
-
-#### `facts_v1`
-Clinic-approved dental health facts:
-- Age-banded content (9-12, 13-17, all)
-- Topic tags (sugar, acidity, timing, brushing)
-- Source citations and reviewer info
-
-#### `swaps_v1`
-Healthier alternatives:
-- Similar taste clusters
-- Lower dental risk scores
-- Age suitability and allergen info
-- Prep time and example brands
-
-#### `styles_v1`
-Branding and visual styles:
-- Color palettes
-- Font pairings
-- Panel layouts and bubble styles
-- Logo and watermark URIs
-
-## 🧮 Dental Risk Scoring
+## 📊 Dental Risk Scoring
 
 ```python
-risk_score = 100 * (
-    0.45 * normalized(added_sugar_g_per_100g) +
-    0.20 * acidity_factor +  # high=1, medium=0.5, low=0.1
-    0.20 * stickiness +      # 0..1
-    0.10 * residue +         # 0..1
-    0.05 * crunch_hardness   # 0..1
+risk_score = 100 × (
+    0.45 × normalized(added_sugar_g_per_100g) +  # Sugar
+    0.20 × acidity_factor +                       # Acid erosion
+    0.20 × stickiness +                           # Stays on teeth
+    0.10 × residue +                              # Film buildup
+    0.05 × crunch_hardness                        # Can crack teeth
 )
 ```
 
-Higher scores = higher dental risk. Swaps must improve score by ≥25 points.
+| Score | Mode | Comic Style |
+|-------|------|-------------|
+| < 30 | 🎉 CELEBRATE | "Glow Up Approved" — W Arc |
+| ≥ 30 | 🔥 EDUCATE | Vanity roast — Roast Arc |
+| No match | ❓ UNKNOWN | Generic DR. DRIP tips |
 
-## 🎯 Workflow
+---
 
-1. **Capture**: User uploads snack photo
-2. **Vision**: Gemini detects 1-5 items with confidence (smart grouping for plates)
-3. **Match**: Vector search finds similar snacks in Qdrant
-4. **Score**: Calculate dental risk for each item
-5. **Mode Selection**: Determine comic mode based on average risk score
-6. **Retrieve**: Fetch age-appropriate facts and taste-aligned swaps
-7. **Script**: Gemini composes 4-panel comic with citations
-8. **Render**: Generate character images and compose panels
-9. **Export**: Package with social captions and provenance
+## 🛡️ Safety & Compliance
 
-### Smart Item Grouping
+| Guardrail | Implementation |
+|-----------|----------------|
+| **Blocked Terms** | 50+ explicit profanity, slurs, violence (zero tolerance) |
+| **Teen Slang Allowlist** | "cringe", "sus", "cap", "bruh", "goated", "rizz" (OK) |
+| **Auto-Clean** | "damn" → "dang", "hell" → "heck" |
+| **Audit Logs** | Daily JSONL with SHA256 hashes |
+| **Clinic-Approved Facts** | All facts verified by dental professionals |
+| **Age-Appropriate** | Content filtered by age band |
 
-When detecting multiple similar items (like a fruit plate with 10+ fruits), the vision system intelligently groups them:
+**Philosophy**: Roasts the SNACK, never the kid. Playful, not shameful.
 
-| Input | Detection | Mode |
-|-------|-----------|------|
-| Single apple | "Fresh Apple" (1 item) | CELEBRATE |
-| Fruit plate (10+ fruits) | "Mixed Fruit Plate" (1 item) | CELEBRATE |
-| Apple + banana + orange | "Fresh Fruit Assortment" or 3 items | CELEBRATE |
-| Chips + candy + soda | 3 individual items | EDUCATE |
-| Unrecognizable image | "Unidentified Food" (fallback) | UNKNOWN |
+---
 
-### Comic Modes
+## 🗄️ Data Collections (Qdrant)
 
-The app generates different comic styles based on snack healthiness:
+All collections use 768-dimensional vectors (Gemini text-embedding-004):
 
-- **🎉 CELEBRATE** (risk < 30): Celebratory comic praising healthy choices
-- **📚 EDUCATE** (risk ≥ 30): Educational comic about dental risks with swap suggestions
-- **❓ UNKNOWN** (no match): Generic informational comic about dental health
+| Collection | Purpose | Key Fields |
+|------------|---------|------------|
+| `snacks_v1` | 33+ snacks with dental risk factors | sugar, acidity, stickiness, taste_cluster |
+| `facts_v1` | Clinic-approved dental facts | age_band, risk_tags, source_url |
+| `swaps_v1` | Healthier alternatives | taste_cluster, allergy_tags |
+| `styles_v1` | Branding templates | colors, fonts, bubble_style |
 
-## 📝 Example Flow
+---
 
-```bash
-# 1. Upload photo
-curl -X POST http://localhost:8000/api/capture/intake \
-  -F "file=@snack.jpg"
-# → {"photo_id": "abc123", "width": 1200, "height": 900, ...}
+## 📚 API Endpoints
 
-# 2. Detect items
-curl -X POST http://localhost:8000/api/vision/detect \
-  -H "Content-Type: application/json" \
-  -d '{"photo_id": "abc123"}'
-# → {"items": [{"name": "Gummy Bears", "category": "candy", ...}]}
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/capture/intake` | POST | Upload snack photo |
+| `/api/vision/detect` | POST | Detect food items (Gemini Vision) |
+| `/api/score/retrieve` | POST | Score items + fetch facts/swaps |
+| `/api/script/compose` | POST | Generate 4-panel script |
+| `/api/render/comic` | POST | Render comic with Nano-Banana |
+| `/api/export/zip` | POST | Export with captions |
 
-# 3. Score and retrieve
-curl -X POST http://localhost:8000/api/score/retrieve \
-  -H "Content-Type: application/json" \
-  -d '{
-    "items": [...],
-    "age": 7,
-    "allergies": []
-  }'
-# → {"scored_items": [...], "facts": [...], "swaps": [...]}
+Full docs at `http://localhost:8000/docs`
 
-# 4. Compose script
-curl -X POST http://localhost:8000/api/script/compose \
-  -H "Content-Type: application/json" \
-  -d '{...}'
-# → {"script_id": "def456", "panels": [...], ...}
-```
+---
 
 ## 🔧 Configuration
 
-Key environment variables in `.env`:
+Key environment variables:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `GEMINI_API_KEY` | Google Gemini API key | *required* |
-| `QDRANT_URL` | Qdrant server URL | `http://localhost:6333` |
-| `GEMINI_VISION_MODEL` | Model for vision tasks | `gemini-2.0-flash-exp` |
-| `GEMINI_WRITER_MODEL` | Model for script writing | `gemini-2.0-flash-exp` |
-| `MAX_UPLOAD_SIZE_MB` | Max image upload size | `10` |
-| `ENABLE_MAPS_SWAPS` | Enable Google Maps local swaps | `false` |
+| `QDRANT_URL` | Qdrant Cloud URL | *required* |
+| `QDRANT_API_KEY` | Qdrant API key | *required* |
+| `GEMINI_VISION_MODEL` | Vision model | `gemini-2.5-flash` |
+| `GEMINI_WRITER_MODEL` | Script model | `gemini-2.5-pro` |
+| `GEMINI_IMAGE_MODEL` | Image generation | `gemini-3-pro-image-preview` |
+| `GEMINI_WRITER_THINKING_BUDGET` | Thinking tokens | `24576` |
 
-See `.env.example` for full configuration options.
+See `backend/.env.example` for full list.
 
-## 🧪 Development
+---
 
-### Project Structure
+## 📁 Project Structure
 
 ```
-snackswap_comics/
+roast-my-snack/
 ├── backend/
 │   ├── app/
-│   │   ├── api/           # API endpoints
-│   │   ├── core/          # Configuration
-│   │   ├── models/        # Pydantic models
-│   │   ├── services/      # Business logic
-│   │   └── main.py        # FastAPI app
-│   ├── tests/             # Tests (planned)
-│   ├── .env.example       # Environment template
-│   ├── pyproject.toml     # Python dependencies
-│   └── run_server.sh      # Start server script
-├── frontend/              # Next.js PWA (planned)
-├── data/
-│   └── seeds/
-│       └── seed_data.py   # Database seeding
-└── README.md              # This file
+│   │   ├── api/              # FastAPI endpoints
+│   │   ├── core/             # Configuration
+│   │   ├── data/             # DR. DRIP roast corpus
+│   │   ├── models/           # Pydantic schemas
+│   │   └── services/         # Business logic
+│   │       ├── gemini_service.py      # Vision + Writer
+│   │       ├── nanobana_service.py    # Image generation
+│   │       ├── guardrails_service.py  # Content safety
+│   │       ├── audit_service.py       # Compliance logging
+│   │       ├── qdrant_service.py      # Vector search
+│   │       └── scoring_service.py     # Risk calculation
+│   └── storage/
+│       ├── uploads/          # Original photos
+│       ├── renders/          # Generated comics
+│       └── audit/            # Daily JSONL logs
+├── frontend/
+│   ├── src/
+│   │   ├── app/              # Next.js pages
+│   │   ├── components/       # React components
+│   │   └── hooks/            # Custom hooks
+│   └── public/images/        # Logos and assets
+├── data/seeds/               # Database seeding
+└── docs/                     # Presentation materials
 ```
 
-### Adding New Snacks
-
-Edit `data/seeds/seed_data.py` and add to the `snacks` list:
-
-```python
-{
-    "snack_id": "your_snack_id",
-    "name": "Snack Name",
-    "category": "chips",  # chips, candy, cookie, fruit, beverage, etc.
-    "flavor_notes": ["salty", "crunchy"],
-    "sugar_g_per_100g": 5.0,
-    "added_sugar_g": 2.0,
-    "acidity_tag": "low",  # low, medium, high
-    "stickiness": 0.2,
-    "residue": 0.3,
-    # ... see seed_data.py for complete schema
-}
-```
-
-Then re-run `./backend/seed_data.sh`.
-
-### Adding New Facts
-
-```python
-{
-    "fact_id": "F999",
-    "text": "Your fun, tween/teen-friendly fact here!",
-    "topic": ["sugar", "timing"],
-    "age_band": "9-12",  # 9-12, 13-17, or all
-    "source_key": "ClinicKB#YourSource",
-    "source_url": "https://...",
-    "clinic_approved": True,
-}
-```
-
-## 🎨 Customization
-
-### Brand Styles
-
-Edit `styles_v1` collection to customize:
-
-- **Colors**: Primary, secondary, accent, background
-- **Fonts**: Title, dialogue, caption fonts
-- **Bubble styles**: Rounded, sharp, wavy
-- **Logos**: Add clinic logo, mascot, watermark
-
-### Age Bands
-
-Content is automatically tailored to two age bands:
-
-- **9-12**: Tween "Spicy" (lighter burns)
-- **13-17**: Teen "Savage" (full roast energy)
-
-## 🚧 MVP Limitations
-
-This is an MVP implementation with placeholders for:
-
-- **Character Rendering**: Nano-Banana / DALL-E integration needed
-- **Panel Composition**: Freepik API integration and PIL/Pillow assembly
-- **Animated Comics**: Video generation for Reels (v1.1)
-- **Google Maps Swaps**: Local swap recommendations (v1.1)
-- **Database Persistence**: Currently uses in-memory storage for scripts
+---
 
 ## 📋 Roadmap
 
-### v0.1 (Current - MVP Backend)
-- ✅ FastAPI backend with uv
-- ✅ Gemini vision and script composition
-- ✅ Qdrant vector database setup
-- ✅ Image processing pipeline
-- ✅ Dental risk scoring engine
-- ✅ Seed data and examples
+### ✅ Completed (v0.9)
+- Full 6-stage pipeline (Capture → Export)
+- DR. DRIP character with age-adaptive personality
+- Gemini Thinking Mode for vision and writing
+- Nano-Banana / Imagen 4.0 comic generation
+- GuardrailsService with teen slang allowlist
+- AuditService with daily compliance logs
+- 5 emotion-based speech bubble styles
+- Next.js frontend with localStorage persistence
 
-### v0.2 (Next - Rendering)
-- [ ] Character rendering integration
-- [ ] Panel composition with Freepik
-- [ ] Final image assembly
-- [ ] Next.js PWA frontend
-- [ ] Camera capture interface
+### 🚧 In Progress
+- Production deployment (Cloud Run / Vercel)
+- Analytics integration
 
-### v0.3 (Enhanced Features)
-- [ ] Animated comic shorts (≤15s)
-- [ ] Google Maps local swaps
-- [ ] User profiles and preferences
-- [ ] Analytics and tracking
+### 📅 Planned (v1.1)
+- Animated comic shorts (≤15s video)
+- User accounts with comic history
+- Rate limiting
+- Multi-language support
 
-### v1.0 (Production Ready)
-- [ ] Admin dashboard
-- [ ] Approval workflow
-- [ ] S3/GCS storage
-- [ ] Database persistence
-- [ ] Comprehensive testing
-- [ ] CI/CD pipeline
-
-## 🤝 Contributing
-
-Contributions welcome! Areas of focus:
-
-1. **Character Rendering**: Integrate Nano-Banana or similar for consistent character generation
-2. **Panel Composition**: Build the visual compositor for assembling comics
-3. **Frontend**: Develop the Next.js PWA with camera capture
-4. **Testing**: Add unit and integration tests
-5. **Documentation**: Expand API docs and guides
-
-## 📄 License
-
-See LICENSE file for details.
+---
 
 ## 🙏 Acknowledgments
 
 Built with:
-- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
-- [Google Gemini](https://ai.google.dev/) - Vision and language models
-- [Qdrant](https://qdrant.tech/) - Vector database for RAG
-- [uv](https://github.com/astral-sh/uv) - Fast Python package manager
-
-## 📞 Support
-
-For questions or issues:
-- Open an issue on GitHub
-- Check the API docs at `/docs` endpoint
-- Review the PRD in the repository
+- [Google Gemini](https://ai.google.dev/) — Vision, language, and image generation
+- [Qdrant](https://qdrant.tech/) — Vector database for semantic search
+- [FastAPI](https://fastapi.tiangolo.com/) — Modern Python web framework
+- [Next.js](https://nextjs.org/) — React framework
+- [Poppy Kids Pediatric Dentistry](https://www.poppykidsdental.com) — Clinical partner
 
 ---
 
-**SnackSwap Comics** - Making dental health education delightful, one snack at a time! 🦷✨
+<p align="center">
+  <strong>Roast My Snack</strong> — Vanity as a force for good 🦷✨
+</p>

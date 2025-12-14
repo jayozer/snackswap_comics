@@ -63,6 +63,14 @@ class Settings(BaseSettings):
     gemini_temperature: float = Field(0.7, description="Gemini generation temperature")
     gemini_max_tokens: int = Field(8192, description="Maximum tokens for generation")
 
+    # Thinking Mode Configuration
+    gemini_vision_thinking_level: str = Field(
+        "HIGH", description="Thinking level for vision model (NONE, LOW, MEDIUM, HIGH)"
+    )
+    gemini_writer_thinking_budget: int = Field(
+        24576, description="Thinking budget tokens for writer model (max 24576)"
+    )
+
     # Feature Flags
     enable_admin_approval: bool = Field(False, description="Require admin approval before download")
     enable_maps_swaps: bool = Field(False, description="Enable Maps-powered local swaps")

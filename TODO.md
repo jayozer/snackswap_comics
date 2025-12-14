@@ -386,6 +386,43 @@
 
 ---
 
+## Planned Refactoring
+
+### Rename Dr. Drip → Dr. Hawley
+
+**Scope:** 248 occurrences across 21 files + 2 file renames
+
+#### Files to Rename
+- [ ] `backend/app/data/drdrip_roast_corpus.py` → `drhawley_roast_corpus.py`
+- [ ] `backend/generate_dr_drip.py` → `generate_dr_hawley.py`
+
+#### High-Impact Code Files
+| File | Occurrences |
+|------|-------------|
+| `app/services/gemini_service.py` | 70 |
+| `app/data/drdrip_roast_corpus.py` | 16 |
+| `app/services/nanobana_service.py` | 4 |
+| `app/services/render_service.py` | 3 |
+| `app/models/comic.py` | 1 |
+| `app/data/__init__.py` | 1 |
+
+#### Other Files
+- Tests: `tests/test_render_service_dialogue.py` (6), `test_guardrails.py` (4)
+- Frontend: `page.tsx` (5), `ToothMascot.tsx` (4)
+- Data: `seed_data.py` (1), `roast_my_snak.jsonl` (10)
+- Scripts: `remove_backgrounds.py` (7), `generate_dr_drip.py` (6)
+- Docs: `tween_teen_pivot.md` (48), `new_prompts.md` (21), `hackathon-rubric.md` (17), `presentation-2min.md` (8), `README.md` (7), `CLAUDE.md` (5), `TODO.md` (4)
+
+#### Replacement Patterns
+| Find | Replace |
+|------|---------|
+| `Dr. Drip` | `Dr. Hawley` |
+| `DrDrip` | `DrHawley` |
+| `dr_drip` | `dr_hawley` |
+| `drdrip` | `drhawley` |
+
+---
+
 ## Implementation Priority Order
 
 ```

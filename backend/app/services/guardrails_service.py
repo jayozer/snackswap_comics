@@ -64,12 +64,24 @@ class GuardrailsService:
 
     # Mild terms - allowed but logged for review
     MILD_TERMS = {
+        # General mild terms
         "stupid", "dumb", "idiot", "moron",
         "ugly", "fat", "skinny",
         "loser", "lame", "sucks",
         "hate", "hater", "hating",
-        "cringe", "sus", "cap",  # Teen slang - OK
-        "cooked", "mid", "trash", "ratio",  # Roast terms - OK for our context
+        # Teen slang - OK
+        "cringe", "sus", "cap", "bruh", "rip", "oof", "yikes",
+        "goated", "bussin", "lowkey", "highkey", "slay", "based",
+        "rizz", "aura", "vibe", "vibes", "npc", "simp",
+        # Roast terms - OK for our context
+        "cooked", "mid", "trash", "ratio", "ratioed",
+        "destroyed", "wrecked", "obliterated", "annihilated",
+        # Hyperbole terms - OK for comedic effect
+        "villain", "chaos", "disaster", "crime", "assault", "criminal",
+        "war", "attack", "explosion", "catastrophe", "tragedy",
+        # Gaming/meme refs - OK
+        "speedrun", "any%", "achievement", "unlocked", "buff", "nerf",
+        "verified", "cancelled", "exposed", "caught", "crying",
     }
 
     # Replacement patterns for auto-cleaning
@@ -178,7 +190,13 @@ class GuardrailsService:
             cleaned_dialogue = []
 
             for line in dialogue_lines:
-                result = self.validate_text(line, auto_clean=auto_clean)
+                # Handle both new DialogueLine format (dict) and legacy string format
+                if isinstance(line, dict):
+                    text_to_validate = line.get("text", "")
+                else:
+                    text_to_validate = line
+
+                result = self.validate_text(text_to_validate, auto_clean=auto_clean)
 
                 if result.rating == ContentRating.BLOCKED:
                     has_blocked = True
@@ -186,10 +204,20 @@ class GuardrailsService:
                     logger.error("Blocked content in panel %s: %s",
                                  panel.get("panel_number"), result.flagged_terms)
                     # For blocked content, we don't include in cleaned version
-                    cleaned_dialogue.append("[CONTENT REMOVED]")
+                    if isinstance(line, dict):
+                        cleaned_line = line.copy()
+                        cleaned_line["text"] = "[CONTENT REMOVED]"
+                        cleaned_dialogue.append(cleaned_line)
+                    else:
+                        cleaned_dialogue.append("[CONTENT REMOVED]")
                 else:
                     all_flagged.extend(result.flagged_terms)
-                    cleaned_dialogue.append(result.cleaned_content or line)
+                    if isinstance(line, dict):
+                        cleaned_line = line.copy()
+                        cleaned_line["text"] = result.cleaned_content or text_to_validate
+                        cleaned_dialogue.append(cleaned_line)
+                    else:
+                        cleaned_dialogue.append(result.cleaned_content or line)
 
             panel_copy["dialogue"] = cleaned_dialogue
             cleaned_panels.append(panel_copy)
