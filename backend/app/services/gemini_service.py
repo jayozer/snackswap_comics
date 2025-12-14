@@ -640,18 +640,64 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                             cleaned_text = fact_id_pattern.sub('', text).strip()
                             cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
                             line['text'] = cleaned_text
+
+                            # Set default position based on speaker if not provided
+                            # Dr. Drip is always on the right, snacks/other characters on the left
+                            if 'position' not in line or line.get('position') not in ('left', 'right', 'center'):
+                                speaker = line.get('speaker', '').lower()
+                                if 'drip' in speaker or 'dr.' in speaker or 'tooth' in speaker:
+                                    line['position'] = 'right'
+                                else:
+                                    line['position'] = 'left'
+
                             cleaned_dialogue.append(line)
                         else:
                             # Legacy string format - convert to object
+                            # Intelligently assign speaker based on content and panel characters
                             cleaned_text = fact_id_pattern.sub('', str(line)).strip()
                             cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
-                            # Default to Dr. Drip as speaker for legacy format
-                            cleaned_dialogue.append({
-                                'speaker': 'Dr. Drip',
-                                'text': cleaned_text,
-                                'position': 'right',
-                                'emotion': panel.get('emotion', 'speech')
-                            })
+
+                            # Find the non-Dr. Drip character in this panel (the snack)
+                            snack_char = None
+                            for char in panel.get('characters', []):
+                                char_name = char.get('name', '').lower()
+                                if 'drip' not in char_name and 'dr.' not in char_name and 'tooth' not in char_name:
+                                    snack_char = char
+                                    break
+
+                            # Determine speaker based on dialogue content
+                            text_lower = cleaned_text.lower()
+                            is_snack_speaking = False
+
+                            # DEBUG: Log detection attempt
+                            logger.info(f"Legacy dialogue detection: text='{cleaned_text}', snack_char={snack_char.get('name') if snack_char else None}")
+
+                            # Lines with first-person self-references are likely the snack speaking
+                            # (Dr. Drip talks ABOUT things, snacks talk about themselves)
+                            if snack_char:
+                                snack_name_lower = snack_char.get('name', '').lower()
+                                # Check if line is self-referential (snack introducing/defending itself)
+                                if any(phrase in text_lower for phrase in ["i'm ", "i am ", "i literally", "i scrub", "i just", "but i ", "we ", "my "]):
+                                    is_snack_speaking = True
+                                # Check if line mentions the snack's own name
+                                elif snack_name_lower and snack_name_lower in text_lower:
+                                    is_snack_speaking = True
+
+                            if is_snack_speaking and snack_char:
+                                cleaned_dialogue.append({
+                                    'speaker': snack_char.get('name', 'Snack'),
+                                    'text': cleaned_text,
+                                    'position': snack_char.get('position', 'left'),
+                                    'emotion': panel.get('emotion', 'speech')
+                                })
+                            else:
+                                # Default to Dr. Drip
+                                cleaned_dialogue.append({
+                                    'speaker': 'Dr. Drip',
+                                    'text': cleaned_text,
+                                    'position': 'right',
+                                    'emotion': panel.get('emotion', 'speech')
+                                })
                     panel['dialogue'] = cleaned_dialogue
 
             # Character limit validation: Truncate lines that are too long
@@ -917,18 +963,26 @@ PANEL 4 - THE CROWN (The Glow Up Award)
 {vanity_flex_line}
 5. VISUAL GLOW: Sparkles, shine effects, pristine white, golden hour lighting
 
-⚠️ CRITICAL RULES FOR FACT CITATIONS:
-- citation_ids field = ONLY fact IDs like ["F025", "F027"]
-- dialogue field = ONLY what characters SAY - NEVER include fact IDs in dialogue
-- The dialogue should naturally incorporate the fact's content WITHOUT mentioning the ID
+	⚠️ CRITICAL RULES FOR FACT CITATIONS:
+	- citation_ids field = ONLY fact IDs like ["F025", "F027"]
+	- dialogue field = ONLY what characters SAY - NEVER include fact IDs in dialogue
+	- The dialogue should naturally incorporate the fact's content WITHOUT mentioning the ID
 
-📝 OTHER RULES:
-- Every panel should feel like a W (win)
-- Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
-- CRITICAL TEXT LIMITS: Each dialogue line must be under 50 characters, total per panel under 130 characters
-- Expressions: impressed, respectful, hyped, triumphant, nodding
-- Props: green hoodie, shades on forehead, beige slides, gold chains, trophy, stat screens
-- NO CRINGE - Keep it genuinely cool, not try-hard
+	⚠️ CRITICAL DIALOGUE FORMAT:
+	Each dialogue line MUST be an object with:
+	- "speaker": Character name (MUST match a character in the panel)
+	- "text": The dialogue text (under 50 characters)
+	- "position": "left", "center", or "right" (match character position)
+	- "emotion": "speech", "thought", "exclaim", "angry", or "whisper"
+
+	📝 OTHER RULES:
+	- Every panel should feel like a W (win)
+	- Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
+	- If a panel includes BOTH the snack and Dr. Drip, give EACH one a line
+	- CRITICAL TEXT LIMITS: Each dialogue line must be under 50 characters, total per panel under 130 characters
+	- Expressions: impressed, respectful, hyped, triumphant, nodding
+	- Props: green hoodie, shades on forehead, beige slides, gold chains, trophy, stat screens
+	- NO CRINGE - Keep it genuinely cool, not try-hard
 
 🎤 SPEECH BUBBLE EMOTIONS (Required per panel):
 Specify the "emotion" for each panel's speech bubble style:
@@ -941,17 +995,20 @@ Specify the "emotion" for each panel's speech bubble style:
 
 Return your response as valid JSON with this EXACT structure:
 
-{{
-  "panels": [
-    {{
-      "panel_number": 1,
-      "title": "The Entrance",
-      "dialogue": ["Wait... is that a natural filter?", "I literally GLOW."],
-      "emotion": "speech",
-      "citation_ids": ["F025"],
-      "characters": [
-        {{
-          "name": "Crunchy Apple Chad",
+	{{
+	  "panels": [
+	    {{
+	      "panel_number": 1,
+	      "title": "The Entrance",
+	      "dialogue": [
+	        {{"speaker": "Crunchy Apple Chad", "text": "I'm basically a snack-sized whitening strip.", "position": "left", "emotion": "speech"}},
+	        {{"speaker": "Dr. Drip", "text": "No filter needed. That's a W.", "position": "right", "emotion": "speech"}}
+	      ],
+	      "emotion": "speech",
+	      "citation_ids": ["F025"],
+	      "characters": [
+	        {{
+	          "name": "Crunchy Apple Chad",
           "item_id": "fruit_apple",
           "expression": "glowing",
           "position": "left",
@@ -994,7 +1051,7 @@ Dr. Drip: "Crunchy enough to scrub, vitamins for that natural shine."
 Dr. Drip: "Your smile just got a scholarship to Hollywood."
 Dr. Drip: "W. Actual W."
 
-NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Make teens want that Hollywood smile."""
+	NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Make teens want that Hollywood smile."""
 
         try:
             start_time = time.time()
@@ -1064,17 +1121,89 @@ NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Ma
                 else:
                     raise ValueError(f"Gemini returned invalid JSON: {e}")
 
-            # Safety filter: Remove any fact IDs from dialogue
+            # Safety filter: Remove any fact IDs that slipped into dialogue
             import re
+
             fact_id_pattern = re.compile(r'\[?F\d{3,4}\]?|\(F\d{3,4}\)')
 
+            # Process dialogue - handle both new object format and legacy string format
             for panel in result.get('panels', []):
                 if 'dialogue' in panel:
                     cleaned_dialogue = []
                     for line in panel['dialogue']:
-                        cleaned_line = fact_id_pattern.sub('', line).strip()
-                        cleaned_line = re.sub(r'\s+', ' ', cleaned_line)
-                        cleaned_dialogue.append(cleaned_line)
+                        # Handle new object format: {speaker, text, position, emotion}
+                        if isinstance(line, dict):
+                            text = line.get('text', '')
+                            # Remove fact IDs from text
+                            cleaned_text = fact_id_pattern.sub('', text).strip()
+                            cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+                            line['text'] = cleaned_text
+
+                            # Set default emotion based on panel if missing/invalid
+                            if 'emotion' not in line or line.get('emotion') not in (
+                                'speech', 'thought', 'exclaim', 'angry', 'whisper'
+                            ):
+                                line['emotion'] = panel.get('emotion', 'speech')
+
+                            # Set default position based on speaker if not provided
+                            # Dr. Drip is always on the right, snacks/other characters on the left
+                            if 'position' not in line or line.get('position') not in ('left', 'right', 'center'):
+                                speaker = line.get('speaker', '').lower()
+                                if 'drip' in speaker or 'dr.' in speaker or 'tooth' in speaker:
+                                    line['position'] = 'right'
+                                else:
+                                    line['position'] = 'left'
+
+                            cleaned_dialogue.append(line)
+                        else:
+                            # Legacy string format - convert to object
+                            cleaned_text = fact_id_pattern.sub('', str(line)).strip()
+                            cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+
+                            # Find the non-Dr. Drip character in this panel (the snack)
+                            snack_char = None
+                            for char in panel.get('characters', []):
+                                char_name = char.get('name', '').lower()
+                                if 'drip' not in char_name and 'tooth' not in char_name:
+                                    snack_char = char
+                                    break
+
+                            # Heuristic: snack talks about itself; Dr. Drip talks about the snack
+                            text_lower = cleaned_text.lower()
+                            is_snack_speaking = False
+                            if snack_char:
+                                snack_name_lower = snack_char.get('name', '').lower()
+                                if any(
+                                    phrase in text_lower
+                                    for phrase in [
+                                        "i'm ",
+                                        "i am ",
+                                        "i literally",
+                                        "i scrub",
+                                        "i just",
+                                        "but i ",
+                                        "we ",
+                                        "my ",
+                                    ]
+                                ):
+                                    is_snack_speaking = True
+                                elif snack_name_lower and snack_name_lower in text_lower:
+                                    is_snack_speaking = True
+
+                            if is_snack_speaking and snack_char:
+                                cleaned_dialogue.append({
+                                    'speaker': snack_char.get('name', 'Snack'),
+                                    'text': cleaned_text,
+                                    'position': snack_char.get('position', 'left'),
+                                    'emotion': panel.get('emotion', 'speech')
+                                })
+                            else:
+                                cleaned_dialogue.append({
+                                    'speaker': 'Dr. Drip',
+                                    'text': cleaned_text,
+                                    'position': 'right',
+                                    'emotion': panel.get('emotion', 'speech')
+                                })
                     panel['dialogue'] = cleaned_dialogue
 
             # Character limit validation (increased for punchier Adult Swim jokes)
@@ -1087,16 +1216,27 @@ NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Ma
                     panel_total = 0
 
                     for line in panel['dialogue']:
-                        if len(line) > MAX_LINE_LENGTH:
-                            logger.warning(f"Truncating dialogue line from {len(line)} to {MAX_LINE_LENGTH} chars")
-                            line = line[:MAX_LINE_LENGTH-3] + "..."
+                        # Get text from object format
+                        text = line.get('text', '') if isinstance(line, dict) else str(line)
 
-                        if panel_total + len(line) > MAX_PANEL_TOTAL:
-                            logger.warning(f"Panel exceeds character limit, stopping at {panel_total} chars")
+                        # Truncate individual line if too long
+                        if len(text) > MAX_LINE_LENGTH:
+                            logger.warning(
+                                f"Truncating dialogue line from {len(text)} to {MAX_LINE_LENGTH} chars"
+                            )
+                            text = text[:MAX_LINE_LENGTH-3] + "..."
+                            if isinstance(line, dict):
+                                line['text'] = text
+
+                        # Check total panel character count
+                        if panel_total + len(text) > MAX_PANEL_TOTAL:
+                            logger.warning(
+                                f"Panel exceeds character limit, stopping at {panel_total} chars"
+                            )
                             break
 
                         validated_dialogue.append(line)
-                        panel_total += len(line)
+                        panel_total += len(text)
 
                     panel['dialogue'] = validated_dialogue
 

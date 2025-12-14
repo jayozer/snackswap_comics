@@ -4,170 +4,105 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SnackSwap Comics is an AI-powered progressive web app that transforms photos of snacks into 4-panel comics teaching kids about dental health. It uses Google Gemini for vision detection and script generation, with Qdrant for RAG-based fact retrieval.
+SnackSwap Comics is an AI-powered progressive web app that transforms photos of snacks into 4-panel comics teaching kids about dental health through "vanity roasting" - making dental health about aesthetics (white teeth, glow ups) rather than health lectures. It uses Google Gemini for vision detection and script generation, with Qdrant for RAG-based fact retrieval.
 
 ## Tech Stack
 
 - **Backend**: Python 3.11+ with FastAPI
 - **Package Management**: `uv` (required - not pip)
-- **AI Models**:
-  - Google Gemini 2.5 Flash (via `google-genai`) - Vision detection
-  - Google Gemini 2.5 Pro (via `google-genai`) - Script generation
-  - Gemini 3 Pro Image / Nano-Banana Pro (via `google-genai`) - Comic image generation
-- **Vector Database**: Qdrant for semantic search and fact retrieval
+- **AI Models** (via `google-genai` SDK):
+  - Gemini 2.5 Flash/Pro - Vision detection with thinking mode
+  - Gemini 2.5 Pro - Script generation with thinking budget (up to 24576 tokens)
+  - Gemini 3 Pro Image (Nano-Banana) - Comic image generation
+- **Vector Database**: Qdrant Cloud for semantic search and fact retrieval
 - **Image Processing**: Pillow + pillow-heif for HEIC/EXIF handling
 - **Frontend**: Next.js 14 + React 18 + Tailwind CSS + Framer Motion
 
-## Development Setup
+## Development Commands
 
-### Starting Development
+### Backend
 
 ```bash
-# From backend directory
 cd backend
-
-# Create virtual environment with uv
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
+uv venv && source .venv/bin/activate
 uv pip install -e .
-
-# Copy environment template
-cp .env.example .env
-# Then edit .env to add GEMINI_API_KEY (required)
-
-# Qdrant Cloud is pre-configured in .env (no local setup needed)
-# If using local Qdrant instead, set QDRANT_URL=http://localhost:6333
-
-# Seed database (first time only)
-./seed_data.sh
-
-# Run development server
-./run_server.sh
-# Server runs at http://localhost:8000
-# API docs at http://localhost:8000/docs
+cp .env.example .env  # Add GEMINI_API_KEY
+./seed_data.sh        # First time only
+./run_server.sh       # http://localhost:8000, docs at /docs
 ```
 
-### Frontend Development
+### Frontend
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Run development server
-npm run dev
-# Runs at http://localhost:3000
-
-# Build for production
-npm run build
-
-# Lint
-npm run lint
+npm run dev           # http://localhost:3000
+npm run build         # Production build
+npm run lint          # ESLint
 ```
 
-### Testing and Linting
+### Testing & Linting (Backend)
 
 ```bash
-# From backend directory with venv activated
-
-# Run tests (when available)
-pytest
-
-# Format code with Black
-black app/
-
-# Lint with Ruff
-ruff check app/
-
-# Type checking with mypy
-mypy app/
+pytest                # Run tests
+black app/            # Format
+ruff check app/       # Lint
+mypy app/             # Type check
 ```
 
 ## Architecture
 
-### API Flow
+### 6-Stage Pipeline
 
-The application follows a 6-step pipeline:
-
-1. **Capture** (`/api/capture/intake`) - Upload snack photo, return photo_id
-2. **Vision** (`/api/vision/detect`) - Gemini detects 1-5 food items (with smart grouping)
-3. **Score** (`/api/score/retrieve`) - Match to snack DB, calculate dental risk, determine comic mode, fetch facts/swaps
-4. **Script** (`/api/script/compose`) - Gemini generates 4-panel comic script (mode-aware)
-5. **Render** (`/api/render/comic`) - Generate character images and compose panels
+1. **Capture** (`/api/capture/intake`) - Upload photo, return photo_id
+2. **Vision** (`/api/vision/detect`) - Gemini detects 1-5 items with smart grouping
+3. **Score** (`/api/score/retrieve`) - Match to snack DB, calculate dental risk, determine comic mode
+4. **Script** (`/api/script/compose`) - Gemini generates 4-panel script with guardrails
+5. **Render** (`/api/render/comic`) - Generate images via Nano-Banana, compose panels
 6. **Export** (`/api/export/zip`) - Package with captions and provenance
-
-### Smart Item Grouping
-
-The vision detection intelligently groups similar items to prevent overwhelming the system:
-
-| Input | Detection Result |
-|-------|------------------|
-| Single apple | 1 item: "Fresh Apple" |
-| Fruit plate (10+ fruits) | 1 item: "Mixed Fruit Plate" |
-| Veggie tray | 1 item: "Fresh Vegetable Tray" |
-| 3 distinct snacks | 3 separate items |
-
-Grouping rules (in `gemini_service.py:43-78`):
-- Plates/bowls with similar items → single grouped item
-- Maximum 5 items total
-- Prioritizes most prominent items
-- Falls back to "Unidentified Food" on errors
 
 ### Comic Modes
 
-Three comic generation modes based on average dental risk score:
+| Mode | Trigger | Arc |
+|------|---------|-----|
+| `CELEBRATE` | avg_risk < 30 | W Arc: Entrance → Stats → Glaze → Crown |
+| `EDUCATE` | avg_risk ≥ 30 | Roast Arc: Flex → Exposé → Ratio → Vibe Check |
+| `UNKNOWN` | No snack match | Generic Dr. Drip tips |
 
-| Mode | Trigger | Script Style |
-|------|---------|--------------|
-| `CELEBRATE` | avg_risk < 30 | Celebrates healthy choices, reinforces good habits |
-| `EDUCATE` | avg_risk ≥ 30 | Educational about dental risks, suggests swaps |
-| `UNKNOWN` | No snack match | Generic dental health info |
+### Dr. Drip Character System
 
-Mode is determined in `score.py` and passed to `script.py` for appropriate script generation.
+The recurring mascot is Dr. Drip - an off-white/pale cyan molar in a dark forest green hoodie, shades on forehead, chunky beige slides. Uses "Adult Swim" humor style (Rick and Morty, Smiling Friends energy).
 
-### Core Components
+- **Age 9-12 (Spicy)**: Lighter burns, meme-y, "sus", "mid", "skill issue"
+- **Age 13-17 (Savage)**: Full destruction mode, "cooked", "L + ratio", "aura"
 
-- **`app/api/`** - FastAPI endpoint handlers, one file per pipeline stage
-- **`app/services/`** - Business logic services:
-  - `gemini_service.py` - Vision detection and script generation
-  - `qdrant_service.py` - Vector search operations
-  - `scoring_service.py` - Dental risk calculation (0-100 scale)
-  - `image_service.py` - Photo intake and HEIF conversion
-  - `render_service.py` - Comic rendering (MVP placeholder)
-  - `nanobana_service.py` - Character generation integration
-  - `freepik_service.py` - Background/prop generation
-- **`app/models/`** - Pydantic models for API contracts and data validation
-- **`app/core/`** - Configuration via pydantic-settings
+Roast examples are in `app/data/drdrip_roast_corpus.py` for few-shot prompting.
 
-### Frontend Components (`frontend/src/`)
+### Key Services
 
-- **`app/page.tsx`** - Main page with upload flow and results display
-- **`app/layout.tsx`** - Root layout with metadata and fonts
-- **`components/UploadZone.tsx`** - Drag-and-drop snack photo upload
-- **`components/ComicDisplay.tsx`** - Rendered comic panel viewer
-- **`components/ResultsPanel.tsx`** - Dental risk scores, facts, and swaps
-- **`components/AgeSelector.tsx`** - Age band selection (9-12, 13-17)
-- **`components/ScanningOverlay.tsx`** - Loading animation during processing
-- **`components/ToothMascot.tsx`** - Animated tooth character
-- **`components/Header.tsx`** - App header with branding
+| Service | Purpose |
+|---------|---------|
+| `gemini_service.py` | Vision detection, script composition, embeddings |
+| `qdrant_service.py` | Vector search across snacks/facts/swaps/styles |
+| `scoring_service.py` | Dental risk calculation (0-100 scale) |
+| `nanobana_service.py` | Gemini 3 Pro Image generation (2K comics) |
+| `render_service.py` | Panel composition, speech bubble overlay |
+| `guardrails_service.py` | Content safety validation with auto-clean |
+| `audit_service.py` | Generation logging for review |
 
 ### Qdrant Collections
 
-All collections use 768-dimensional vectors (Gemini text-embedding-004):
+All use 768-dim vectors (text-embedding-004):
 
-- **`snacks_v1`** - Snack database with nutritional and dental risk factors
-- **`facts_v1`** - Clinic-approved dental health facts (age-banded: 9-12, 13-17, all)
-- **`swaps_v1`** - Healthier alternatives with taste cluster matching
-- **`styles_v1`** - Branding styles (colors, fonts, bubble styles)
+- `snacks_v1` - Nutritional/dental risk factors
+- `facts_v1` - Clinic-approved facts (age-banded: 9-12, 13-17, all)
+- `swaps_v1` - Healthier alternatives by taste cluster
+- `styles_v1` - Branding (colors, fonts, bubble styles)
 
-### Dental Risk Scoring
+### Dental Risk Formula
 
-Formula (app/services/scoring_service.py:23-65):
 ```
-risk_score = 100 * (
+risk = 100 * (
     0.45 * normalized(added_sugar_g_per_100g) +
     0.20 * acidity_factor +  # high=1, medium=0.5, low=0.1
     0.20 * stickiness +      # 0..1
@@ -176,133 +111,87 @@ risk_score = 100 * (
 )
 ```
 
-Higher scores = higher dental risk. Swaps must improve score by ≥25 points.
+Swaps must improve score by ≥25 points.
 
 ## Key Patterns
 
-### Adding New Endpoints
+### Adding Endpoints
 
 1. Create handler in `app/api/{stage}.py`
-2. Define request/response models in `app/models/api.py`
-3. Add business logic to appropriate service in `app/services/`
-4. Import and include router in `app/api/__init__.py`
+2. Define models in `app/models/api.py`
+3. Add logic to service in `app/services/`
+4. Include router in `app/api/__init__.py`
 
-### Working with Qdrant
+### Gemini SDK Usage (google-genai)
 
 ```python
-from app.services.qdrant_service import QdrantService
+from google import genai
+from google.genai import types
 
-qdrant = QdrantService(settings)
+client = genai.Client(api_key=settings.gemini_api_key)
 
-# Search snacks
-results = qdrant.search_snacks(
-    query_vector=embedding,
-    limit=8,
-    filters={"category": "candy"}
+# Vision with thinking
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=[...],
+    config=types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(thinking_budget=8192)
+    )
 )
 
-# Search facts (automatically filters by age band and clinic_approved)
-facts = qdrant.search_facts(
-    query_vector=embedding,
-    age_band="9-12",
-    limit=8
+# Embeddings
+response = client.models.embed_content(
+    model="text-embedding-004",
+    contents=[...],
+    config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY")
 )
 ```
 
-### Generating Embeddings
+### Script Dialogue Format
 
-```python
-from app.services.gemini_service import GeminiService
-
-gemini = GeminiService(settings)
-embedding = await gemini.generate_embedding(
-    text="chocolate chip cookies",
-    task_type="retrieval_query"
-)
+Each dialogue line is an object:
+```json
+{
+  "speaker": "Dr. Drip",
+  "text": "Your teeth are filing a restraining order.",
+  "position": "right",
+  "emotion": "exclaim"
+}
 ```
 
-## Data Seeding
+Limits: 50 chars per line, 130 chars per panel total.
 
-Edit `data/seeds/seed_data.py` to add snacks, facts, swaps, or styles. Each record needs:
-- Unique ID
-- Embedding-friendly text (used for vector generation)
-- All required fields per schema (see existing examples)
+## Environment Variables
 
-Run `./backend/seed_data.sh` to populate Qdrant.
+Required:
+- `GEMINI_API_KEY` - Google Gemini API key
+- `QDRANT_URL` - Qdrant Cloud cluster URL
+- `QDRANT_API_KEY` - Qdrant Cloud API key
 
-## Environment Configuration
+Key optional:
+- `GEMINI_VISION_MODEL` - Vision model (default: gemini-2.5-flash)
+- `GEMINI_WRITER_MODEL` - Script model (default: gemini-2.5-pro)
+- `GEMINI_IMAGE_MODEL` - Image gen (default: gemini-3-pro-image-preview)
+- `GEMINI_WRITER_THINKING_BUDGET` - Thinking tokens (default: 24576)
 
-Required environment variables (in `backend/.env`):
-- `GEMINI_API_KEY` - Google Gemini API key (required)
-- `QDRANT_URL` - Qdrant server URL (default: http://localhost:6333)
-
-Optional but commonly used:
-- `GEMINI_VISION_MODEL` - Model for vision (default: gemini-2.0-flash-exp)
-- `GEMINI_WRITER_MODEL` - Model for scripts (default: gemini-2.0-flash-exp)
-- `STORAGE_PATH` - Local storage directory (default: ./storage)
-- `DEBUG` - Enable debug mode (default: false)
-
-See `backend/.env.example` for complete list.
-
-## Nano-Banana Image Generation
-
-The project uses **Gemini 2.5 Flash Image** (Nano-Banana) for comic image generation via the `google-genai` SDK.
-
-### Key Implementation Details
-
-- Uses the new `google-genai` package (not `google-generativeai`)
-- Client-based API: `genai.Client(api_key=...)`
-- Streaming response: `generate_content_stream` for receiving image data
-- Model name: `"gemini-2.5-flash-image"`
-- Image sizes: "256", "512", "1K", "2K", "4K", "8K"
-- Response format: Binary image data via `inline_data.data` with mime type
-
-### Workflow
-
-1. **Generate base comic**: Nano-Banana creates 2x2 grid with EMPTY speech bubbles
-2. **Text overlay**: Pillow adds Comic Sans text on top of empty bubbles
-3. **Export formats**: Resize to square (1080x1080), portrait (1080x1350), reel (1080x1920)
-
-### Important Notes
-
-- Empty bubbles are intentional - text is added as overlay for better control
-- Prompts emphasize character consistency across all 4 panels
-- Falls back to Pillow rendering if Nano-Banana fails
-
-## Current MVP Limitations
-
-This is an MVP implementation. The following are placeholder implementations:
-- **Panel composition** - Freepik API integration needed for enhanced assets
-- **Animated comics** - Video generation for Reels (planned v1.1)
-- **Database persistence** - Currently uses in-memory storage for scripts
-
-## Active Development: Qdrant Query Enhancements
-
-The `qdrant-features` branch contains planned improvements (see `docs/qdrant-enhancements-plan.md`):
-
-1. **Panel-aware retrieval** - Blend scene/mood context into fact search queries
-2. **Cross-collection joins** - Use snack metadata (sticky, sugary, acidic) to filter facts with matching `risk_tags`
-
-Key additions planned:
-- `PanelContext` model for mood/scene awareness
-- `QueryBuilder` service for context-enriched queries
-- `risk_tags` field on facts for targeted filtering
-- `extract_risk_tags()` method on `ScoringService`
+See `backend/.env.example` for full list.
 
 ## Storage Structure
 
 ```
 backend/storage/
-├── uploads/        # Original uploaded photos (JPEG/PNG)
-├── thumbs/         # 512×512 thumbnails
-└── renders/        # Final comic renders (base, square, portrait, reel)
+├── uploads/     # Original photos (JPEG/PNG)
+├── thumbs/      # 512×512 thumbnails
+└── renders/     # Comic renders (base, square 1080×1080, portrait 1080×1350, reel 1080×1920)
 ```
-
-Files are named by photo_id or script_id with appropriate extensions.
 
 ## Common Issues
 
-**Qdrant connection fails**: Verify QDRANT_URL and QDRANT_API_KEY in .env (uses Qdrant Cloud by default)
-**HEIC images fail**: Requires pillow-heif, install with: `uv pip install pillow-heif`
-**Import errors**: Always activate venv before running: `source backend/.venv/bin/activate`
-- Do not mention claude or Anthopic words in Github commit messages.
+- **Qdrant connection fails**: Verify `QDRANT_URL` and `QDRANT_API_KEY` in .env
+- **HEIC images fail**: Install `pillow-heif`: `uv pip install pillow-heif`
+- **Import errors**: Activate venv: `source backend/.venv/bin/activate`
+- **JSON parse errors**: Check for truncated Gemini responses; `_repair_json()` attempts auto-fix
+
+## Commit Guidelines
+
+- Do not mention Claude or Anthropic in commit messages

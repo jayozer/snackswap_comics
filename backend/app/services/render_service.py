@@ -398,59 +398,49 @@ class RenderService:
 
         return all_lines if all_lines else [text]
 
-    def _group_dialogue_by_speaker(self, dialogue: list) -> list[dict]:
+    def _dialogue_entries_for_bubbles(self, dialogue: list) -> list[dict]:
         """
-        Group dialogue lines by speaker, combining text with newlines.
+        Normalize dialogue into per-bubble entries.
 
-        This ensures each speaker gets ONE bubble with all their lines combined,
-        rather than separate bubbles for each line.
-
-        Args:
-            dialogue: List of dialogue entries (dicts or strings)
-
-        Returns:
-            List of grouped dialogue dicts (max 2 speakers) with combined text
+        Returns ONE bubble per dialogue line (no grouping). Supports both:
+        - New object format: {speaker, text, position, emotion}
+        - Legacy string format: treated as Dr. Drip on the right
         """
-        speaker_groups = {}
+        entries: list[dict] = []
 
         for d in dialogue:
             if isinstance(d, dict):
-                speaker = d.get("speaker", "Unknown")
-                text = d.get("text", "").strip()
-                emotion = d.get("emotion", "speech")
-                position = d.get("position", "center")  # Preserve position field
+                speaker = str(d.get("speaker", "Unknown")).strip() or "Unknown"
+                text = str(d.get("text", "")).strip()
+                emotion = str(d.get("emotion", "speech")).strip() or "speech"
+                position = str(d.get("position", "center")).strip() or "center"
             elif isinstance(d, str):
-                # Legacy string format - default to Dr. Drip
                 speaker = "Dr. Drip"
                 text = d.strip()
                 emotion = "speech"
-                position = "right"  # Dr. Drip defaults to right
+                position = "right"
             else:
                 continue
 
             if not text:
                 continue
 
-            if speaker not in speaker_groups:
-                speaker_groups[speaker] = {
+            if position not in ("left", "right", "center"):
+                position = "center"
+
+            if emotion not in ("speech", "thought", "exclaim", "angry", "whisper"):
+                emotion = "speech"
+
+            entries.append(
+                {
                     "speaker": speaker,
-                    "texts": [],
-                    "emotion": emotion,  # Use first emotion for this speaker
-                    "position": position  # Use first position for this speaker
+                    "text": text,
+                    "emotion": emotion,
+                    "position": position,
                 }
-            speaker_groups[speaker]["texts"].append(text)
+            )
 
-        # Combine texts with newlines and limit to 2 speakers max
-        result = []
-        for speaker, data in list(speaker_groups.items())[:2]:
-            result.append({
-                "speaker": data["speaker"],
-                "text": "\n".join(data["texts"]),
-                "emotion": data["emotion"],
-                "position": data["position"]  # Include position in result
-            })
-
-        return result
+        return entries
 
     def _darken_color(self, hex_color: str) -> str:
         """Darken a hex color by 20%."""
@@ -1905,22 +1895,33 @@ Rules:
 
                 logger.info(f"Panel {i+1}: Position ({panel_x}, {panel_y}), Size {panel_width}x{panel_height}")
 
-                # Group dialogue by speaker (combine lines from same speaker into one bubble)
-                speaker_dialogues = self._group_dialogue_by_speaker(dialogue)
+                bubble_entries = self._dialogue_entries_for_bubbles(dialogue)
 
-                if not speaker_dialogues:
+                if not bubble_entries:
                     logger.info(f"Panel {i+1}: Empty dialogue text - skipping")
                     continue
 
-                total_speakers = len(speaker_dialogues)
-                logger.info(f"Panel {i+1}: {total_speakers} speaker(s) - {[d['speaker'] for d in speaker_dialogues]}")
+                logger.info(
+                    f"Panel {i+1}: {len(bubble_entries)} bubble(s) - {[d['speaker'] for d in bubble_entries]}"
+                )
 
-                # Draw a bubble for EACH speaker
-                for speaker_idx, speaker_data in enumerate(speaker_dialogues):
-                    speaker = speaker_data["speaker"]
-                    text = speaker_data["text"]
-                    emotion = speaker_data["emotion"]
-                    position = speaker_data.get("position", "center")  # Get position from dialogue
+                # Track y cursors per side so multiple bubbles don't overlap.
+                margin_x = int(panel_width * 0.04)  # ~20px at 512px wide
+                margin_top = 10
+                lane_gap = 10
+                diagonal_offset_y = int(panel_height * 0.06)
+                lane_y = {
+                    "left": panel_y + margin_top,
+                    "right": panel_y + margin_top + diagonal_offset_y,
+                    "center": panel_y + margin_top,
+                }
+
+                # Draw a bubble for EACH dialogue line
+                for bubble_idx, bubble_data in enumerate(bubble_entries):
+                    speaker = bubble_data["speaker"]
+                    text = bubble_data["text"]
+                    emotion = bubble_data["emotion"]
+                    position = bubble_data.get("position", "center")
 
                     # Calculate dynamic bubble size based on text length
                     bubble_width, bubble_height, font_size, wrapped_lines = self._calculate_bubble_dimensions(
@@ -1933,17 +1934,20 @@ Rules:
 
                     # Use position field to determine bubble placement (not speaker_index)
                     if position == "left":
-                        bubble_x = panel_x + 30  # Left side of panel
+                        bubble_x = panel_x + margin_x
                         tail_direction = "left"
                     elif position == "right":
-                        bubble_x = panel_x + panel_width - bubble_width - 30  # Right side of panel
+                        bubble_x = panel_x + panel_width - bubble_width - margin_x
                         tail_direction = "right"
                     else:  # center
                         bubble_x = panel_x + (panel_width - bubble_width) // 2
                         tail_direction = "left"  # Default tail direction for center
 
-                    # Y position uses speaker_idx for vertical stagger to avoid overlap
-                    bubble_y = panel_y + 10 + (speaker_idx * 27)
+                    # Stack bubbles within each lane based on the actual rendered height
+                    bubble_y = lane_y.get(position, panel_y + margin_top)
+                    max_y = panel_y + panel_height - bubble_height - margin_top
+                    bubble_y = max(panel_y + margin_top, min(bubble_y, max_y))
+                    lane_y[position] = bubble_y + bubble_height + lane_gap
 
                     # Create a semi-transparent bubble overlay for this speaker
                     bubble_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))
@@ -2033,7 +2037,10 @@ Rules:
                         # Draw text in black
                         draw.text((text_x, text_y), line_text, font=font, fill="black")
 
-                    logger.info(f"Panel {i+1}: Drew bubble for '{speaker}' at ({bubble_x},{bubble_y}) size {bubble_width}x{bubble_height}, position={position}, emotion={emotion}")
+                    logger.info(
+                        f"Panel {i+1}: Drew bubble {bubble_idx + 1}/{len(bubble_entries)} for '{speaker}' at ({bubble_x},{bubble_y}) "
+                        f"size {bubble_width}x{bubble_height}, position={position}, emotion={emotion}"
+                    )
 
             # Save the result
             img.save(output_path, 'PNG', quality=95)
