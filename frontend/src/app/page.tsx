@@ -32,7 +32,6 @@ interface ScoredItem {
 }
 
 interface ComicData {
-  comic_square_uri: string;
   comic_portrait_uri: string;
   reel_cover_uri: string | null;
 }

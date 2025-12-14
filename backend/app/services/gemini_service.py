@@ -364,7 +364,7 @@ TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 {vanity_stakes}
 
 🎭 RECURRING CHARACTER - DR. DRIP:
-A hype-beast molar tooth with sunglasses, a gold crown, and fresh kicks.
+An off-white/pale cyan molar in a dark forest green hoodie, shades pushed up on forehead, chunky beige slides.
 {dr_drip_personality}
 {dr_drip_catchphrases}
 {dr_drip_verdicts}
@@ -389,7 +389,7 @@ SWAPS (The Glow Up Secret):
 
 PANEL 1 - THE FLEX (The Setup)
 - Snack enters acting tasty. "I'm the main character."
-- Dr. Drip looks disgusted (behind sunglasses). "Ew. Brother ewww."
+- Dr. Drip looks disgusted (pulling shades down from forehead). "Ew. Brother ewww."
 {flex_social_line}
 
 PANEL 2 - THE EXPOSÉ (The Vanity Roast)
@@ -449,7 +449,7 @@ PANEL 4 - THE VIBE CHECK (The Glow Up Switch)
 - Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
 - CRITICAL TEXT LIMITS: Each dialogue line must be under 50 characters, total per panel under 130 characters
 - Expressions: smug, skeptical, shocked, defeated, crying, triumphant, flexing
-- Props: sunglasses, gold chains, sneakers, "L" signs, sweat drops
+- Props: green hoodie, shades on forehead, beige slides, gold chains, "L" signs, sweat drops
 - NO PREACHING - Don't sound like a dentist. Sound like a hater with dental knowledge.
 
 🎤 SPEECH BUBBLE EMOTIONS (Required per panel):
@@ -484,10 +484,10 @@ EXAMPLE PANEL (showing VANITY roast + citations + emotion + SPEAKER ATTRIBUTION 
       "item_id": "recurring_tooth",
       "expression": "disgusted",
       "position": "right",
-      "props": ["sunglasses", "gold crown", "fresh kicks", "pristine white shine"]
+      "props": ["green hoodie", "shades on forehead", "beige slides", "gold chains", "clean white shine"]
     }}
   ],
-  "visual_prompt": "Gummy candy looking gross with yellow stains while pristine white molar tooth with sunglasses looks disgusted. Contrast between gross and aesthetic.",
+  "visual_prompt": "Gummy candy looking gross with yellow stains while off-white molar in green hoodie pulls shades down looking disgusted. Contrast between gross and aesthetic.",
   "background": "split background - grimy on left, sparkling clean on right"
 }}
 
@@ -845,7 +845,7 @@ TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 🎭 RECURRING CHARACTER - DR. DRIP:
 He's giving out the "Glow Up" award. GENUINELY IMPRESSED - Adult Swim hype mode.
 Like Rick Sanchez when he actually respects something. Peak respect energy.
-Look: Hype-beast molar with sunglasses, gold crown, fresh kicks, PRISTINE WHITE SHINE
+Look: Off-white/pale cyan molar in dark forest green hoodie, shades on forehead, chunky beige slides, CLEAN AESTHETIC
 Catchphrases:
 - "Now THIS is main character energy."
 - "Your teeth just won the lottery."
@@ -921,7 +921,7 @@ PANEL 4 - THE CROWN (The Glow Up Award)
 - Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
 - CRITICAL TEXT LIMITS: Each dialogue line must be under 50 characters, total per panel under 130 characters
 - Expressions: impressed, respectful, hyped, triumphant, nodding
-- Props: sunglasses, gold crown, sneakers, trophy, stat screens
+- Props: green hoodie, shades on forehead, beige slides, gold chains, trophy, stat screens
 - NO CRINGE - Keep it genuinely cool, not try-hard
 
 🎤 SPEECH BUBBLE EMOTIONS (Required per panel):
@@ -956,10 +956,10 @@ Return your response as valid JSON with this EXACT structure:
           "item_id": "recurring_tooth",
           "expression": "impressed",
           "position": "right",
-          "props": ["sunglasses", "gold crown", "fresh kicks", "pristine white shine"]
+          "props": ["green hoodie", "shades on forehead", "beige slides", "gold chains", "clean white shine"]
         }}
       ],
-      "visual_prompt": "Glowing apple character with sparkles enters scene. Pristine white molar tooth with sunglasses looks impressed. Golden hour lighting, aesthetic vibes.",
+      "visual_prompt": "Glowing apple character with sparkles enters scene. Off-white molar in green hoodie looks impressed, shades on forehead. Golden hour lighting, aesthetic vibes.",
       "background": "bright, clean, aesthetic setting with sparkle effects"
     }}
     // ... panels 2-4 with emotion: "exclaim", "speech", "exclaim" respectively
@@ -1168,10 +1168,10 @@ NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Ma
                             "item_id": "recurring_tooth",
                             "expression": "cool",
                             "position": "center",
-                            "props": ["sunglasses", "gold crown", "fresh kicks", "pristine white shine"]
+                            "props": ["green hoodie", "shades on forehead", "beige slides", "gold chains", "clean white shine"]
                         }
                     ],
-                    "visual_prompt": f"Pristine white molar tooth with sunglasses, gold crown, and sneakers in {tone_adj} style, literally glowing, looking directly at viewer",
+                    "visual_prompt": f"Off-white molar in dark green hoodie, shades on forehead, beige slides in {tone_adj} style, literally glowing, looking directly at viewer",
                     "background": "aesthetic gradient with sparkle effects"
                 },
                 {
@@ -1189,10 +1189,10 @@ NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Ma
                             "item_id": "recurring_tooth",
                             "expression": "smug",
                             "position": "left",
-                            "props": ["sunglasses", "gold crown", "toothbrush sword", "sparkle effect"]
+                            "props": ["green hoodie", "shades on forehead", "toothbrush sword", "sparkle effect"]
                         }
                     ],
-                    "visual_prompt": "Pristine white tooth character wielding toothbrush like a sword, teeth literally sparkling, dramatic pose",
+                    "visual_prompt": "Off-white molar in green hoodie wielding toothbrush like a sword, shades on forehead, teeth literally sparkling, dramatic pose",
                     "background": "clean neon bathroom with mirror showing bright smile"
                 },
                 {
@@ -1210,10 +1210,10 @@ NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Ma
                             "item_id": "recurring_tooth",
                             "expression": "nodding",
                             "position": "right",
-                            "props": ["sunglasses", "gold crown", "water bottle", "pristine white shine"]
+                            "props": ["green hoodie", "shades on forehead", "water bottle", "clean white shine"]
                         }
                     ],
-                    "visual_prompt": "Pristine white tooth character holding water bottle, refreshing sparkle effects around the smile",
+                    "visual_prompt": "Off-white molar in green hoodie holding water bottle, shades on forehead, refreshing sparkle effects around the smile",
                     "background": "clean aesthetic with crystal water splash effects"
                 },
                 {
@@ -1231,15 +1231,15 @@ NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Ma
                             "item_id": "recurring_tooth",
                             "expression": "triumphant",
                             "position": "center",
-                            "props": ["sunglasses", "gold crown", "fresh kicks", "peace sign", "sparkle effects"]
+                            "props": ["green hoodie", "shades on forehead", "beige slides", "peace sign", "sparkle effects"]
                         }
                     ],
-                    "visual_prompt": "Pristine white tooth character doing peace sign, Hollywood smile energy, walking away with sparkles",
+                    "visual_prompt": "Off-white molar in green hoodie doing peace sign, shades on forehead, beige slides, walking away with sparkles",
                     "background": "golden hour lighting with aesthetic glow"
                 }
             ],
             "summary_caption": "Dr. Drip drops the glow up secrets. No filter needed.",
-            "alt_text": "A 4-panel comic featuring Dr. Drip, a pristine white molar tooth with sunglasses and gold crown, sharing appearance tips about keeping teeth white and aesthetic."
+            "alt_text": "A 4-panel comic featuring Dr. Drip, an off-white molar in a green hoodie with shades on forehead, sharing appearance tips about keeping teeth white and aesthetic."
         }
 
     async def detect_speech_bubbles(self, image_path: str) -> dict[int, dict] | None:

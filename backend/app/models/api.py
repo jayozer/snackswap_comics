@@ -131,7 +131,6 @@ class RenderComicRequest(BaseModel):
 class RenderComicResponse(BaseModel):
     """Response from comic rendering."""
 
-    comic_square_uri: str = Field(..., description="1080x1080 PNG URI")
     comic_portrait_uri: str = Field(..., description="1080x1350 PNG URI")
     reel_cover_uri: str | None = Field(None, description="Reel cover URI")
 

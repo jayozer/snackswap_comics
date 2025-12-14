@@ -24,34 +24,35 @@ async def main():
 
     service = NanoBananaService(settings)
     
-    # 1. REVERTED TO PREVIOUS STYLE (User preferred this)
-    # But adding fixes for Hands, Cutoff, and continuity.
+    # Dr. Drip character description based on image_25.png reference
     base_description = (
-        "A hype-beast molar tooth character named 'Dr. Drip'. "
-        "IMPORTANT: The TOP PART of the tooth is SOLID SHINY GOLD (A Gold Dental Crown / Gold Cap). "
-        "It looks like a Gold Tooth. "
-        "He wears cool black sunglasses and fresh high-top sneakers. "
-        "Style: Modern 2D vector art, clean lines, vibrant colors, edgy sticker art style. "
-        "White body, GOLD TOP (Dental Crown), black shades. "
+        "An anthropomorphic molar tooth character named 'Dr. Drip'. "
+        "Off-white/pale cyan body with smooth rounded shape. "
+        "Large round eyes with small black pupils, simple black eyebrows, wide open smiling mouth. "
+        "Black retro sunglasses pushed up onto forehead. "
+        "Wears an oversized dark forest green pullover hoodie with front kangaroo pocket and drawstrings. "
+        "Chunky beige slip-on slides (Yeezy style) on feet. "
+        "Style: Clean 2D digital illustration in modern cartoon style. Bold uniform black outlines. "
+        "Flat coloring with minimal hard-edged cel-shading. "
         "NO TEXT. NO WORDS. SINGLE CHARACTER ONLY. "
-        "framing: FULL BODY SHOT, ZOOM OUT slightly to ensure feet and crown are fully visible. Wide margins."
+        "framing: FULL BODY SHOT, ZOOM OUT slightly to ensure feet and hoodie are fully visible. Wide margins. White background."
     )
     
     variations = [
         {
             "name": "dr_drip_hero",
             "expression": "confident, cool, smirking, standing with swag",
-            "detail": "Standing confidently. Gold tooth cap is shiny. Arms crossed or at sides."
+            "detail": "Standing confidently. Clean white shine. Arms crossed or at sides. Hoodie looks fresh."
         },
         {
             "name": "dr_drip_scanning",
-            "expression": "intense focus, looking over sunglasses",
-            "detail": "Action: Moving glasses down with ONE HAND to peek over them. The other hand is down. STRICTLY TWO HANDS TOTAL. No extra floating hands."
+            "expression": "intense focus, pulling shades down from forehead",
+            "detail": "Action: Pulling shades down from forehead with ONE HAND to peek. The other hand is down. STRICTLY TWO HANDS TOTAL. No extra floating hands."
         },
         {
             "name": "dr_drip_success",
             "expression": "celebrating, triumphant, holding up a 'W' sign or thumbs up",
-            "detail": "Huge success. Energetic pose. Jump or cheer. ZOOM OUT to keep hands and feet in frame. Gold top shining."
+            "detail": "Huge success. Energetic pose. Jump or cheer. ZOOM OUT to keep hands and feet in frame. Hoodie and slides visible."
         }
     ]
     

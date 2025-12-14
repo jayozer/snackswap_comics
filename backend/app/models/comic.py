@@ -70,7 +70,6 @@ class Comic(BaseModel):
     script: ComicScript = Field(..., description="Comic script")
 
     # Rendered assets
-    comic_square_uri: str | None = Field(None, description="1080x1080 PNG")
     comic_portrait_uri: str | None = Field(None, description="1080x1350 PNG")
     reel_cover_uri: str | None = Field(None, description="Reel cover image")
 

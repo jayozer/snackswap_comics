@@ -69,7 +69,6 @@ async def render_comic(
         logger.info(f"Comic rendered successfully: {request.script_id}")
 
         return RenderComicResponse(
-            comic_square_uri=result["comic_square_uri"],
             comic_portrait_uri=result["comic_portrait_uri"],
             reel_cover_uri=result["reel_cover_uri"],
         )

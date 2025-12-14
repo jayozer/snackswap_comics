@@ -78,7 +78,7 @@ class NanoBananaService:
             "- Dramatic lighting for 'Roast' moments",
             "",
             "VANITY-FOCUSED VISUAL EFFECTS:",
-            "- DR. DRIP (the tooth character) must ALWAYS look PRISTINE WHITE, SPARKLING, and CLEAN",
+            "- DR. DRIP (the tooth character): Off-white/pale cyan molar in dark forest green hoodie, shades pushed up on forehead, beige slides. Clean 2D vector style with bold black outlines.",
             "- Bad snacks (villains) should look GRIMY, SLIMY, STICKY, or have YELLOW STAIN effects around them",
             "- Panel 2 & 3 (The Roast): Add 'gross' visual effects - green fumes, brown stains, yellow discoloration",
             "- Panel 4 (The Solution): Add 'clean' visual effects - sparkles, glow, pristine white shine",
@@ -89,12 +89,9 @@ class NanoBananaService:
             "CRITICAL RULES - ABSOLUTELY MUST FOLLOW:",
             "- ZERO TEXT: DO NOT generate ANY text, words, letters, numbers, or typography ANYWHERE",
             "- NO LABELS: DO NOT write any labels, signs, captions, titles, or placeholder text",
-            "- EMPTY BUBBLES: If you draw speech bubbles, they MUST be COMPLETELY EMPTY (pure white interior)",
-            "- DO NOT attempt to write dialogue - text will be added by post-processing software",
-            "- ANY text in the image WILL BE WRONG - leave bubbles BLANK for correct text overlay",
-            "- Leave the TOP 25% of each panel with space for speech bubbles (will be added later)",
-            "- Draw all characters in the BOTTOM 75% of each panel ONLY",
-            "- The top area should have simple background - no objects blocking bubble placement",
+            "- DO NOT DRAW ANY SPEECH BUBBLES - no bubbles of any kind in the image",
+            "- Characters can fill the ENTIRE panel - use full vertical space for dynamic compositions",
+            "- Leave small clear area in top corners for text overlay (will be added later)",
             "- Text and dialogue will be professionally added as post-processing overlay",
             "",
             "LAYOUT RULES:",
@@ -159,7 +156,6 @@ class NanoBananaService:
 
             prompt_parts.append(f"Scene: {visual_prompt}")
             prompt_parts.append(f"Background: {background}")
-            # Note: Speech bubbles will be drawn by PIL post-processing, not by the AI
             prompt_parts.append("")
 
         # Add final styling notes
@@ -169,8 +165,8 @@ class NanoBananaService:
             "- Webtoon/Adult Swim animation style with bold outlines",
             "- Saturated, neon-accented colors (NOT pastel or kiddy)",
             "- Edgy character designs - cool, not cute",
-            "- ABSOLUTELY NO TEXT - zero words, letters, or typography in image",
-            "- Speech bubbles must be EMPTY (white interior) - text added via software",
+            "- ABSOLUTELY NO TEXT OR SPEECH BUBBLES - zero words, letters, typography, or bubbles",
+            "- Characters fill full panel space - dynamic compositions using entire vertical area",
             "- VERTICAL 1x4 layout (tall strip, panels stacked top to bottom)",
             "- Professional comic book layout with consistent panel heights",
             "- Each character maintains exact same appearance across all panels",
@@ -178,7 +174,7 @@ class NanoBananaService:
             "- Meme-worthy exaggerated expressions",
             "",
             "VANITY CONTRAST (CRITICAL):",
-            "- DR. DRIP: ALWAYS pristine white, sparkling, clean, glowing - 'Hollywood Smile' energy",
+            "- DR. DRIP: Off-white/pale cyan molar in dark forest green hoodie, shades on forehead, beige slides - clean, fresh aesthetic energy",
             "- Bad snacks: Look GROSS - yellow stains, sticky residue, grimy, slimy, faded colors",
             "- Good snacks: Look CLEAN - bright colors, sparkle effects, fresh appearance",
             "- Visual contrast between 'aesthetic' (clean/white) and 'cooked' (gross/yellow)",
@@ -203,7 +199,7 @@ class NanoBananaService:
             "chips_classic": "A potato chip character with attitude. Golden-yellow, wavy crispy shape. Cartoon eyes that can show smugness or panic. Slightly curled edges, textured surface. Can look like it's trying too hard to be cool.",
             "soda_orange": "An orange soda can character with main-character energy. Neon orange, cylindrical shape with condensation droplets. Expressive face - can be cocky or scared. Fizzy bubbles as dramatic effect.",
             "candy_chocolate": "A chocolate bar character with street style. Brown rectangular shape with segmented squares. Glossy chocolate surface. Can have smug or nervous expressions. Might wear tiny sneakers or gold chain.",
-            "recurring_tooth": "DR. DRIP - A hype-beast molar tooth character obsessed with AESTHETICS. PRISTINE WHITE tooth shape with SPARKLE EFFECTS and GLOW - representing the perfect 'Hollywood Smile'. ALWAYS looks CLEAN, WHITE, and SPARKLING. Wears dark sunglasses, has a literal gold crown on top of the tooth. Fresh sneakers (kicks) on small feet. Expression range: disgusted (at gross snacks), impressed (at healthy snacks), smug. Very confident stance. NOT a baby superhero - more like a beauty influencer who happens to be a tooth. Represents the 'glow up' aesthetic teens want.",
+            "recurring_tooth": "DR. DRIP - An anthropomorphic molar tooth character. Off-white/pale cyan body with smooth rounded shape. Large round eyes with small black pupils, simple black eyebrows, wide open smiling mouth. Black retro sunglasses pushed up on forehead. Wears an oversized dark forest green pullover hoodie with front kangaroo pocket and drawstrings. Chunky beige slip-on slides on feet. Optional gold chains for swagger. Style: Clean 2D digital illustration, bold uniform black outlines, flat coloring with minimal cel-shading. Expression range: surprised, excited, impressed, smug, disgusted. Very confident stance - a beauty influencer who happens to be a tooth.",
         }
 
         return descriptions.get(
