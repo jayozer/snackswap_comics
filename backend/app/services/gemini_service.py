@@ -87,6 +87,36 @@ class GeminiService:
 
         return None
 
+    def _extract_json(self, text: str) -> str:
+        """
+        Extract JSON from text that may contain markdown code blocks or prefixed text.
+
+        Args:
+            text: Response text that may contain JSON
+
+        Returns:
+            Extracted JSON string or original text if no extraction needed
+        """
+        import re
+
+        # Try to extract from markdown code blocks first
+        # Match ```json ... ``` or ``` ... ```
+        code_block_pattern = r'```(?:json)?\s*(\{[\s\S]*?\})\s*```'
+        match = re.search(code_block_pattern, text)
+        if match:
+            logger.info("Extracted JSON from markdown code block")
+            return match.group(1)
+
+        # Try to find JSON object starting with {"panels"
+        json_start_pattern = r'(\{"panels"[\s\S]*)'
+        match = re.search(json_start_pattern, text)
+        if match:
+            logger.info("Extracted JSON starting from {\"panels\"")
+            return match.group(1)
+
+        # Return original text if no extraction needed
+        return text
+
     async def detect_items(self, image_path: str) -> list[DetectedItem]:
         """
         Detect food items in an image using Gemini Vision.
@@ -446,7 +476,7 @@ PANEL 4 - THE VIBE CHECK (The Glow Up Switch)
 📝 OTHER RULES:
 - Every panel needs a ROAST MOMENT or meme reference
 - Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
-- CRITICAL TEXT LIMITS: Each dialogue line must be under 50 characters, total per panel under 130 characters
+- CRITICAL TEXT LIMITS: Each dialogue line must be under 40 characters, total per panel under 100 characters
 - Expressions: smug, skeptical, shocked, defeated, crying, triumphant, flexing
 - Props: green hoodie, shades on forehead, beige slides, gold chains, "L" signs, sweat drops
 - NO PREACHING - Don't sound like a dentist. Sound like a hater with dental knowledge.
@@ -493,7 +523,7 @@ EXAMPLE PANEL (showing VANITY roast + citations + emotion + SPEAKER ATTRIBUTION 
 ⚠️ CRITICAL DIALOGUE FORMAT:
 Each dialogue line MUST be an object with:
 - "speaker": Character name (MUST match a character in the panel)
-- "text": The dialogue text (under 50 characters)
+- "text": The dialogue text (under 40 characters)
 - "position": "left", "center", or "right" (match character position)
 - "emotion": "speech", "thought", "exclaim", "angry", or "whisper"
 
@@ -524,7 +554,7 @@ Return your response as valid JSON with this EXACT structure:
 DIALOGUE RULES:
 - Each dialogue line is an OBJECT with speaker, text, position, emotion
 - MAX 2-3 dialogue lines per panel
-- Each line under 50 characters
+- Each line under 40 characters
 - Speaker must match a character name in that panel
 
 📚 FEW-SHOT ROAST EXAMPLES (Copy this energy):
@@ -593,7 +623,10 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
             # Parse JSON response
             response_text = response.text.strip()
 
-            # Handle markdown code blocks
+            # Extract JSON from markdown code blocks or prefixed text
+            response_text = self._extract_json(response_text)
+
+            # Handle any remaining markdown code block markers
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
             if response_text.startswith("```"):
@@ -697,8 +730,8 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                     panel['dialogue'] = cleaned_dialogue
 
             # Character limit validation: Truncate lines that are too long
-            MAX_LINE_LENGTH = 50  # chars per line (increased for punchier Adult Swim jokes)
-            MAX_PANEL_TOTAL = 130  # total chars per panel (increased for better punchlines)
+            MAX_LINE_LENGTH = 40  # chars per line (punchy comic dialogue)
+            MAX_PANEL_TOTAL = 100  # total chars per panel
 
             for panel in result.get('panels', []):
                 if 'dialogue' in panel:
@@ -967,7 +1000,7 @@ PANEL 4 - THE CROWN (The Glow Up Award)
 	⚠️ CRITICAL DIALOGUE FORMAT:
 	Each dialogue line MUST be an object with:
 	- "speaker": Character name (MUST match a character in the panel)
-	- "text": The dialogue text (under 50 characters)
+	- "text": The dialogue text (under 40 characters)
 	- "position": "left", "center", or "right" (match character position)
 	- "emotion": "speech", "thought", "exclaim", "angry", or "whisper"
 
@@ -975,7 +1008,7 @@ PANEL 4 - THE CROWN (The Glow Up Award)
 	- Every panel should feel like a W (win)
 	- Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
 	- If a panel includes BOTH the snack and Dr. Drip, give EACH one a line
-	- CRITICAL TEXT LIMITS: Each dialogue line must be under 50 characters, total per panel under 130 characters
+	- CRITICAL TEXT LIMITS: Each dialogue line must be under 40 characters, total per panel under 100 characters
 	- Expressions: impressed, respectful, hyped, triumphant, nodding
 	- Props: green hoodie, shades on forehead, beige slides, gold chains, trophy, stat screens
 	- NO CRINGE - Keep it genuinely cool, not try-hard
@@ -1091,7 +1124,10 @@ Dr. Drip: "W. Actual W."
             # Parse JSON response
             response_text = response.text.strip()
 
-            # Handle markdown code blocks
+            # Extract JSON from markdown code blocks or prefixed text
+            response_text = self._extract_json(response_text)
+
+            # Handle any remaining markdown code block markers
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
             if response_text.startswith("```"):
@@ -1202,9 +1238,9 @@ Dr. Drip: "W. Actual W."
                                 })
                     panel['dialogue'] = cleaned_dialogue
 
-            # Character limit validation (increased for punchier Adult Swim jokes)
-            MAX_LINE_LENGTH = 50
-            MAX_PANEL_TOTAL = 130
+            # Character limit validation (punchy comic dialogue)
+            MAX_LINE_LENGTH = 40
+            MAX_PANEL_TOTAL = 100
 
             for panel in result.get('panels', []):
                 if 'dialogue' in panel:

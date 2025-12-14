@@ -322,11 +322,10 @@ class RenderService:
                 dialogue_y = y + panel_height - 80  # Scaled from 150
                 bubble_height = 25 * min(len(dialogue), 2)  # Max 2 lines in small panels
 
-                # Speech bubble background
+                # Speech bubble background (oval for comic feel)
                 bubble_margin = 8
-                draw.rounded_rectangle(
+                draw.ellipse(
                     [x + bubble_margin, dialogue_y, x + panel_width - bubble_margin, dialogue_y + bubble_height + 12],
-                    radius=6,
                     fill='white',
                     outline='#333',
                     width=2
