@@ -67,16 +67,16 @@ mypy app/             # Type check
 |------|---------|-----|
 | `CELEBRATE` | avg_risk < 30 | W Arc: Entrance → Stats → Glaze → Crown |
 | `EDUCATE` | avg_risk ≥ 30 | Roast Arc: Flex → Exposé → Ratio → Vibe Check |
-| `UNKNOWN` | No snack match | Generic Dr. Drip tips |
+| `UNKNOWN` | No snack match | Generic Dr. Hawley tips |
 
-### Dr. Drip Character System
+### Dr. Hawley Character System
 
-The recurring mascot is Dr. Drip - an off-white/pale cyan molar in a dark forest green hoodie, shades on forehead, chunky beige slides. Uses "Adult Swim" humor style (Rick and Morty, Smiling Friends energy).
+The recurring mascot is Dr. Hawley - an off-white/pale cyan molar in a dark forest green hoodie, shades on forehead, chunky beige slides. Uses "Adult Swim" humor style (Rick and Morty, Smiling Friends energy).
 
 - **Age 9-12 (Spicy)**: Lighter burns, meme-y, "sus", "mid", "skill issue"
 - **Age 13-17 (Savage)**: Full destruction mode, "cooked", "L + ratio", "aura"
 
-Roast examples are in `app/data/drdrip_roast_corpus.py` for few-shot prompting.
+Roast examples are in `app/data/drhawley_roast_corpus.py` for few-shot prompting.
 
 ### Key Services
 
@@ -152,7 +152,7 @@ response = client.models.embed_content(
 Each dialogue line is an object:
 ```json
 {
-  "speaker": "Dr. Drip",
+  "speaker": "Dr. Hawley",
   "text": "Your teeth are filing a restraining order.",
   "position": "right",
   "emotion": "exclaim"

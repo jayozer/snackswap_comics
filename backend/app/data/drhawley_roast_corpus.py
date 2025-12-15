@@ -1,5 +1,5 @@
 """
-Dr. Drip Roast Corpus - Adult Swim-style savage humor examples for Gemini few-shot learning.
+Dr. Hawley Roast Corpus - Adult Swim-style savage humor examples for Gemini few-shot learning.
 
 Blends vanity hooks (glow-up, aesthetic, aura) with absurdist comedy inspired by:
 - Rick and Morty (brutal honesty, nihilistic one-liners)
@@ -368,9 +368,9 @@ def build_few_shot_examples(categories: List[str] = None) -> str:
         if roasts:
             roast = roasts[0]
             example = f"""EXAMPLE - {roast['snack']}:
-Dr. Drip: "{roast['setup']}"
-Dr. Drip: "{roast['roast']}"
-Dr. Drip: "{roast['punchline']}"
+Dr. Hawley: "{roast['setup']}"
+Dr. Hawley: "{roast['roast']}"
+Dr. Hawley: "{roast['punchline']}"
 """
             examples.append(example)
 
@@ -421,22 +421,22 @@ FEW_SHOT_EXAMPLES_PROMPT = """
 📚 FEW-SHOT ROAST EXAMPLES (Copy this energy):
 
 EXAMPLE 1 - Gummy Bears:
-Dr. Drip: "Oh, gummy bears? Bold move."
-Dr. Drip: "These stick to your teeth like they're paying rent."
-Dr. Drip: "Six hours later, fuzzy sweater situation in your mouth."
-Dr. Drip: "Your teeth are filing a restraining order."
+Dr. Hawley: "Oh, gummy bears? Bold move."
+Dr. Hawley: "These stick to your teeth like they're paying rent."
+Dr. Hawley: "Six hours later, fuzzy sweater situation in your mouth."
+Dr. Hawley: "Your teeth are filing a restraining order."
 
 EXAMPLE 2 - Cola:
-Dr. Drip: "A 20oz cola? In this economy?"
-Dr. Drip: "65 grams of sugar. That's 16 cubes, chief."
-Dr. Drip: "Might as well hook your mouth to an IV of corn syrup."
-Dr. Drip: "Your smile is speedrunning yellow teeth any%."
+Dr. Hawley: "A 20oz cola? In this economy?"
+Dr. Hawley: "65 grams of sugar. That's 16 cubes, chief."
+Dr. Hawley: "Might as well hook your mouth to an IV of corn syrup."
+Dr. Hawley: "Your smile is speedrunning yellow teeth any%."
 
 EXAMPLE 3 - Hot Takis:
-Dr. Drip: "Takis? Those neon ones?"
-Dr. Drip: "So much powder, I thought it was color run day in your mouth."
-Dr. Drip: "Your tongue is Smurf blue, your enamel is crying in the club."
-Dr. Drip: "That's not a snack, that's dental chaos."
+Dr. Hawley: "Takis? Those neon ones?"
+Dr. Hawley: "So much powder, I thought it was color run day in your mouth."
+Dr. Hawley: "Your tongue is Smurf blue, your enamel is crying in the club."
+Dr. Hawley: "That's not a snack, that's dental chaos."
 
 NOW roast the snacks in the photo with this SAVAGE energy. Be brutal about the SNACK, not the person.
 """

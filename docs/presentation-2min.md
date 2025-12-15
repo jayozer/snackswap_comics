@@ -1,233 +1,153 @@
-# SnackSwap Comics - 2 Minute Presentation
+# Roast My Snack — Presentation Script
 
-> **Total Time**: 2:00
-> **Format**: Live demo with voiceover
-> **Audience**: Hackathon judges
+> **Total time**: ~3-4 minutes (adjustable)
+> **Format**: Storytelling + 2 live demos (gummies + fruit plate)
+> **Vibe**: Entertaining, personal, technically impressive
 
 ---
 
 ## Pre-Demo Setup
 
-- Browser open to `localhost:3000` (idle state)
-- Have a photo of gummy bears ready on desktop
-- Have a photo of an apple ready as backup
-- Age slider set to 10 (will toggle to 15 during demo)
+**Browser Tabs:**
+- **Tab A (Live)**: `http://localhost:3000` - fresh start
+- **Tab B (Backup Roast)**: Pre-generated gummy bears result
+- **Tab C (Backup Celebrate)**: Pre-generated fruit plate result
+
+**Desktop Ready:**
+- `gummy_bears.jpg` (roast demo)
+- `fruit_plate.jpg` (celebrate demo - the one with watermelon, grapes, strawberries)
+
+**Settings:**
+- Age slider at **14** (Savage mode)
+- One allergen selected (e.g., Peanuts)
 
 ---
 
-## SECTION 1: The Problem (0:00 - 0:20)
+## The Script (TIGHT 2-MINUTE VERSION)
 
-### On Screen
-*App in idle state, DR. DRIP mascot visible*
+### 🎬 HOOK + INTRO (0:00-0:25)
 
-### Say This
+**[App on screen with DR. HAWLEY]**
 
-> "Every parent knows the struggle: getting kids to care about dental health.
+> "Tell a kid 'brush or you'll get cavities'... they don't care. But tell them their snack is gonna turn their smile yellow? Now you've got their attention.
 >
-> Here's the truth — **telling a 13-year-old 'sugar causes cavities' doesn't work**. They don't care about cavities. They care about their **appearance**.
+> This is **Roast My Snack** — snap a photo of any snack, and **Dr. Hawley** — a Gen-Z molar with no chill — roasts its 'aesthetic threat level' to your smile.
 >
-> What if we could make dental health about **looking good** instead of avoiding pain?
+> **Vanity as a force for good.**
 >
-> Meet **DR. DRIP** — a molar tooth with Gen-Z energy who's about to roast your snack's aesthetic."
-
-### Rubric Points Hit
-- ✅ Real-World Fit: Problem statement
-- ✅ Creative Quality: DR. DRIP introduction
-- ✅ Innovation: Vanity roasting concept
+> Quick origin story: Dr. Hawley is named after my golden retriever puppy, who's named after the Hawley retainer. Tooth mascot, named after a dog, named after dental equipment. **Turtles all the way down.**"
 
 ---
 
-## SECTION 2: Age-Adaptive Demo (0:20 - 0:35)
+### 🔥 PERSONALITY + TONE (0:25-0:45)
 
-### On Screen
-*Toggle age slider from 10 to 15*
+**[Show age toggle]**
 
-### Say This
-
-> "Watch this. At age 10, DR. DRIP is in **Spicy Mode** — playful burns, meme references.
+> "Two modes: **Spicy** for tweens — 'sus', 'mid'. **Savage** for teens — 'cooked', 'L + ratio'. Same character, **developmentally appropriate intensity**.
 >
-> *(toggle to 15)*
+> The comedy comes from **30 Adult Swim transcripts** I used to build a roast corpus. Rick and Morty, Smiling Friends energy — not generic AI output.
 >
-> At 15? **Savage Mode**. Full destruction. 'Your teeth are filing a restraining order.'
->
-> Same character, **developmentally appropriate intensity**. Powered by Gemini's thinking mode with a 24,000 token reasoning budget."
-
-### Rubric Points Hit
-- ✅ Creative Quality: Age-adaptive personality
-- ✅ Guardrails: Age-appropriate content
-- ✅ Innovation: Thinking mode configuration
+> And we **roast the snack, never the kid**."
 
 ---
 
-## SECTION 3: Live Scan Demo (0:35 - 1:15)
+### 🎯 LIVE DEMO — Gummy Bears (0:45-1:30)
 
-### On Screen
-*Drag gummy bear photo into upload zone*
+**[Drag gummy_bears.jpg]**
 
-### Say This
+> "Let's roast some gummy bears."
 
-> "Let's scan some gummy bears.
->
-> *(drag photo)*
->
-> Gemini Vision detects the snack with **smart grouping** — a whole bag becomes one item, not fifty.
->
-> *(as steps progress)*
->
-> Now we're checking the **aesthetic threat level**. Qdrant searches our dental database — **transparent scoring**: sugar content, stickiness, acidity. Each factor weighted scientifically.
->
-> *(results appear)*
->
-> Risk score: 78. That's a **glow-down**, not a glow-up.
->
-> *(comic generates)*
->
-> And here's the magic — **Gemini 3 Pro generates a 4-panel comic** with DR. DRIP roasting the snack. Notice the **emotion-based speech bubbles** — that angry starburst? That's the exposé panel.
->
-> The roast targets the **snack**, never the kid. Playful destruction, not shame."
+**[While processing — keep it brief]**
 
-### Rubric Points Hit
-- ✅ Creative Quality: Full pipeline demo
-- ✅ Search & Similarity: Transparent scoring, Qdrant search
-- ✅ Guardrails: Kid-safe design (roasts snack, not person)
-- ✅ UX: 5-step progress, real-time feedback
-- ✅ Innovation: Emotion bubbles, Nano-Banana image gen
+> "**Gemini Vision** detects the snack. **Qdrant semantic search** matches it to our database and pulls clinic-approved facts. **Gemini Pro** writes the script through guardrails. **Nano-Banana** generates the art — but here's the thing:
+>
+> AI-generated text looks terrible. So Nano-Banana makes the art, **PIL draws clean bubbles**, **Freepik adds the background**. Best of both worlds."
+
+**[Results appear]**
+
+> "**74 risk score**. Sugar, stickiness — the works. Dr. Hawley does not hold back."
 
 ---
 
-## SECTION 4: Safety & Compliance (1:15 - 1:35)
+### 🍎 CELEBRATE MODE + WIFE SHOUTOUT (1:30-2:00)
 
-### On Screen
-*Point to comic output*
+**[Drag fruit_plate.jpg OR show pre-loaded Tab]**
 
-### Say This
+> "But it's not all roasting. Healthy snack? **Celebrate mode**."
 
-> "Every script passes through our **GuardrailsService** — 50+ blocked terms, but we **allow teen slang** like 'sus' and 'cooked'. Auto-clean replaces mild words.
+**[While processing / showing result]**
+
+> "Quick shoutout to my wife **Dr. Andrea at Poppy Kids Pediatric Dentistry** — she reviewed every risk score in our database. Sugar weights, acidity factors — that's **clinic-validated science** behind the roasts.
 >
-> All generations are logged to **daily audit files** with SHA256 hashes. Production-ready compliance.
->
-> And the facts? **Clinic-approved only**. We built this with Poppy Kids Pediatric Dentistry."
-
-### Rubric Points Hit
-- ✅ Guardrails: Content moderation, audit logging
-- ✅ Real-World Fit: Clinic partnership
+> *'Goated. Actually goated with the sauce.'* — I learned that phrase making this app. Now I say it constantly."
 
 ---
 
-## SECTION 5: The Why & Close (1:35 - 2:00)
+### 🏁 CLOSE (2:00-2:10)
 
-### On Screen
-*Show comic in portrait format, Poppy Kids logo visible in footer*
-
-### Say This
-
-> "Here's why this matters.
+> "Portrait for Stories, Reel for TikTok — **shareable dental education**.
 >
-> **65% of teens** say appearance is their top concern. We're not fighting that — we're **using it**.
->
-> When DR. DRIP says 'That snack is gonna turn your smile yellow' — that lands. That's **vanity as a force for good**.
->
-> *(click download)*
->
-> One tap to download. Instagram-ready. Kids share these. Parents save them.
->
-> We're not lecturing about cavities. We're building **lifelong oral health habits** by speaking their language.
->
-> **SnackSwap Comics** — making dental health about the glow-up, one roast at a time."
-
-### Rubric Points Hit
-- ✅ Real-World Fit: Measurable impact, social sharing
-- ✅ Innovation: Novel approach to health education
-- ✅ Creative Quality: Coherent brand message
-
----
-
-## Timing Summary
-
-| Section | Duration | Cumulative |
-|---------|----------|------------|
-| 1. The Problem | 0:20 | 0:20 |
-| 2. Age-Adaptive Demo | 0:15 | 0:35 |
-| 3. Live Scan Demo | 0:40 | 1:15 |
-| 4. Safety & Compliance | 0:20 | 1:35 |
-| 5. The Why & Close | 0:25 | 2:00 |
+> **Roast My Snack** — making dental health about the glow up, one roast at a time."
 
 ---
 
 ## Rubric Coverage Checklist
 
-| Criteria | Mentioned | Demonstrated |
-|----------|-----------|--------------|
-| **1. Creative Quality** | DR. DRIP, emotion bubbles, thinking mode | Age toggle, comic output |
-| **2. Search & Similarity** | Transparent scoring, Qdrant | Risk score breakdown |
-| **3. Guardrails** | 50+ blocked terms, audit logs, clinic-approved | Kid-safe roast example |
-| **4. UX & Tradeoffs** | 5-step progress | Live scanning overlay |
-| **5. Real-World Fit** | Poppy Kids partnership, social sharing | Download button, logo |
-| **6. Innovation** | Vanity roasting, age-adaptive | Toggle demo, bubble styles |
-
----
-
-## Backup Plans
-
-### If demo fails during scan:
-> "Let me show you a pre-generated example while that loads..."
-> *(have a screenshot of completed comic ready)*
-
-### If time runs short:
-Skip Section 4 (Safety & Compliance) — it's important but the demo speaks louder.
-
-### If asked about tech stack:
-> "Gemini 2.5 Flash for vision, Gemini 2.5 Pro for scripts with thinking mode, Gemini 3 Pro Image for comics, Qdrant Cloud for semantic search, and a custom GuardrailsService for content safety."
+| Rubric Criteria | How We Hit It |
+|-----------------|---------------|
+| **Creative Quality** | DR. HAWLEY character, Adult Swim corpus, Freepik backgrounds, vanity roasting concept |
+| **Search & Similarity** | Qdrant semantic search, transparent risk scoring, taste-matched swaps, risk_tags filtering |
+| **Guardrails** | 50+ blocked terms, teen slang allowlist, audit logs, "roast snack not kid" philosophy |
+| **UX & Tradeoffs** | 5-step progress, PIL text overlay (not Nano-Banana), localStorage persistence, export formats |
+| **Real-World Fit** | Poppy Kids partnership, clinic-validated scores, shareable social formats |
+| **Innovation** | Vanity framing, age-adaptive personality, Adult Swim corpus, smart plate detection |
 
 ---
 
 ## Key Phrases to Memorize
 
-1. **"Vanity as a force for good"** — the core thesis
-2. **"Same character, developmentally appropriate intensity"** — age-adaptive
-3. **"Roasts the snack, never the kid"** — guardrails philosophy
-4. **"Making dental health about the glow-up"** — the tagline
+1. **"Vanity as a force for good."**
+2. **"Roast the snack, never the kid."**
+3. **"Same character, developmentally appropriate intensity."**
+4. **"Adult Swim energy, tuned for dental health."**
+5. **"Best of both worlds: AI art + professional backgrounds + pixel-perfect typography."**
 
 ---
 
-## Background Research (If Asked)
+## Personal Story Beats (Quick Hits)
 
-### Why Vanity Metrics Work for Teens
-
-**The Science:**
-- Adolescent brain development prioritizes social perception (Blakemore, 2018)
-- Appearance-based health messaging is 3x more effective than consequence-based for ages 12-17 (Journal of Adolescent Health, 2019)
-- Peer influence on health behaviors peaks at age 14-15
-
-**The Problem with Traditional Messaging:**
-- "Brush or you'll get cavities" → Abstract future harm, low urgency
-- "Sugar rots your teeth" → Sounds like a lecture, triggers defiance
-
-**The SnackSwap Approach:**
-- "That snack is gonna turn your smile yellow" → Immediate, visual, vanity-driven
-- "Your teeth are losing followers" → Social currency language
-- Humor creates positive association with dental awareness
-
-### Why Positivity Matters
-
-**Shame-Free Education:**
-- Studies show shame-based health messaging backfires for adolescents
-- Creates anxiety and avoidance, not behavior change
-- DR. DRIP roasts the SNACK, celebrates the PERSON
-
-**Lifelong Habit Formation:**
-- Positive associations with dental health create lasting habits
-- Kids who enjoy learning about oral health visit dentists more regularly
-- Shareable content creates peer-to-peer education
+- 🐕 **"Turtles all the way down"** — puppy → retainer → mascot
+- 📺 **"Adult Swim energy"** — 30 transcripts, roast corpus
+- 👩‍⚕️ **"Clinic-validated"** — wife reviewed every score
+- 🎨 **"Best of both worlds"** — Nano-Banana art + PIL text + Freepik backgrounds
 
 ---
 
-## Final Checklist Before Presenting
+## Backup Lines
 
-- [ ] Browser at localhost:3000
-- [ ] Age slider at 10
-- [ ] Gummy bear photo on desktop
-- [ ] Apple photo as backup
-- [ ] Screenshot of completed comic (backup)
-- [ ] Timer visible or memorized cues
-- [ ] Deep breath, you've got this
+**If live demo is slow:**
+> "While this finishes, let me show you a pre-generated example." → Switch to Tab B/C
+
+**If detection fails:**
+> "We fail gracefully — switches to Unknown mode with generic glow-up tips."
+
+**If asked about stack (quick version):**
+> "FastAPI + Next.js, Gemini Flash for vision, Gemini Pro for scripts with thinking mode, Nano-Banana for images, Qdrant Cloud for semantic search, PIL for text overlay, and custom guardrails."
+
+**If asked about the corpus:**
+> "The roast examples are in `drhawley_roast_corpus.py` — 50+ few-shot examples extracted from Adult Swim dialogue patterns."
+
+---
+
+## Rehearsal Checklist
+
+- [ ] Backend running (`localhost:8000`)
+- [ ] Frontend running (`localhost:3000`)
+- [ ] Tab B: Gummy bears pre-generated (backup)
+- [ ] Tab C: Fruit plate pre-generated (backup)
+- [ ] Gummy bears image on desktop
+- [ ] Fruit plate image on desktop
+- [ ] Age at 14 (Savage mode)
+- [ ] One dry run with timer
+- [ ] Practice the puppy joke delivery
+- [ ] Deep breath — you've got this 🦷✨

@@ -6,7 +6,13 @@
 
 > **Making dental health about the glow-up, one roast at a time.**
 
-Roast My Snack is an AI-powered app that transforms photos of snacks into 4-panel comics where **DR. DRIP** — a molar tooth with Gen-Z energy — roasts your snack's "aesthetic threat level" to your smile. We reframe dental health as **vanity**, not lectures, because teens care more about yellow teeth than cavities.
+<p align="center">
+  <a href="https://www.loom.com/share/b1568b443acb4c1db7f3a2af903e2d14">
+    <img src="https://img.shields.io/badge/🎬_Watch_Demo-Loom-blueviolet?style=for-the-badge" alt="Watch Demo on Loom" />
+  </a>
+</p>
+
+Roast My Snack is an AI-powered app that transforms photos of snacks into 4-panel comics where **DR. HAWLEY** — a molar tooth with Gen-Z energy — roasts your snack's "aesthetic threat level" to your smile. We reframe dental health as **vanity**, not lectures, because teens care more about yellow teeth than cavities.
 
 <p align="center">
   <a href="https://www.poppykidsdental.com">
@@ -50,7 +56,7 @@ Roast My Snack is an AI-powered app that transforms photos of snacks into 4-pane
 - Appearance-based health messaging is 3x more effective for ages 12-17
 - Peer influence on health behaviors peaks at age 14-15
 
-**DR. DRIP** speaks their language — roasting the **snack**, never the kid. Playful destruction, not shame.
+**DR. HAWLEY** speaks their language — roasting the **snack**, never the kid. Playful destruction, not shame.
 
 ---
 
@@ -59,13 +65,15 @@ Roast My Snack is an AI-powered app that transforms photos of snacks into 4-pane
 | Feature | Description |
 |---------|-------------|
 | **📸 Snap & Roast** | Upload any snack photo → get a 4-panel comic in ~30 seconds |
-| **🦷 DR. DRIP Mascot** | Off-white molar in a forest green hoodie with Adult Swim energy |
+| **🦷 DR. HAWLEY Mascot** | Off-white molar in a forest green hoodie with Adult Swim energy |
 | **🔥 Age-Adaptive Roasts** | Ages 9-12 "Spicy" (playful) vs 13-17 "Savage" (full destruction) |
 | **📊 Transparent Scoring** | Multi-factor dental risk: sugar, acidity, stickiness, residue |
 | **🔄 Taste-Matched Swaps** | Healthier alternatives that match flavor profiles |
 | **🛡️ Kid-Safe Guardrails** | 50+ blocked terms, teen slang allowlist, daily audit logs |
 | **📱 Social-Ready Export** | Portrait (1080×1350) and Reel (1080×1920) formats |
 | **💬 5 Bubble Styles** | speech, thought, exclaim, angry, whisper — emotion-driven |
+| **🍎 Smart Plate Detection** | 3+ fruits → "Fresh Fruit Plate", 3+ veggies → "Fresh Veggie Tray" |
+| **⚠️ Allergen Filtering** | 8 FDA allergens filter swap recommendations (dairy, nuts, etc.) |
 
 ---
 
@@ -108,6 +116,41 @@ Roast My Snack is an AI-powered app that transforms photos of snacks into 4-pane
                                         │   Output    │
                                         └─────────────┘
 ```
+
+### Why Images and Dialogue Are Generated Separately
+
+The comic generation uses a **two-phase approach**:
+
+1. **Phase 1: Script Generation** (Gemini Writer)
+   - Generates both `visual_prompt` (scene description) AND `dialogue` (who says what)
+   - Example output per panel:
+     ```json
+     {
+       "visual_prompt": "Cucumber glowing with hydration aura, Dr. Hawley giving approving nod",
+       "dialogue": [
+         {"speaker": "Hydro Cucumber", "text": "I keep your mouth fresh!", "position": "left"},
+         {"speaker": "Dr. Hawley", "text": "Glow up approved!", "position": "right"}
+       ]
+     }
+     ```
+
+2. **Phase 2: Image Generation** (Nano-Banana)
+   - Receives ONLY the `visual_prompt`, characters, and mood
+   - Explicitly told: **"ABSOLUTELY NO TEXT OR SPEECH BUBBLES"**
+   - Focuses purely on visual composition
+
+3. **Phase 3: Dialogue Overlay** (Render Service)
+   - Adds speech bubbles with the `dialogue` text AFTER image generation
+   - Handles bubble positioning, collision detection, and styling
+
+**Why this separation?**
+
+| Reason | Explanation |
+|--------|-------------|
+| **Text Quality** | AI-generated text in images looks bad (distorted letters, misspellings). Professional overlay is cleaner. |
+| **Flexibility** | Can adjust dialogue without regenerating images. Enables localization. |
+| **Bubble Control** | Precise positioning, collision detection, and emotion-based styling (exclaim, whisper, etc.) |
+| **Consistency** | Same font, bubble style, and readability across all comics |
 
 ---
 
@@ -157,7 +200,7 @@ npm run dev
 
 ---
 
-## 🎭 DR. DRIP Character
+## 🎭 DR. HAWLEY Character
 
 <table>
   <tr>
@@ -203,7 +246,7 @@ risk_score = 100 × (
 |-------|------|-------------|
 | < 30 | 🎉 CELEBRATE | "Glow Up Approved" — W Arc |
 | ≥ 30 | 🔥 EDUCATE | Vanity roast — Roast Arc |
-| No match | ❓ UNKNOWN | Generic DR. DRIP tips |
+| No match | ❓ UNKNOWN | Generic DR. HAWLEY tips |
 
 ---
 
@@ -276,7 +319,7 @@ roast-my-snack/
 │   ├── app/
 │   │   ├── api/              # FastAPI endpoints
 │   │   ├── core/             # Configuration
-│   │   ├── data/             # DR. DRIP roast corpus
+│   │   ├── data/             # DR. HAWLEY roast corpus
 │   │   ├── models/           # Pydantic schemas
 │   │   └── services/         # Business logic
 │   │       ├── gemini_service.py      # Vision + Writer
@@ -305,19 +348,22 @@ roast-my-snack/
 
 ### ✅ Completed (v0.9)
 - Full 6-stage pipeline (Capture → Export)
-- DR. DRIP character with age-adaptive personality
+- DR. HAWLEY character with age-adaptive personality
 - Gemini Thinking Mode for vision and writing
-- Nano-Banana / Imagen 4.0 comic generation
+- Nano-Banana comic generation
 - GuardrailsService with teen slang allowlist
 - AuditService with daily compliance logs
 - 5 emotion-based speech bubble styles
 - Next.js frontend with localStorage persistence
+- Smart fruit/veggie plate detection (3+ items → consolidated plate)
+- Allergen filtering for swap recommendations (8 FDA allergens)
 
 ### 🚧 In Progress
 - Production deployment (Cloud Run / Vercel)
 - Analytics integration
 
 ### 📅 Planned (v1.1)
+- Allergen warnings on detected snacks (flag items containing user's allergens)
 - Animated comic shorts (≤15s video)
 - User accounts with comic history
 - Rate limiting
@@ -331,7 +377,6 @@ Built with:
 - [Google Gemini](https://ai.google.dev/) — Vision, language, and image generation
 - [Qdrant](https://qdrant.tech/) — Vector database for semantic search
 - [FastAPI](https://fastapi.tiangolo.com/) — Modern Python web framework
-- [Next.js](https://nextjs.org/) — React framework
 - [Poppy Kids Pediatric Dentistry](https://www.poppykidsdental.com) — Clinical partner
 
 ---

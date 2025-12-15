@@ -10,6 +10,7 @@ import ScanningOverlay from '@/components/ScanningOverlay';
 import ResultsPanel from '@/components/ResultsPanel';
 import ComicDisplay from '@/components/ComicDisplay';
 import ToothMascot from '@/components/ToothMascot';
+import HowToUse from '@/components/HowToUse';
 import { usePreferences } from '@/hooks/usePreferences';
 
 type AppState = 'idle' | 'uploading' | 'scanning' | 'results' | 'comic';
@@ -174,12 +175,12 @@ export default function Home() {
     setState('comic');
   };
 
-  // Get DR. DRIP's message based on state and mode - VANITY FOCUSED
-  const getDrDripMessage = () => {
+  // Get DR. HAWLEY's message based on state and mode - VANITY FOCUSED
+  const getDrHawleyMessage = () => {
     if (state === 'idle') {
       return intensityMode === 'Savage'
-        ? "Yo. Dr. Drip here. Show me your snack and I'll tell you if it's gonna cook your smile or give you that glow up."
-        : "Hey! Dr. Drip here. Drop your snack and let's see if it's aesthetic or gonna turn your teeth yellow!";
+        ? "Yo. Dr. Hawley here. Show me your snack and I'll tell you if it's gonna cook your smile or give you that glow up."
+        : "Hey! Dr. Hawley here. Drop your snack and let's see if it's aesthetic or gonna turn your teeth yellow!";
     }
     if (state === 'uploading') return "Uploading... hold up.";
     if (state === 'scanning') return "Scanning for aesthetic threats... 👀";
@@ -229,7 +230,7 @@ export default function Home() {
             key={state + comicMode}
           >
             <p className="font-bold text-lg text-gray-800">
-              {getDrDripMessage()}
+              {getDrHawleyMessage()}
             </p>
             <p className="text-xs text-gray-500 mt-1 font-comic">
               {intensityMode} Mode {intensityMode === 'Savage' ? '💀' : '🔥'}
@@ -263,6 +264,7 @@ export default function Home() {
 
         {/* Main Content Card */}
         <div className="bg-white/95 backdrop-blur rounded-3xl p-6 md:p-10 relative overflow-hidden transition-all duration-300 shadow-2xl border-4 border-gray-800">
+          <HowToUse />
           <AnimatePresence mode="wait">
             {(state === 'idle' || state === 'uploading') && (
               <motion.div
@@ -340,7 +342,7 @@ export default function Home() {
 
         <footer className="mt-8 flex flex-col items-center gap-4">
           <p className="text-center text-gray-500 text-sm font-body">
-            Powered by Gemini Vision & Qdrant • Roast My Snack 2025 • Your Smile's Glow Up Starts Here
+            Powered by DeepMind (Gemini & Nano Banana) & Qdrant & Freepik • Roast My Snack 2025 • Your Smile's Glow Up Starts Here
           </p>
           <a
             href="https://www.poppykidsdental.com"
@@ -351,7 +353,7 @@ export default function Home() {
             <img
               src="/images/poppykids_logo.png"
               alt="Poppy Kids Pediatric Dentistry"
-              className="h-12 w-auto"
+              className="h-24 w-auto"
             />
           </a>
         </footer>

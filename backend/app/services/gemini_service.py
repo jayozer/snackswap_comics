@@ -117,6 +117,57 @@ class GeminiService:
         # Return original text if no extraction needed
         return text
 
+    def _consolidate_produce_items(self, items: list[DetectedItem]) -> list[DetectedItem]:
+        """
+        Consolidate 3+ fruit/veggie items into a single plate/tray item.
+
+        This is a fallback safety net in case the vision prompt doesn't
+        correctly group multiple fruits/vegetables into a single item.
+
+        Args:
+            items: List of detected items from vision
+
+        Returns:
+            Consolidated list with fruit/veggie plates if applicable
+        """
+        fruit_items = [i for i in items if i.category == "fruit"]
+        veggie_items = [i for i in items if i.category == "vegetables"]
+        other_items = [i for i in items if i.category not in ("fruit", "vegetables")]
+
+        result = other_items.copy()
+
+        # Consolidate 3+ fruits -> Fresh Fruit Plate
+        if len(fruit_items) >= 3:
+            avg_conf = sum(i.confidence for i in fruit_items) / len(fruit_items)
+            fruit_names = [i.name for i in fruit_items]
+            logger.info(f"Consolidating {len(fruit_items)} fruit items into Fresh Fruit Plate: {fruit_names}")
+            result.append(DetectedItem(
+                name="Fresh Fruit Plate",
+                brand_guess=None,
+                category="fruit",
+                visible_clues=f"Multiple fruits detected: {', '.join(fruit_names[:5])}",
+                confidence=avg_conf
+            ))
+        else:
+            result.extend(fruit_items)
+
+        # Consolidate 3+ veggies -> Fresh Veggie Tray
+        if len(veggie_items) >= 3:
+            avg_conf = sum(i.confidence for i in veggie_items) / len(veggie_items)
+            veggie_names = [i.name for i in veggie_items]
+            logger.info(f"Consolidating {len(veggie_items)} veggie items into Fresh Veggie Tray: {veggie_names}")
+            result.append(DetectedItem(
+                name="Fresh Veggie Tray",
+                brand_guess=None,
+                category="vegetables",
+                visible_clues=f"Multiple vegetables detected: {', '.join(veggie_names[:5])}",
+                confidence=avg_conf
+            ))
+        else:
+            result.extend(veggie_items)
+
+        return result
+
     async def detect_items(self, image_path: str) -> list[DetectedItem]:
         """
         Detect food items in an image using Gemini Vision.
@@ -142,14 +193,16 @@ candy, chips, cookies, crackers, fruit, vegetables, dairy, beverage, baked_goods
 
 NAME RULES (very important):
 - If the photo shows ONE obvious food type, name it specifically (e.g., "Bananas"). Do NOT use mixed/assortment names.
-- Only use a mixed label (e.g., "Mixed Fruit Bowl", "Fresh Fruit Assortment") if 2+ different fruit types are clearly visible together.
-- Do NOT label fresh fruit/vegetables as crackers/chips/candy.
+- CRITICAL: If 3 or more distinct FRUIT types are visible together (on a plate, in a bowl, or grouped), return ONE item named "Fresh Fruit Plate" with category "fruit".
+- CRITICAL: If 3 or more distinct VEGETABLE types are visible together, return ONE item named "Fresh Veggie Tray" with category "vegetables".
+- Fresh fruits (watermelon, grapes, strawberries, oranges, berries, melon, kiwi, pineapple) should NEVER be classified as crackers, chips, candy, or dairy.
 - Do NOT label fruit pieces/cubes as cheese unless texture/packaging clearly indicates cheese.
   If uncertain between fruit cubes vs cheese cubes, set confidence <= 0.6 and explain uncertainty in visible_clues.
 
 GROUPING:
 - Many pieces of the same thing = ONE item (e.g., a bunch of bananas = one "Bananas").
-- A bowl/plate of clearly mixed fruits = ONE item ("Mixed Fruit Bowl") rather than listing every fruit.
+- A plate with watermelon, grapes, and strawberries = ONE item ("Fresh Fruit Plate"), NOT three separate items.
+- Count distinct fruit/veggie types: if 3 or more types, ALWAYS use "Fresh Fruit Plate" or "Fresh Veggie Tray".
 
 For each item, return:
 - name: specific common name
@@ -283,6 +336,9 @@ Return ONLY valid JSON with this structure (no markdown, no extra keys):
                     )
                 ]
 
+            # Post-processing: consolidate 3+ fruits/veggies into plate/tray
+            items = self._consolidate_produce_items(items)
+
             logger.info(f"Detected {len(items)} items from image")
             return items
 
@@ -328,7 +384,7 @@ Return ONLY valid JSON with this structure (no markdown, no extra keys):
 - VANITY: White, clean teeth (camera-ready)
 - AESTHETICS: Not having gross, yellow, or "fuzzy" teeth
 - SOCIAL: Looking cool with friends (school/pics)"""
-            flex_social_line = '- Snack tries to act cool, but Dr. Drip is not buying it'
+            flex_social_line = '- Snack tries to act cool, but Dr. Hawley is not buying it'
             ratio_social_line_1 = (
                 '- "Imagine your friends seeing that yellow smile. Couldn\'t be me."'
             )
@@ -336,18 +392,18 @@ Return ONLY valid JSON with this structure (no markdown, no extra keys):
             slang_line = (
                 '3. GLOW-UP SLANG: "Glow up", "Aesthetic", "No filter needed", "W/L", "No cap", "sus"'
             )
-            dr_drip_personality = (
+            dr_hawley_personality = (
                 'Personality: ADULT SWIM LITE. Sassy roast mode with absurd humor. '
                 'Uses funny comparisons and meme references. Roast snacks, not people. '
                 'Think: playful Smiling Friends energy with light burns.'
             )
-            dr_drip_catchphrases = '''Catchphrases:
+            dr_hawley_catchphrases = '''Catchphrases:
 - "That ain't it, chief."
 - "Your teeth just called. They want a refund."
 - "Skill issue tbh."
 - "That's sus for your teeth."
 - "Bold move. Let's see how your teeth feel about it."'''
-            dr_drip_verdicts = 'Verdicts: "SUS" / "MID" / "NOT IT" / "SKILL ISSUE"'
+            dr_hawley_verdicts = 'Verdicts: "SUS" / "MID" / "NOT IT" / "SKILL ISSUE"'
         else:
             age_band = "13-17"
             intensity = "Savage"
@@ -357,7 +413,7 @@ Return ONLY valid JSON with this structure (no markdown, no extra keys):
 - VANITY: Having white, bright teeth (The "Hollywood Smile")
 - AESTHETICS: Not having gross, yellow, or "fuzzy" teeth
 - SOCIAL STATUS: Having "Rizz" and "Aura". Bad teeth = Negative Aura."""
-            flex_social_line = '- Snack tries to have "aura" but Dr. Drip isn\'t buying it'
+            flex_social_line = '- Snack tries to have "aura" but Dr. Hawley isn\'t buying it'
             ratio_social_line_1 = (
                 '- "Imagine talking to your crush with yellow teeth. Couldn\'t be me."'
             )
@@ -365,12 +421,12 @@ Return ONLY valid JSON with this structure (no markdown, no extra keys):
             slang_line = (
                 '3. LOOKSMAXXING SLANG: "Glow up", "Aura", "Aesthetic", "Rizz", "No filter needed"'
             )
-            dr_drip_personality = (
+            dr_hawley_personality = (
                 'Personality: FULL ADULT SWIM ENERGY. Part Rick Sanchez (brutal honesty, "your boos mean nothing"), '
                 'part Master Shake (absurd rants), part Gordon Ramsay (savage metaphors). '
                 'Obsessed with aesthetics. Uses hyperbole, absurd comparisons, meme refs. Roast snacks, not people.'
             )
-            dr_drip_catchphrases = '''Catchphrases:
+            dr_hawley_catchphrases = '''Catchphrases:
 - "Your smile is COOKED. Done. Finished."
 - "That's not a snack, that's a premeditated assault on your glow up."
 - "Bold move, Cotton. Let's see if your teeth pay off."
@@ -378,7 +434,7 @@ Return ONLY valid JSON with this structure (no markdown, no extra keys):
 - "L + ratio + cooked smile."
 - "Skill issue tbh."
 - "Your teeth just called. They want a divorce."'''
-            dr_drip_verdicts = 'Verdicts: "COOKED BEYOND REPAIR" / "L + RATIO + YELLOW TEETH" / "CERTIFIED BRUH MOMENT" / "NOT AESTHETIC"'
+            dr_hawley_verdicts = 'Verdicts: "COOKED BEYOND REPAIR" / "L + RATIO + YELLOW TEETH" / "CERTIFIED BRUH MOMENT" / "NOT AESTHETIC"'
 
         # Build context
         snacks_context = json.dumps(snacks, indent=2)
@@ -392,11 +448,11 @@ TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 
 {vanity_stakes}
 
-🎭 RECURRING CHARACTER - DR. DRIP:
+🎭 RECURRING CHARACTER - DR. HAWLEY:
 An off-white/pale cyan molar in a dark forest green hoodie, shades pushed up on forehead, chunky beige slides.
-{dr_drip_personality}
-{dr_drip_catchphrases}
-{dr_drip_verdicts}
+{dr_hawley_personality}
+{dr_hawley_catchphrases}
+{dr_hawley_verdicts}
 
 SNACKS IN PHOTO (The Victims):
 {snacks_context}
@@ -418,24 +474,24 @@ SWAPS (The Glow Up Secret):
 
 PANEL 1 - THE FLEX (The Setup)
 - Snack enters acting tasty. "I'm the main character."
-- Dr. Drip looks disgusted (pulling shades down from forehead). "Ew. Brother ewww."
+- Dr. Hawley looks disgusted (pulling shades down from forehead). "Ew. Brother ewww."
 {flex_social_line}
 
 PANEL 2 - THE EXPOSÉ (The Vanity Roast)
-- Dr. Drip EXPOSES how the snack makes you LOOK BAD (cite fact_id)
+- Dr. Hawley EXPOSES how the snack makes you LOOK BAD (cite fact_id)
 - "You turn bright white teeth into YELLOW BRICKS."
 - "You give people 'Fuzzy Tooth' syndrome. Cringe."
 - Snack looks offended: "But I taste good!"
 
 PANEL 3 - THE RATIO (The Social Destruction)
-- Dr. Drip destroys the snack's social status
+- Dr. Hawley destroys the snack's social status
 {ratio_social_line_1}
 {ratio_social_line_2}
 - Snack is crying: "I just wanted to be aesthetic!"
 - Visual: Snack looks gross, melting, or ugly
 
 PANEL 4 - THE VIBE CHECK (The Glow Up Switch)
-- Dr. Drip presents the SWAP as the "Glow Up" secret
+- Dr. Hawley presents the SWAP as the "Glow Up" secret
 - "Eat [Swap Name]. It scrubs your teeth white while you eat."
 - "Your smile will be unfiltered. Main character energy."
 - Final Verdict: "COOKED SMILE" or "YELLOW TEETH SIGNAL"
@@ -494,8 +550,8 @@ EXAMPLE PANEL (showing VANITY roast + citations + emotion + SPEAKER ATTRIBUTION 
   "panel_number": 2,
   "title": "The Exposé",
   "dialogue": [
-    {{"speaker": "Dr. Drip", "text": "Bro turns white teeth into YELLOW BRICKS.", "position": "right", "emotion": "exclaim"}},
-    {{"speaker": "Dr. Drip", "text": "That's negative aura detected.", "position": "right", "emotion": "exclaim"}},
+    {{"speaker": "Dr. Hawley", "text": "Bro turns white teeth into YELLOW BRICKS.", "position": "right", "emotion": "exclaim"}},
+    {{"speaker": "Dr. Hawley", "text": "That's negative aura detected.", "position": "right", "emotion": "exclaim"}},
     {{"speaker": "Sugar Bomb Sam", "text": "But I taste good!", "position": "left", "emotion": "speech"}}
   ],
   "emotion": "exclaim",
@@ -509,7 +565,7 @@ EXAMPLE PANEL (showing VANITY roast + citations + emotion + SPEAKER ATTRIBUTION 
       "props": ["sweat drops", "yellow stains", "gross aura"]
     }},
     {{
-      "name": "Dr. Drip",
+      "name": "Dr. Hawley",
       "item_id": "recurring_tooth",
       "expression": "disgusted",
       "position": "right",
@@ -560,22 +616,22 @@ DIALOGUE RULES:
 📚 FEW-SHOT ROAST EXAMPLES (Copy this energy):
 
 EXAMPLE 1 - Gummy Bears:
-Dr. Drip: "Oh, gummy bears? Bold move."
-Dr. Drip: "These stick to your teeth like they're paying rent."
-Dr. Drip: "Six hours later, fuzzy sweater situation."
-Dr. Drip: "Your teeth are filing a restraining order."
+Dr. Hawley: "Oh, gummy bears? Bold move."
+Dr. Hawley: "These stick to your teeth like they're paying rent."
+Dr. Hawley: "Six hours later, fuzzy sweater situation."
+Dr. Hawley: "Your teeth are filing a restraining order."
 
 EXAMPLE 2 - Cola:
-Dr. Drip: "A 20oz cola? In this economy?"
-Dr. Drip: "65 grams of sugar. That's 16 cubes, chief."
-Dr. Drip: "Might as well hook your mouth to an IV of corn syrup."
-Dr. Drip: "Your smile is speedrunning yellow teeth any%."
+Dr. Hawley: "A 20oz cola? In this economy?"
+Dr. Hawley: "65 grams of sugar. That's 16 cubes, chief."
+Dr. Hawley: "Might as well hook your mouth to an IV of corn syrup."
+Dr. Hawley: "Your smile is speedrunning yellow teeth any%."
 
 EXAMPLE 3 - Hot Takis:
-Dr. Drip: "Takis? Those neon ones?"
-Dr. Drip: "So much powder, I thought it was color run day in your mouth."
-Dr. Drip: "Your tongue is Smurf blue, your enamel is crying in the club."
-Dr. Drip: "That's not a snack, that's dental chaos."
+Dr. Hawley: "Takis? Those neon ones?"
+Dr. Hawley: "So much powder, I thought it was color run day in your mouth."
+Dr. Hawley: "Your tongue is Smurf blue, your enamel is crying in the club."
+Dr. Hawley: "That's not a snack, that's dental chaos."
 
 NOW roast the snacks in the photo with this SAVAGE energy. Be brutal about the SNACK, not the person.
 Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their smile's appearance."""
@@ -671,10 +727,10 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                             line['text'] = cleaned_text
 
                             # Set default position based on speaker if not provided
-                            # Dr. Drip is always on the right, snacks/other characters on the left
+                            # Dr. Hawley is always on the right, snacks/other characters on the left
                             if 'position' not in line or line.get('position') not in ('left', 'right', 'center'):
                                 speaker = line.get('speaker', '').lower()
-                                if 'drip' in speaker or 'dr.' in speaker or 'tooth' in speaker:
+                                if 'hawley' in speaker or 'dr.' in speaker or 'tooth' in speaker:
                                     line['position'] = 'right'
                                 else:
                                     line['position'] = 'left'
@@ -686,11 +742,11 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                             cleaned_text = fact_id_pattern.sub('', str(line)).strip()
                             cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
 
-                            # Find the non-Dr. Drip character in this panel (the snack)
+                            # Find the non-Dr. Hawley character in this panel (the snack)
                             snack_char = None
                             for char in panel.get('characters', []):
                                 char_name = char.get('name', '').lower()
-                                if 'drip' not in char_name and 'dr.' not in char_name and 'tooth' not in char_name:
+                                if 'hawley' not in char_name and 'dr.' not in char_name and 'tooth' not in char_name:
                                     snack_char = char
                                     break
 
@@ -702,11 +758,13 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                             logger.info(f"Legacy dialogue detection: text='{cleaned_text}', snack_char={snack_char.get('name') if snack_char else None}")
 
                             # Lines with first-person self-references are likely the snack speaking
-                            # (Dr. Drip talks ABOUT things, snacks talk about themselves)
+                            # (Dr. Hawley talks ABOUT things, snacks talk about themselves)
                             if snack_char:
                                 snack_name_lower = snack_char.get('name', '').lower()
                                 # Check if line is self-referential (snack introducing/defending itself)
-                                if any(phrase in text_lower for phrase in ["i'm ", "i am ", "i literally", "i scrub", "i just", "but i ", "we ", "my "]):
+                                # Catch ANY "I [verb]" pattern: "I trigger", "I have", "I boost", etc.
+                                if text_lower.startswith("i ") or text_lower.startswith("i'") or \
+                                   any(phrase in text_lower for phrase in ["but i ", "we ", "my "]):
                                     is_snack_speaking = True
                                 # Check if line mentions the snack's own name
                                 elif snack_name_lower and snack_name_lower in text_lower:
@@ -720,9 +778,9 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
                                     'emotion': panel.get('emotion', 'speech')
                                 })
                             else:
-                                # Default to Dr. Drip
+                                # Default to Dr. Hawley
                                 cleaned_dialogue.append({
-                                    'speaker': 'Dr. Drip',
+                                    'speaker': 'Dr. Hawley',
                                     'text': cleaned_text,
                                     'position': 'right',
                                     'emotion': panel.get('emotion', 'speech')
@@ -870,7 +928,7 @@ Make it about LOOKS. Make it about AESTHETIC. Make the audience care about their
 
         Uses positive "W Arc" narrative:
         Panel 1: The Entrance - Healthy snack walks in confident
-        Panel 2: The Stats - Dr. Drip impressed by health stats
+        Panel 2: The Stats - Dr. Hawley impressed by health stats
         Panel 3: The Glaze - Bro-hug moment
         Panel 4: The Crown - Coronation, verdict: GOATED
 
@@ -923,7 +981,7 @@ TARGET AUDIENCE: Age {age} ({age_band} - {intensity} mode), tone: {tone}
 ⚠️ CORE MESSAGE: This snack makes your teeth WHITE, CLEAN, and AESTHETIC.
 {audience_care}
 
-🎭 RECURRING CHARACTER - DR. DRIP:
+🎭 RECURRING CHARACTER - DR. HAWLEY:
 He's giving out the "Glow Up" award. GENUINELY IMPRESSED - Adult Swim hype mode.
 Like Rick Sanchez when he actually respects something. Peak respect energy.
 Look: Off-white/pale cyan molar in dark forest green hoodie, shades on forehead, chunky beige slides, CLEAN AESTHETIC
@@ -953,23 +1011,23 @@ Catchphrases:
 PANEL 1 - THE ENTRANCE
 - Healthy snack walks in looking clean/shiny (like it has a natural filter)
 - Snack literally GLOWS (sparkles, shine effects)
-- Dr. Drip: "Wait... is that a natural filter?"
+- Dr. Hawley: "Wait... is that a natural filter?"
 - Vibe: Aesthetic immediately detected
 
 PANEL 2 - THE STATS (The Beauty Secrets)
 - Snack reveals its beauty secrets (Natural scrubber, No stain risk)
 - "It literally whitens your teeth while you eat?"
-- Dr. Drip is impressed: "So you're basically a whitening kit I can eat?" (cite fact_id)
+- Dr. Hawley is impressed: "So you're basically a whitening kit I can eat?" (cite fact_id)
 - Visual: "Glow Up Stats" screen showing aesthetic benefits
 
 PANEL 3 - THE GLAZE (The Hype)
-- Dr. Drip hypes up the aesthetic potential
+- Dr. Hawley hypes up the aesthetic potential
 {panel3_line_1}
 {panel3_line_2}
 - Mutual respect moment (cite another fact_id if available)
 
 PANEL 4 - THE CROWN (The Glow Up Award)
-- Dr. Drip creates a frame with his hands (like taking a photo)
+- Dr. Hawley creates a frame with his hands (like taking a photo)
 - "No filter needed. Your smile is already unfiltered perfection."
 - Final verdict text overlay: "AESTHETIC" or "GLOW UP APPROVED"
 - Sparkles, shine effects, golden hour lighting
@@ -1007,7 +1065,7 @@ PANEL 4 - THE CROWN (The Glow Up Award)
 	📝 OTHER RULES:
 	- Every panel should feel like a W (win)
 	- Keep dialogue SHORT and PUNCHY: Max 2-3 lines per panel
-	- If a panel includes BOTH the snack and Dr. Drip, give EACH one a line
+	- If a panel includes BOTH the snack and Dr. Hawley, give EACH one a line
 	- CRITICAL TEXT LIMITS: Each dialogue line must be under 40 characters, total per panel under 100 characters
 	- Expressions: impressed, respectful, hyped, triumphant, nodding
 	- Props: green hoodie, shades on forehead, beige slides, gold chains, trophy, stat screens
@@ -1031,7 +1089,7 @@ Return your response as valid JSON with this EXACT structure:
 	      "title": "The Entrance",
 	      "dialogue": [
 	        {{"speaker": "Crunchy Apple Chad", "text": "I'm basically a snack-sized whitening strip.", "position": "left", "emotion": "speech"}},
-	        {{"speaker": "Dr. Drip", "text": "No filter needed. That's a W.", "position": "right", "emotion": "speech"}}
+	        {{"speaker": "Dr. Hawley", "text": "No filter needed. That's a W.", "position": "right", "emotion": "speech"}}
 	      ],
 	      "emotion": "speech",
 	      "citation_ids": ["F025"],
@@ -1044,7 +1102,7 @@ Return your response as valid JSON with this EXACT structure:
           "props": ["sparkles", "shine effect", "pristine appearance"]
         }},
         {{
-          "name": "Dr. Drip",
+          "name": "Dr. Hawley",
           "item_id": "recurring_tooth",
           "expression": "impressed",
           "position": "right",
@@ -1063,22 +1121,22 @@ Return your response as valid JSON with this EXACT structure:
 📚 FEW-SHOT CELEBRATION EXAMPLES (Copy this hype energy):
 
 EXAMPLE 1 - Fresh Apple:
-Dr. Drip: "Wait... is that an APPLE?"
-Dr. Drip: "That thing scrubs your teeth WHITE while you eat it."
-Dr. Drip: "It's literally a crunchy whitening strip you can snack on."
-Dr. Drip: "Goated. Actually goated with the sauce. No notes."
+Dr. Hawley: "Wait... is that an APPLE?"
+Dr. Hawley: "That thing scrubs your teeth WHITE while you eat it."
+Dr. Hawley: "It's literally a crunchy whitening strip you can snack on."
+Dr. Hawley: "Goated. Actually goated with the sauce. No notes."
 
 EXAMPLE 2 - Cheese:
-Dr. Drip: "Cheese? Oh, you're built different."
-Dr. Drip: "That neutralizes acid AND has calcium. Double buff."
-Dr. Drip: "Your teeth are sending you a thank you card."
-Dr. Drip: "Main character energy. Unironically."
+Dr. Hawley: "Cheese? Oh, you're built different."
+Dr. Hawley: "That neutralizes acid AND has calcium. Double buff."
+Dr. Hawley: "Your teeth are sending you a thank you card."
+Dr. Hawley: "Main character energy. Unironically."
 
 EXAMPLE 3 - Carrots:
-Dr. Drip: "Carrots? The OG glow up snack."
-Dr. Drip: "Crunchy enough to scrub, vitamins for that natural shine."
-Dr. Drip: "Your smile just got a scholarship to Hollywood."
-Dr. Drip: "W. Actual W."
+Dr. Hawley: "Carrots? The OG glow up snack."
+Dr. Hawley: "Crunchy enough to scrub, vitamins for that natural shine."
+Dr. Hawley: "Your smile just got a scholarship to Hollywood."
+Dr. Hawley: "W. Actual W."
 
 	NOW hype up these healthy snacks with this energy. Make it about the GLOW UP. Make teens want that Hollywood smile."""
 
@@ -1178,10 +1236,10 @@ Dr. Drip: "W. Actual W."
                                 line['emotion'] = panel.get('emotion', 'speech')
 
                             # Set default position based on speaker if not provided
-                            # Dr. Drip is always on the right, snacks/other characters on the left
+                            # Dr. Hawley is always on the right, snacks/other characters on the left
                             if 'position' not in line or line.get('position') not in ('left', 'right', 'center'):
                                 speaker = line.get('speaker', '').lower()
-                                if 'drip' in speaker or 'dr.' in speaker or 'tooth' in speaker:
+                                if 'hawley' in speaker or 'dr.' in speaker or 'tooth' in speaker:
                                     line['position'] = 'right'
                                 else:
                                     line['position'] = 'left'
@@ -1192,32 +1250,22 @@ Dr. Drip: "W. Actual W."
                             cleaned_text = fact_id_pattern.sub('', str(line)).strip()
                             cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
 
-                            # Find the non-Dr. Drip character in this panel (the snack)
+                            # Find the non-Dr. Hawley character in this panel (the snack)
                             snack_char = None
                             for char in panel.get('characters', []):
                                 char_name = char.get('name', '').lower()
-                                if 'drip' not in char_name and 'tooth' not in char_name:
+                                if 'hawley' not in char_name and 'tooth' not in char_name:
                                     snack_char = char
                                     break
 
-                            # Heuristic: snack talks about itself; Dr. Drip talks about the snack
+                            # Heuristic: snack talks about itself; Dr. Hawley talks about the snack
                             text_lower = cleaned_text.lower()
                             is_snack_speaking = False
                             if snack_char:
                                 snack_name_lower = snack_char.get('name', '').lower()
-                                if any(
-                                    phrase in text_lower
-                                    for phrase in [
-                                        "i'm ",
-                                        "i am ",
-                                        "i literally",
-                                        "i scrub",
-                                        "i just",
-                                        "but i ",
-                                        "we ",
-                                        "my ",
-                                    ]
-                                ):
+                                # Catch ANY "I [verb]" pattern: "I trigger", "I have", "I boost", etc.
+                                if text_lower.startswith("i ") or text_lower.startswith("i'") or \
+                                   any(phrase in text_lower for phrase in ["but i ", "we ", "my "]):
                                     is_snack_speaking = True
                                 elif snack_name_lower and snack_name_lower in text_lower:
                                     is_snack_speaking = True
@@ -1231,7 +1279,7 @@ Dr. Drip: "W. Actual W."
                                 })
                             else:
                                 cleaned_dialogue.append({
-                                    'speaker': 'Dr. Drip',
+                                    'speaker': 'Dr. Hawley',
                                     'text': cleaned_text,
                                     'position': 'right',
                                     'emotion': panel.get('emotion', 'speech')
@@ -1311,7 +1359,7 @@ Dr. Drip: "W. Actual W."
         """
         Get a generic fallback script when no snacks are recognized.
 
-        Provides general appearance/glow-up tips with DR. DRIP character.
+        Provides general appearance/glow-up tips with DR. HAWLEY character.
         Focused on VANITY (white teeth, aesthetic smile) not health.
 
         Args:
@@ -1336,16 +1384,16 @@ Dr. Drip: "W. Actual W."
             "panels": [
                 {
                     "panel_number": 1,
-                    "title": "Dr. Drip Enters",
+                    "title": "Dr. Hawley Enters",
                     "dialogue": [
-                        "Yo. Dr. Drip here.",
+                        "Yo. Dr. Hawley here.",
                         "Let me drop some glow up secrets."
                     ],
                     "emotion": "speech",
                     "citation_ids": [],
                     "characters": [
                         {
-                            "name": "Dr. Drip",
+                            "name": "Dr. Hawley",
                             "item_id": "recurring_tooth",
                             "expression": "cool",
                             "position": "center",
@@ -1366,7 +1414,7 @@ Dr. Drip: "W. Actual W."
                     "citation_ids": [],
                     "characters": [
                         {
-                            "name": "Dr. Drip",
+                            "name": "Dr. Hawley",
                             "item_id": "recurring_tooth",
                             "expression": "smug",
                             "position": "left",
@@ -1387,7 +1435,7 @@ Dr. Drip: "W. Actual W."
                     "citation_ids": [],
                     "characters": [
                         {
-                            "name": "Dr. Drip",
+                            "name": "Dr. Hawley",
                             "item_id": "recurring_tooth",
                             "expression": "nodding",
                             "position": "right",
@@ -1408,7 +1456,7 @@ Dr. Drip: "W. Actual W."
                     "citation_ids": [],
                     "characters": [
                         {
-                            "name": "Dr. Drip",
+                            "name": "Dr. Hawley",
                             "item_id": "recurring_tooth",
                             "expression": "triumphant",
                             "position": "center",
@@ -1419,8 +1467,8 @@ Dr. Drip: "W. Actual W."
                     "background": "golden hour lighting with aesthetic glow"
                 }
             ],
-            "summary_caption": "Dr. Drip drops the glow up secrets. No filter needed.",
-            "alt_text": "A 4-panel comic featuring Dr. Drip, an off-white molar in a green hoodie with shades on forehead, sharing appearance tips about keeping teeth white and aesthetic."
+            "summary_caption": "Dr. Hawley drops the glow up secrets. No filter needed.",
+            "alt_text": "A 4-panel comic featuring Dr. Hawley, an off-white molar in a green hoodie with shades on forehead, sharing appearance tips about keeping teeth white and aesthetic."
         }
 
     async def detect_speech_bubbles(self, image_path: str) -> dict[int, dict] | None:

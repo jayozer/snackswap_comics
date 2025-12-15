@@ -215,7 +215,7 @@
 #### 5.2.5 Script Composition
 - [x] Add `compose_celebrate_script()` method in `gemini_service.py`:
   - [x] Positive narrative: THE ENTRANCE → THE STATS → THE GLAZE → THE CROWN (W Arc)
-  - [x] DR. DRIP character as hype-beast giving props
+  - [x] DR. HAWLEY character as hype-beast giving props
   - [x] Focus on WHY snack is great (verdicts: "W", "BASED", "GOATED")
 - [x] Add `compose_unknown_script()` method for generic dental health comics
 - [x] Update `script.py` endpoint to route based on mode
@@ -240,13 +240,25 @@
 - [x] Update API documentation (1-5 items, grouped)
 - [x] **File References**: `gemini_service.py:43-199`, `api.py`
 
+#### 5.2.8 Fruit/Veggie Plate Detection Fallback (COMPLETED 2025-12-14)
+- [x] Enhanced vision prompt with explicit 3+ fruit/veggie rules:
+  - [x] "CRITICAL: If 3+ distinct FRUIT types visible → 'Fresh Fruit Plate'"
+  - [x] "CRITICAL: If 3+ distinct VEGETABLE types visible → 'Fresh Veggie Tray'"
+  - [x] Anti-confusion rule: fresh fruits should NEVER be classified as crackers/chips/candy
+- [x] Added `_consolidate_produce_items()` post-processing fallback:
+  - [x] Counts items by category (fruit/vegetables)
+  - [x] If 3+ fruits detected → consolidates to single "Fresh Fruit Plate"
+  - [x] If 3+ veggies detected → consolidates to single "Fresh Veggie Tray"
+  - [x] Logs consolidation for debugging
+- [x] **File References**: `gemini_service.py:120-169` (new method), `gemini_service.py:193-207` (prompt)
+
 ### 5.3 User Preferences (COMPLETED - MODIFIED ✓)
 *"Roast My Snack" Pivot: localStorage preferences instead of signup flow*
 
 #### 5.3.1 Backend
 - [x] Update age validation to 9-17 range in `api.py`
 - [x] Update age bands to 9-12 (Spicy) and 13-17 (Savage) in `scoring_service.py`
-- [x] Update script prompts for DR. DRIP character in `gemini_service.py`
+- [x] Update script prompts for DR. HAWLEY character in `gemini_service.py`
 - [x] Update visual style to Webtoon/Adult Swim in `nanobana_service.py`
 - [x] Add teen facts (F033-F046) with savage language in `seed_data.py`
 - [x] Fix Qdrant client API (`query_points` instead of deprecated `search`)
@@ -256,7 +268,7 @@
 - [x] Create `usePreferences.ts` hook for localStorage persistence
 - [x] Create `AllergenSelector.tsx` component (8 common allergens)
 - [x] Update `AgeSelector.tsx` for 9-17 range with Tween/Teen modes
-- [x] Update `page.tsx` with dark theme and DR. DRIP messaging
+- [x] Update `page.tsx` with dark theme and DR. HAWLEY messaging
 - [x] Pass age and allergens to score/retrieve API
 - **File References**: `usePreferences.ts`, `AllergenSelector.tsx`, `AgeSelector.tsx`, `page.tsx`
 
@@ -323,13 +335,40 @@
 - [ ] **Comic Style Picker**: Let users pick different comic styles (e.g., superhero, manga, vaporwave) to better suit individual tastes
 - [ ] **Multi-language support**: Localization for broader accessibility
 
+### 5.9 Allergen Warnings on Detected Snacks
+
+**Priority**: Medium
+**Status**: Planned
+
+#### Current Behavior
+- Allergens filter swap recommendations only (working correctly)
+- Detected snacks are NOT checked against user allergens
+
+#### Proposed Enhancement
+Flag detected snacks that contain user's allergens as a safety feature.
+
+**Example**: If user selected "dairy" allergen and "Cheese Crackers" is detected, show a warning badge like "Contains dairy" in the results.
+
+#### Implementation Notes
+- Snacks already have `allergy_tags` in Qdrant payloads
+- Need to pass user allergens to score response
+- Add allergen match check in `ScoredItem` response
+- Frontend: Display warning badge on matching items
+
+#### Files to Modify
+- [ ] `backend/app/api/score.py` - Add allergen matching logic
+- [ ] `backend/app/models/api.py` - Add `contains_user_allergens` field to `ScoredItem`
+- [ ] `frontend/src/components/ResultsPanel.tsx` - Display allergen warning badge
+
+---
+
 ### 5.8 Design Enhancements
 
 #### Visual & Interaction Style
 
 - [ ] **Bold colour palettes & expressive typography**: Teens are drawn to vibrant, expressive visuals. Material 3 Expressive design language promotes rich purples, pinks and blues, funky fonts, and more abstract themes to make apps feel energetic. Pair purple gradient background with accent colours like neon green or electric pink and use eye-catching headings and captions.
 
-- [ ] **Motion & micro-animations**: Kinetic typography and subtle animations are trending. Animate Dr. Drip's reactions and have panels slide in with a spring effect. Use motion sparingly (e.g., a bouncing progress indicator or a sparkle animation when users get a "glow-up" snack) to add life without overwhelming.
+- [ ] **Motion & micro-animations**: Kinetic typography and subtle animations are trending. Animate Dr. Hawley's reactions and have panels slide in with a spring effect. Use motion sparingly (e.g., a bouncing progress indicator or a sparkle animation when users get a "glow-up" snack) to add life without overwhelming.
 
 - [ ] **Comic-panel storytelling**: Keep the comic layout but explore different panel shapes (e.g., diagonal cuts or speech bubbles that overlap panels) to mimic popular webtoons. Allow the user to tap on a panel for a zoomed-in view or hold to reveal a fun fact.
 
@@ -386,40 +425,27 @@
 
 ---
 
-## Planned Refactoring
+## Completed Refactoring
 
-### Rename Dr. Drip → Dr. Hawley
+### ✅ Rename Dr. Drip → Dr. Hawley (COMPLETED 2025-12-14)
 
-**Scope:** 248 occurrences across 21 files + 2 file renames
+**Scope:** 244+ occurrences across 20 files + 2 file renames + 13 image renames
 
-#### Files to Rename
-- [ ] `backend/app/data/drdrip_roast_corpus.py` → `drhawley_roast_corpus.py`
-- [ ] `backend/generate_dr_drip.py` → `generate_dr_hawley.py`
+#### Files Renamed
+- [x] `backend/app/data/drdrip_roast_corpus.py` → `drhawley_roast_corpus.py`
+- [x] `backend/generate_dr_drip.py` → `generate_dr_hawley.py`
+- [x] 13 image files: `Dr.Drip_*.png` → `Dr.Hawley_*.png`
 
-#### High-Impact Code Files
-| File | Occurrences |
-|------|-------------|
-| `app/services/gemini_service.py` | 70 |
-| `app/data/drdrip_roast_corpus.py` | 16 |
-| `app/services/nanobana_service.py` | 4 |
-| `app/services/render_service.py` | 3 |
-| `app/models/comic.py` | 1 |
-| `app/data/__init__.py` | 1 |
+#### Code Files Updated
+- [x] `gemini_service.py` (67 occurrences)
+- [x] `drhawley_roast_corpus.py`, `nanobana_service.py`, `render_service.py`
+- [x] `comic.py`, `__init__.py`, `remove_backgrounds.py`
+- [x] Test files, frontend components (`page.tsx`, `ToothMascot.tsx`)
 
-#### Other Files
-- Tests: `tests/test_render_service_dialogue.py` (6), `test_guardrails.py` (4)
-- Frontend: `page.tsx` (5), `ToothMascot.tsx` (4)
-- Data: `seed_data.py` (1), `roast_my_snak.jsonl` (10)
-- Scripts: `remove_backgrounds.py` (7), `generate_dr_drip.py` (6)
-- Docs: `tween_teen_pivot.md` (48), `new_prompts.md` (21), `hackathon-rubric.md` (17), `presentation-2min.md` (8), `README.md` (7), `CLAUDE.md` (5), `TODO.md` (4)
-
-#### Replacement Patterns
-| Find | Replace |
-|------|---------|
-| `Dr. Drip` | `Dr. Hawley` |
-| `DrDrip` | `DrHawley` |
-| `dr_drip` | `dr_hawley` |
-| `drdrip` | `drhawley` |
+#### Documentation Updated
+- [x] `README.md`, `CLAUDE.md`, `TODO.md`, `todo.md`
+- [x] `tween_teen_pivot.md`, `new_prompts.md`, `hackathon-rubric.md`, `presentation-2min.md`
+- [x] `roast_my_snak.jsonl`, `seed_data.py`
 
 ---
 

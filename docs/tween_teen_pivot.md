@@ -9,12 +9,12 @@
 
 ## Executive Summary
 
-SnackSwap Comics is pivoting from a young-kids dental education app to a **tween/teen social content generator** called **"Roast My Snack"** - where **DR. DRIP**, a hype-beast molar tooth, absolutely destroys your snack choices with savage facts and meme-worthy burns.
+SnackSwap Comics is pivoting from a young-kids dental education app to a **tween/teen social content generator** called **"Roast My Snack"** - where **DR. HAWLEY**, a hype-beast molar tooth, absolutely destroys your snack choices with savage facts and meme-worthy burns.
 
 **Key Changes:**
 - Age range: **9-17** (tweens + teens only)
 - Two age bands: **9-12** (Tween/Spicy), **13-17** (Teen/Savage)
-- New mascot: **DR. DRIP** - hype-beast tooth with gold crown, sunglasses, fresh kicks
+- New mascot: **DR. HAWLEY** - hype-beast tooth with gold crown, sunglasses, fresh kicks
 - Content tone: Savage roast comedian, TikTok-ready, screenshot-worthy
 - Vision detection: "Savage Food Critic" style naming
 - No signup required: Inline preferences with localStorage
@@ -96,22 +96,22 @@ Transform dental health education into **comedy roast content**. Instead of teac
 
 ## Part 3: Mascot Specifications
 
-### 3.1 Tween Mode: DR. DRIP (Spicy Edition)
+### 3.1 Tween Mode: DR. HAWLEY (Spicy Edition)
 
 **For ages 9-12** - Same character, toned down intensity:
 
-- **Visual**: Same Dr. Drip design but slightly friendlier expressions
+- **Visual**: Same Dr. Hawley design but slightly friendlier expressions
 - **Personality**: Still sassy but less savage
 - **Catchphrase**: "That's sus for your teeth!"
 - **Tone**: Spicy but age-appropriate burns
 
-### 3.2 Teen Mascot: DR. DRIP (Full Savage Mode)
+### 3.2 Teen Mascot: DR. HAWLEY (Full Savage Mode)
 
 **For ages 13-17** - The main character:
 
 #### Visual Design
 ```
-Name: Dr. Drip (or just "Drip")
+Name: Dr. Hawley (or just "Drip")
 Species: Hype-beast molar tooth
 Vibe: Brutally honest roast master with a PhD in dental destruction
 
@@ -159,14 +159,14 @@ Speech Patterns (CURRENT teen slang):
 - "Let him cook" (for healthy snacks)
 - "Sheesh!" (impressed)
 
-What Dr. Drip WOULD Say:
+What Dr. Hawley WOULD Say:
 - "Bro, you're literally eating a cavity speedrun."
 - "That's not a snack, that's a dentist bill with extra steps."
 - "50g of sugar? The bacteria in your mouth are throwing a party rn."
 - "Your enamel just unfollowed you."
 - "That's a stage 5 clinger for your teeth."
 
-What Dr. Drip would NOT Say:
+What Dr. Hawley would NOT Say:
 - "Remember to brush your teeth!" (too preachy)
 - "Yeet!" "Skibidi!" (dead/cringe memes)
 - "You're stupid" (mean, not funny)
@@ -175,7 +175,7 @@ What Dr. Drip would NOT Say:
 
 #### Character Backstory
 ```
-Dr. Drip earned his crown by being the most based tooth in the mouth.
+Dr. Hawley earned his crown by being the most based tooth in the mouth.
 He's seen the cavity wars. He's watched friends get pulled.
 Now he uses his platform to expose snack crimes and keep it real.
 He's not a hater - he's a truth-teller with immaculate drip.
@@ -211,25 +211,25 @@ He's not a hater - he's a truth-teller with immaculate drip.
 PANEL 1: THE FLEX (The Setup)
 - Snack enters acting cool, thinking it's delicious
 - Snack: "I'm the main character."
-- Dr. Drip watches from side, looking skeptical, maybe holding "X" sign
+- Dr. Hawley watches from side, looking skeptical, maybe holding "X" sign
 - Visual: Snack looking smug, Drip unimpressed
 
 PANEL 2: THE EXPOSÉ (The Roast Begins)
-- Dr. Drip steps in and drops a HARD FACT (cite fact_id)
+- Dr. Hawley steps in and drops a HARD FACT (cite fact_id)
 - "Bro, you're literally just sticky sugar glue."
 - Snack starts sweating/panicking
 - Visual: Snack glitching out or sweating, Drip pointing
 
 PANEL 3: THE RATIO (The Destruction)
-- Dr. Drip doubles down with emotional damage
+- Dr. Hawley doubles down with emotional damage
 - "You're stuck in teeth for 6 hours? Stage 5 clinger vibes."
 - Another fact if available
 - Visual: Snack crying, melting, or defeated ("I just wanted to be loved!")
 
 PANEL 4: THE VIBE CHECK (The Verdict)
-- Dr. Drip presents the CHAD SWAP
+- Dr. Hawley presents the CHAD SWAP
 - "Swap to Apple Slices. High fiber, no cap."
-- Dr. Drip poses with the Swap (who looks buff/Chad-like)
+- Dr. Hawley poses with the Swap (who looks buff/Chad-like)
 - Final verdict overlay: "MID" or "TRASH" or "COOKED"
 ```
 
@@ -241,29 +241,29 @@ PANEL 4: THE VIBE CHECK (The Verdict)
 ```
 PANEL 1: THE ENTRANCE
 - Healthy Snack walks in looking confident (buff arms or sunglasses)
-- Dr. Drip: "Hold up... let him cook."
+- Dr. Hawley: "Hold up... let him cook."
 - Visual: Snack with main character energy, Drip intrigued
 
 PANEL 2: THE STATS
 - Snack reveals its stats (Fiber, Vitamins, Crunch)
-- Dr. Drip is impressed: "No cavity creeps? That's OP."
+- Dr. Hawley is impressed: "No cavity creeps? That's OP."
 - Cite fact_id
 - Visual: Stats floating around snack like a video game character
 
 PANEL 3: THE GLAZE
-- Dr. Drip and Snack engage in handshake or bro-hug
+- Dr. Hawley and Snack engage in handshake or bro-hug
 - "Cleans teeth while you eat? Actually cracked strategy."
 - Visual: Mutual respect moment, maybe sparkle effects
 
 PANEL 4: THE CROWN
-- Dr. Drip puts a literal crown on the snack
+- Dr. Hawley puts a literal crown on the snack
 - Final Text: "W SNACK" or "BASED" or "GOATED"
 - Visual: Coronation ceremony, Drip nodding approval
 ```
 
 ### 4.3 Tween Mode (Ages 9-12)
 
-**Same Dr. Drip but SPICY not SAVAGE:**
+**Same Dr. Hawley but SPICY not SAVAGE:**
 - Less intense slang
 - Still funny, not baby talk
 - "That's sus" instead of "You're COOKED"
@@ -316,17 +316,17 @@ def get_age_band(self, age: int) -> str:
 | Method | New Prompt From |
 |--------|-----------------|
 | `detect_items()` | Section 1: Savage Food Critic vision prompt |
-| `compose_educate_script()` | Section 2: Dr. Drip Roast prompt |
-| `compose_celebrate_script()` | Section 3: Dr. Drip "Based" prompt |
+| `compose_educate_script()` | Section 2: Dr. Hawley Roast prompt |
+| `compose_celebrate_script()` | Section 3: Dr. Hawley "Based" prompt |
 
 **Key additions:**
 1. Add `is_teen = age >= 13` check
-2. Teen mode (13-17): Full savage Dr. Drip prompts
-3. Tween mode (9-12): Same Dr. Drip, lighter intensity
+2. Teen mode (13-17): Full savage Dr. Hawley prompts
+3. Tween mode (9-12): Same Dr. Hawley, lighter intensity
 
-**Dr. Drip character in prompts:**
+**Dr. Hawley character in prompts:**
 ```
-🎭 RECURRING CHARACTER - DR. DRIP:
+🎭 RECURRING CHARACTER - DR. HAWLEY:
 A hype-beast molar tooth with sunglasses, a gold crown (literally), and fresh kicks.
 Personality: Brutally honest, uses slang (cooked, mid, based, cringe, no cap), unfiltered.
 Catchphrase: "You're COOKED." or "Get scrubbed."
@@ -345,7 +345,7 @@ VISUAL STYLE RULES:
 - Thick, gritty ink lines (street art/underground comics)
 - Saturated, neon-accented color palette (Cyberpunk lite / Graffiti vibes)
 - EXAGGERATED expressions (anime shock, meme faces, intense crying, smug smirk)
-- Dr. Drip looks COOL: Sunglasses, gold tooth cap, sneakers. NOT a baby superhero.
+- Dr. Hawley looks COOL: Sunglasses, gold tooth cap, sneakers. NOT a baby superhero.
 - Backgrounds: Halftone dots, speed lines, abstract gradients
 ```
 
@@ -691,7 +691,7 @@ Vibe Reference:
 - NOT: Corporate, sterile, "educational material"
 ```
 
-### 6.3 Expression Library (Dr. Drip + Snacks)
+### 6.3 Expression Library (Dr. Hawley + Snacks)
 
 - Smug/Judging: Shades on, arms crossed; default roast stance.
 - Side-eye/Skeptical: Brow raised, slight head tilt.
@@ -726,16 +726,16 @@ Vibe Reference:
   "panels": [
     {
       "panel_number": 1,
-      "scene": "Gummy Bear enters looking smug, Dr. Drip watching from side with skeptical look",
-      "character": "dr_drip",
+      "scene": "Gummy Bear enters looking smug, Dr. Hawley watching from side with skeptical look",
+      "character": "dr_hawley",
       "snack_dialogue": "I'm literally the main character of snack time.",
       "drip_dialogue": "*holds up X sign*",
       "emotion": "flex_setup"
     },
     {
       "panel_number": 2,
-      "scene": "Dr. Drip steps forward pointing, Gummy Bear starts sweating",
-      "character": "dr_drip",
+      "scene": "Dr. Hawley steps forward pointing, Gummy Bear starts sweating",
+      "character": "dr_hawley",
       "dialogue": "Bro, you're literally just sticky sugar glue. 50g of sugar? The bacteria in your mouth are throwing a PARTY rn.",
       "fact_citation": "sugar_bacteria_01",
       "emotion": "expose"
@@ -743,15 +743,15 @@ Vibe Reference:
     {
       "panel_number": 3,
       "scene": "Gummy Bear crying/melting, bacteria visible partying on tooth in background",
-      "character": "dr_drip",
+      "character": "dr_hawley",
       "dialogue": "You're stuck in teeth for 6 hours? Stage 5 clinger vibes. Skill issue fr.",
       "snack_dialogue": "I just wanted to be loved!",
       "emotion": "ratio"
     },
     {
       "panel_number": 4,
-      "scene": "Dr. Drip posing with buff Apple character, Gummy Bear defeated in corner",
-      "character": "dr_drip",
+      "scene": "Dr. Hawley posing with buff Apple character, Gummy Bear defeated in corner",
+      "character": "dr_hawley",
       "dialogue": "Swap to Apple Slices. High fiber, cleans teeth while you eat. No cap.",
       "verdict_overlay": "COOKED",
       "emotion": "vibe_check"
@@ -769,15 +769,15 @@ Vibe Reference:
   "panels": [
     {
       "panel_number": 1,
-      "scene": "Apple walks in with sunglasses and buff arms, Dr. Drip intrigued",
-      "character": "dr_drip",
+      "scene": "Apple walks in with sunglasses and buff arms, Dr. Hawley intrigued",
+      "character": "dr_hawley",
       "dialogue": "Hold up... let him cook.",
       "emotion": "entrance"
     },
     {
       "panel_number": 2,
-      "scene": "Apple revealing stats floating around it like RPG character, Dr. Drip impressed",
-      "character": "dr_drip",
+      "scene": "Apple revealing stats floating around it like RPG character, Dr. Hawley impressed",
+      "character": "dr_hawley",
       "dialogue": "No cavity creeps? High fiber? That's actually OP.",
       "apple_stats": "+5 Fiber, +3 Crunch, -100% Cavity Risk",
       "fact_citation": "apple_clean_01",
@@ -785,15 +785,15 @@ Vibe Reference:
     },
     {
       "panel_number": 3,
-      "scene": "Dr. Drip and Apple doing elaborate handshake/bro-hug",
-      "character": "dr_drip",
+      "scene": "Dr. Hawley and Apple doing elaborate handshake/bro-hug",
+      "character": "dr_hawley",
       "dialogue": "Cleans teeth while you eat? Actually cracked strategy. Sheesh!",
       "emotion": "glaze"
     },
     {
       "panel_number": 4,
-      "scene": "Dr. Drip placing gold crown on Apple, coronation ceremony vibes",
-      "character": "dr_drip",
+      "scene": "Dr. Hawley placing gold crown on Apple, coronation ceremony vibes",
+      "character": "dr_hawley",
       "dialogue": "Real recognizes real.",
       "verdict_overlay": "GOATED",
       "emotion": "crown"
@@ -811,25 +811,25 @@ Vibe Reference:
   "panels": [
     {
       "panel_number": 1,
-      "character": "dr_drip",
+      "character": "dr_hawley",
       "dialogue": "Hmm, let's see what we got here...",
       "emotion": "curious"
     },
     {
       "panel_number": 2,
-      "character": "dr_drip",
+      "character": "dr_hawley",
       "dialogue": "That's kinda sus for your teeth. Sour candy = acid attack!",
       "emotion": "concerned"
     },
     {
       "panel_number": 3,
-      "character": "dr_drip",
+      "character": "dr_hawley",
       "dialogue": "Your enamel is NOT having a good time rn.",
       "emotion": "dramatic"
     },
     {
       "panel_number": 4,
-      "character": "dr_drip",
+      "character": "dr_hawley",
       "dialogue": "Maybe try some cheese instead? Way better vibes.",
       "verdict_overlay": "Not great",
       "emotion": "suggesting"
@@ -922,7 +922,7 @@ Keep updated as trends evolve:
 
 - **Age pivot is consistent in code.** `backend/app/models/api.py` and `backend/app/services/scoring_service.py` already enforce/produce **9–12 vs 13–17** bands (`ge=9, le=17`, `get_age_band()` returns `"9-12"` or `"13-17"`). Frontend `frontend/src/components/AgeSelector.tsx` matches the same range.
 - **Roast vs Based narrative is implemented.** `backend/app/services/gemini_service.py` has a **Roast Arc** prompt for educate mode and a **W/Based Arc** prompt for celebrate mode, matching Part 4 and Part 7.
-- **Edgy teen visual style is implemented.** `backend/app/services/nanobana_service.py` prompt already specifies Webtoon/Adult Swim vibe, neon palette, exaggerated meme expressions, Dr. Drip “cool not cute,” and vertical 1×4 layout.
+- **Edgy teen visual style is implemented.** `backend/app/services/nanobana_service.py` prompt already specifies Webtoon/Adult Swim vibe, neon palette, exaggerated meme expressions, Dr. Hawley “cool not cute,” and vertical 1×4 layout.
 - **Teen facts exist.** `data/seeds/seed_data.py` includes a dedicated **13–17** block with slang-forward educate + celebrate facts.
 
 **Net:** The pivot described here is not speculative — most core mechanics are already in place.
@@ -931,7 +931,7 @@ Keep updated as trends evolve:
 
 - **Clear value for teens:** you correctly reframe dental health into **vanity + social status** stakes (white teeth, aesthetic, aura). That’s a believable “why care” for 13–17.
 - **Shareable format:** vertical 4‑panel strip, punchy dialogue limits, and verdict overlays are naturally “story/screenshot” friendly.
-- **Mascot fit:** Dr. Drip’s hype‑beast molar persona is specific enough to feel like a *character*, not a dentist reskin. The visual notes in Part 3 and 6 support that.
+- **Mascot fit:** Dr. Hawley’s hype‑beast molar persona is specific enough to feel like a *character*, not a dentist reskin. The visual notes in Part 3 and 6 support that.
 - **Tone guardrails:** you explicitly call out “roast ≠ bully,” avoid body‑shaming, and keep slang current. This is key for teen authenticity.
 - **Dual‑band approach:** “Spicy” 9–12 vs “Savage” 13–17 prevents the app from feeling childish to teens while still being usable for tweens.
 

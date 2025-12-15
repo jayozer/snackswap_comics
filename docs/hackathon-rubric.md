@@ -15,19 +15,19 @@
 |------------|--------------|----------------|
 | **Gemini 2.5 Flash Vision** | Detects 1-5 snacks with smart grouping + **Thinking Mode** (8192 token budget) | `gemini_service.py:detect_items()` |
 | **Gemini 2.5 Pro Writer** | Age-adaptive "vanity roast" scripts with **Thinking Mode** (24576 token budget) | `gemini_service.py:compose_script()` |
-| **Gemini 3 Pro Image (Nano-Banana)** | Creates 1x4 vertical comic strips with consistent DR. DRIP character | `nanobana_service.py` |
+| **Gemini 3 Pro Image (Nano-Banana)** | Creates 1x4 vertical comic strips with consistent DR. HAWLEY character | `nanobana_service.py` |
 | **Imagen 4.0 Support** | Optional 2K high-resolution comic generation | `nanobana_service.py` (dual model support) |
 | **Gemini text-embedding-004** | 768-dim embeddings for semantic search across all collections | `gemini_service.py:generate_embedding()` |
 | **Freepik API** | Professional speech bubbles, comic frames, **mode-based backgrounds** | `freepik_service.py` |
 | **Qdrant Cloud** | Semantic search for snacks, facts, swaps, styles with risk_tags filtering | `qdrant_service.py` |
 
-**DR. DRIP Character System** (Signature Creative Element):
+**DR. HAWLEY Character System** (Signature Creative Element):
 - Recurring mascot: Off-white/pale cyan molar in dark forest green hoodie, sunglasses on forehead, beige Yeezy-style slides
 - **Age-adaptive personality**:
   - Ages 9-12 "Spicy Mode": Lighter burns, meme-y ("sus", "mid", "skill issue")
   - Ages 13-17 "Savage Mode": Full destruction ("cooked", "L + ratio", "aura")
 - Adult Swim humor style (Rick & Morty, Smiling Friends energy)
-- Roast corpus with 50+ few-shot examples: `app/data/drdrip_roast_corpus.py`
+- Roast corpus with 50+ few-shot examples: `app/data/drhawley_roast_corpus.py`
 
 **"Vanity Roasting" Concept** (Novel Approach):
 - Reframes dental health as AESTHETICS, not health lectures
@@ -51,7 +51,7 @@
 **Coherent Multi-Asset Story** (4-Panel Narrative Arcs):
 - **EDUCATE (Roast Arc)**: Flex → Exposé → Ratio → Vibe Check
 - **CELEBRATE (W Arc)**: Entrance → Stats → Glaze → Crown
-- **UNKNOWN**: Generic DR. DRIP glow-up tips
+- **UNKNOWN**: Generic DR. HAWLEY glow-up tips
 
 **Smart Item Detection**:
 - Detects up to 5 items with intelligent grouping
@@ -64,7 +64,7 @@
 - [x] Celebrate Mode: Positive comics for healthy snacks ✓
 - [x] Unknown Mode: Generic comics for unrecognized items ✓
 - [x] Smart Item Grouping ✓
-- [x] DR. DRIP character with age-adaptive personality ✓
+- [x] DR. HAWLEY character with age-adaptive personality ✓
 - [x] Emotion-based speech bubble styles ✓
 - [x] Enhanced Freepik Integration: Mode-based backgrounds ✓
 - [ ] **Animated comics**: Video generation for Reels (v1.1)
@@ -196,7 +196,7 @@ risk_score = 100 × (
 | **Allergy Input** | Multi-select allergen chips with localStorage persistence | `AllergenSelector.tsx` |
 | **Export Formats** | Portrait (1080×1350), Reel (1080×1920) | `ComicDisplay.tsx` |
 | **Progress Indicators** | 5-step scanning overlay with custom icons | `ScanningOverlay.tsx` |
-| **DR. DRIP Dynamic Messages** | Mode-aware greetings based on app state | `page.tsx:getDrDripMessage()` |
+| **DR. HAWLEY Dynamic Messages** | Mode-aware greetings based on app state | `page.tsx:getDrHawleyMessage()` |
 
 **Preference Persistence** (`usePreferences.ts`):
 - Age, allergens, intensity mode saved to localStorage
@@ -277,9 +277,9 @@ risk_score = 100 × (
 | Innovation | Description | Why It's Novel |
 |------------|-------------|----------------|
 | **"Vanity Roasting"** | Dental health reframed as aesthetics ("glow up", "Hollywood teeth") | Speaks teen language |
-| **DR. DRIP Character** | Consistent mascot with Adult Swim personality | Brand recall + engagement |
+| **DR. HAWLEY Character** | Consistent mascot with Adult Swim personality | Brand recall + engagement |
 | **Age-Adaptive Personality** | Same character, different intensity (Spicy vs Savage) | Developmentally appropriate |
-| **Roast Corpus** | 50+ few-shot examples in `drdrip_roast_corpus.py` | Quality script generation |
+| **Roast Corpus** | 50+ few-shot examples in `drhawley_roast_corpus.py` | Quality script generation |
 | **Thinking Mode** | Vision (8192) and Writer (24576) thinking budgets | Better reasoning |
 | **5 Emotion Bubble Styles** | speech, thought, exclaim, angry, whisper | Dynamic visual storytelling |
 | **Dynamic Bubble Sizing** | Bubble width scales with text length (35%-55%) | Optimal text fit |
@@ -298,7 +298,7 @@ risk_score = 100 × (
 - **Alpha Compositing**: Semi-transparent bubbles (180 alpha) for comic effect
 - **JSONL Audit Logs**: Daily compliance logs with SHA256 content hashing
 
-**Novel Character Design** (DR. DRIP visual spec):
+**Novel Character Design** (DR. HAWLEY visual spec):
 - Off-white/pale cyan molar body
 - Dark forest green pullover hoodie
 - Black retro sunglasses pushed up on forehead
@@ -316,7 +316,7 @@ risk_score = 100 × (
 - [x] Cross-collection joins ✓
 - [x] Mode-Based Backgrounds ✓
 - [x] Emotion-based speech bubbles (5 types) ✓
-- [x] DR. DRIP character system ✓
+- [x] DR. HAWLEY character system ✓
 - [x] Roast corpus for few-shot learning ✓
 - [ ] **Animated comics**: Video generation (novel format)
 - [ ] **Character customization**: Let users pick mascot style (v1.2)
@@ -328,7 +328,7 @@ risk_score = 100 × (
 
 | Criteria | Status | Key Strengths | Demo Points |
 |----------|--------|---------------|-------------|
-| **1. Creative Quality** | 🟢 Strong | DR. DRIP character, vanity roasting concept, 5 bubble styles, thinking mode | Show age toggle → personality change |
+| **1. Creative Quality** | 🟢 Strong | DR. HAWLEY character, vanity roasting concept, 5 bubble styles, thinking mode | Show age toggle → personality change |
 | **2. Search & Similarity** | 🟢 Strong | Transparent scoring, 4 collections, QueryBuilder, risk_tags | Show risk score breakdown |
 | **3. Guardrails** | 🟢 Strong | 50+ blocked terms, teen slang allowlist, daily audit logs | Show guardrails_service.py |
 | **4. UX & Tradeoffs** | 🟢 Strong | 5-step progress, localStorage persistence, mode-aware messages | Show scanning overlay |
@@ -340,12 +340,12 @@ risk_score = 100 × (
 ## Presentation Demo Script
 
 ### 1. Opening (30 sec)
-- "Meet DR. DRIP - a molar tooth who's about to roast your snack's aesthetic"
-- Show DR. DRIP character design
+- "Meet DR. HAWLEY - a molar tooth who's about to roast your snack's aesthetic"
+- Show DR. HAWLEY character design
 
 ### 2. Age Toggle Demo (30 sec)
 - Toggle age from 10 to 15
-- Show how DR. DRIP's message changes from "Spicy" to "Savage"
+- Show how DR. HAWLEY's message changes from "Spicy" to "Savage"
 - Highlight: "Same character, different intensity"
 
 ### 3. Full Pipeline Demo (90 sec)
@@ -361,7 +361,7 @@ risk_score = 100 × (
 - Highlight: Different narrative arc
 
 ### 5. Technical Deep-Dive (60 sec)
-- Show `drdrip_roast_corpus.py` - 50+ few-shot examples
+- Show `drhawley_roast_corpus.py` - 50+ few-shot examples
 - Show `guardrails_service.py` - teen slang allowlist
 - Show audit logs in `storage/audit/`
 - Highlight: Production-ready safety
@@ -375,7 +375,7 @@ risk_score = 100 × (
 
 ## Recently Completed Features
 
-- ✅ **DR. DRIP Character System**: Age-adaptive personality (Spicy/Savage)
+- ✅ **DR. HAWLEY Character System**: Age-adaptive personality (Spicy/Savage)
 - ✅ **Vanity Roasting Concept**: Dental health reframed as aesthetics
 - ✅ **Roast Corpus**: 50+ few-shot examples for quality scripts
 - ✅ **Thinking Mode**: Vision (8192) and Writer (24576) budgets
@@ -386,7 +386,7 @@ risk_score = 100 × (
 - ✅ **AuditService**: Daily JSONL logs with SHA256 hashing
 - ✅ **Image Prompt Validation**: Blocks unsafe content before generation
 - ✅ **Celebrate Mode**: Positive comics for healthy snacks
-- ✅ **Unknown Mode**: Generic DR. DRIP tips for unrecognized items
+- ✅ **Unknown Mode**: Generic DR. HAWLEY tips for unrecognized items
 - ✅ **Smart Item Grouping**: Fruit plates, veggie trays as single items
 - ✅ **Panel-aware Retrieval**: Facts match comic mood/scene
 - ✅ **Cross-collection Joins**: Snack risk_tags filter relevant facts

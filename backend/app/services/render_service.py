@@ -404,13 +404,15 @@ class RenderService:
 
     def _dialogue_entries_for_bubbles(self, dialogue: list) -> list[dict]:
         """
-        Normalize dialogue into per-bubble entries.
+        Normalize dialogue into per-speaker bubble entries.
 
-        Returns ONE bubble per dialogue line (no grouping). Supports both:
+        Combines multiple lines from the same speaker into a single bubble.
+        Supports both:
         - New object format: {speaker, text, position, emotion}
-        - Legacy string format: treated as Dr. Drip on the right
+        - Legacy string format: treated as Dr. Hawley on the right
         """
-        entries: list[dict] = []
+        # First pass: normalize all entries
+        raw_entries: list[dict] = []
 
         for d in dialogue:
             if isinstance(d, dict):
@@ -419,7 +421,7 @@ class RenderService:
                 emotion = str(d.get("emotion", "speech")).strip() or "speech"
                 position = str(d.get("position", "center")).strip() or "center"
             elif isinstance(d, str):
-                speaker = "Dr. Drip"
+                speaker = "Dr. Hawley"
                 text = d.strip()
                 emotion = "speech"
                 position = "right"
@@ -435,7 +437,7 @@ class RenderService:
             if emotion not in ("speech", "thought", "exclaim", "angry", "whisper"):
                 emotion = "speech"
 
-            entries.append(
+            raw_entries.append(
                 {
                     "speaker": speaker,
                     "text": text,
@@ -444,7 +446,17 @@ class RenderService:
                 }
             )
 
-        return entries
+        # Second pass: combine consecutive lines from same speaker into single bubble
+        grouped: list[dict] = []
+        for entry in raw_entries:
+            if grouped and grouped[-1]["speaker"] == entry["speaker"]:
+                # Same speaker - combine text into single bubble
+                grouped[-1]["text"] += " " + entry["text"]
+            else:
+                # New speaker - create new bubble
+                grouped.append(entry.copy())
+
+        return grouped
 
     def _darken_color(self, hex_color: str) -> str:
         """Darken a hex color by 20%."""
@@ -665,7 +677,7 @@ class RenderService:
             img_width, img_height = img.size
 
             prompt = f"""Analyze this comic image and find ALL visible text, including:
-- Character name labels (e.g., "GUMMY GUS", "DR. DRIP")
+- Character name labels (e.g., "GUMMY GUS", "DR. HAWLEY")
 - Title text or headers
 - Sound effects (e.g., "POW", "WHOOSH")
 - Any other typography or lettering
@@ -1913,12 +1925,15 @@ Rules:
                 margin_x = int(panel_width * 0.04)  # ~20px at 512px wide
                 margin_top = 10
                 lane_gap = 10
-                diagonal_offset_y = int(panel_height * 0.06)
+                # Increased offset to prevent overlap between left/right bubbles
+                diagonal_offset_y = int(panel_height * 0.25)  # ~64px on 256px panel
                 lane_y = {
                     "left": panel_y + margin_top,
                     "right": panel_y + margin_top + diagonal_offset_y,
                     "center": panel_y + margin_top,
                 }
+                # Track the bottom of the tallest bubble for cross-lane collision awareness
+                max_bubble_bottom = panel_y + margin_top
 
                 # Draw a bubble for EACH dialogue line
                 for bubble_idx, bubble_data in enumerate(bubble_entries):
@@ -1949,9 +1964,18 @@ Rules:
 
                     # Stack bubbles within each lane based on the actual rendered height
                     bubble_y = lane_y.get(position, panel_y + margin_top)
+
+                    # Cross-lane collision: ensure bubbles on opposite sides don't overlap
+                    # For right/center bubbles after a left bubble, start below the previous bubble
+                    if bubble_idx > 0 and position in ("right", "center"):
+                        bubble_y = max(bubble_y, max_bubble_bottom + lane_gap)
+
                     max_y = panel_y + panel_height - bubble_height - margin_top
                     bubble_y = max(panel_y + margin_top, min(bubble_y, max_y))
                     lane_y[position] = bubble_y + bubble_height + lane_gap
+
+                    # Update cross-lane tracking with this bubble's bottom edge
+                    max_bubble_bottom = max(max_bubble_bottom, bubble_y + bubble_height)
 
                     # Create a semi-transparent bubble overlay for this speaker
                     bubble_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))

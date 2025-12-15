@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Remove backgrounds from Dr. Drip images using rembg.
+Remove backgrounds from Dr. Hawley images using rembg.
 Uses AI (U2-Net) to detect and remove backgrounds, producing true transparent PNGs.
 """
 
@@ -17,12 +17,12 @@ BACKUP_DIR = FRONTEND_IMAGES / "originals"
 
 # Images to process
 IMAGES_TO_PROCESS = [
-    "Dr.Drip_chillin.png",
-    "Dr.Drip_folded_hands.png",
-    "Dr.Drip_microphone.png",
-    "Dr.Drip_Crowning.png",
-    "Dr.Drip_raised_hands.png",
-    "Dr.Drip_unexpectedly_good.png",
+    "Dr.Hawley_chillin.png",
+    "Dr.Hawley_folded_hands.png",
+    "Dr.Hawley_microphone.png",
+    "Dr.Hawley_Crowning.png",
+    "Dr.Hawley_raised_hands.png",
+    "Dr.Hawley_unexpectedly_good.png",
     "roast_my_snack_logo.png",
 ]
 

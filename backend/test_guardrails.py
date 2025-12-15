@@ -26,7 +26,7 @@ def test_profanity_filter():
         # Safe content
         ("This snack is cooked! Your teeth are mid.", True, ContentRating.MILD),
         ("That's a W choice, no cap.", True, ContentRating.MILD),
-        ("Dr. Drip says your smile is aesthetic.", True, ContentRating.SAFE),
+        ("Dr. Hawley says your smile is aesthetic.", True, ContentRating.SAFE),
 
         # Mild content (allowed but flagged)
         ("That's stupid and cringe.", True, ContentRating.MILD),
@@ -93,7 +93,7 @@ def test_script_validation():
             },
         ],
         "summary_caption": "Your smile is COOKED. Get the glow up.",
-        "alt_text": "Dr. Drip roasting a gummy bear snack.",
+        "alt_text": "Dr. Hawley roasting a gummy bear snack.",
     }
 
     result = guardrails.validate_script(safe_script)
@@ -131,9 +131,9 @@ def test_image_prompt_validation():
 
     # Safe prompt
     safe_prompt = """
-    Create a 4-panel comic strip with Dr. Drip, a tooth character.
+    Create a 4-panel comic strip with Dr. Hawley, a tooth character.
     Style: Webtoon animation, bright colors, exaggerated expressions.
-    Panel 1: Dr. Drip looking skeptical at a gummy bear.
+    Panel 1: Dr. Hawley looking skeptical at a gummy bear.
     """
 
     result = guardrails.validate_image_prompt(safe_prompt)

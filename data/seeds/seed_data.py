@@ -2069,7 +2069,7 @@ async def seed_styles(qdrant_service: QdrantService, api_key: str):
                 "secondary": "#00FF87",  # Neon green
                 "background": "#1A1A2E",  # Dark background
                 "text": "#FFFFFF",
-                "accent": "#FFD700",  # Gold for Dr. Drip's crown
+                "accent": "#FFD700",  # Gold for Dr. Hawley's crown
             },
             "fonts": {
                 "title": "Impact",
