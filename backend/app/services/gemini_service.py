@@ -117,6 +117,57 @@ class GeminiService:
         # Return original text if no extraction needed
         return text
 
+    def _consolidate_produce_items(self, items: list[DetectedItem]) -> list[DetectedItem]:
+        """
+        Consolidate 3+ fruit/veggie items into a single plate/tray item.
+
+        This is a fallback safety net in case the vision prompt doesn't
+        correctly group multiple fruits/vegetables into a single item.
+
+        Args:
+            items: List of detected items from vision
+
+        Returns:
+            Consolidated list with fruit/veggie plates if applicable
+        """
+        fruit_items = [i for i in items if i.category == "fruit"]
+        veggie_items = [i for i in items if i.category == "vegetables"]
+        other_items = [i for i in items if i.category not in ("fruit", "vegetables")]
+
+        result = other_items.copy()
+
+        # Consolidate 3+ fruits -> Fresh Fruit Plate
+        if len(fruit_items) >= 3:
+            avg_conf = sum(i.confidence for i in fruit_items) / len(fruit_items)
+            fruit_names = [i.name for i in fruit_items]
+            logger.info(f"Consolidating {len(fruit_items)} fruit items into Fresh Fruit Plate: {fruit_names}")
+            result.append(DetectedItem(
+                name="Fresh Fruit Plate",
+                brand_guess=None,
+                category="fruit",
+                visible_clues=f"Multiple fruits detected: {', '.join(fruit_names[:5])}",
+                confidence=avg_conf
+            ))
+        else:
+            result.extend(fruit_items)
+
+        # Consolidate 3+ veggies -> Fresh Veggie Tray
+        if len(veggie_items) >= 3:
+            avg_conf = sum(i.confidence for i in veggie_items) / len(veggie_items)
+            veggie_names = [i.name for i in veggie_items]
+            logger.info(f"Consolidating {len(veggie_items)} veggie items into Fresh Veggie Tray: {veggie_names}")
+            result.append(DetectedItem(
+                name="Fresh Veggie Tray",
+                brand_guess=None,
+                category="vegetables",
+                visible_clues=f"Multiple vegetables detected: {', '.join(veggie_names[:5])}",
+                confidence=avg_conf
+            ))
+        else:
+            result.extend(veggie_items)
+
+        return result
+
     async def detect_items(self, image_path: str) -> list[DetectedItem]:
         """
         Detect food items in an image using Gemini Vision.
@@ -142,14 +193,16 @@ candy, chips, cookies, crackers, fruit, vegetables, dairy, beverage, baked_goods
 
 NAME RULES (very important):
 - If the photo shows ONE obvious food type, name it specifically (e.g., "Bananas"). Do NOT use mixed/assortment names.
-- Only use a mixed label (e.g., "Mixed Fruit Bowl", "Fresh Fruit Assortment") if 2+ different fruit types are clearly visible together.
-- Do NOT label fresh fruit/vegetables as crackers/chips/candy.
+- CRITICAL: If 3 or more distinct FRUIT types are visible together (on a plate, in a bowl, or grouped), return ONE item named "Fresh Fruit Plate" with category "fruit".
+- CRITICAL: If 3 or more distinct VEGETABLE types are visible together, return ONE item named "Fresh Veggie Tray" with category "vegetables".
+- Fresh fruits (watermelon, grapes, strawberries, oranges, berries, melon, kiwi, pineapple) should NEVER be classified as crackers, chips, candy, or dairy.
 - Do NOT label fruit pieces/cubes as cheese unless texture/packaging clearly indicates cheese.
   If uncertain between fruit cubes vs cheese cubes, set confidence <= 0.6 and explain uncertainty in visible_clues.
 
 GROUPING:
 - Many pieces of the same thing = ONE item (e.g., a bunch of bananas = one "Bananas").
-- A bowl/plate of clearly mixed fruits = ONE item ("Mixed Fruit Bowl") rather than listing every fruit.
+- A plate with watermelon, grapes, and strawberries = ONE item ("Fresh Fruit Plate"), NOT three separate items.
+- Count distinct fruit/veggie types: if 3 or more types, ALWAYS use "Fresh Fruit Plate" or "Fresh Veggie Tray".
 
 For each item, return:
 - name: specific common name
@@ -282,6 +335,9 @@ Return ONLY valid JSON with this structure (no markdown, no extra keys):
                         confidence=0.3,
                     )
                 ]
+
+            # Post-processing: consolidate 3+ fruits/veggies into plate/tray
+            items = self._consolidate_produce_items(items)
 
             logger.info(f"Detected {len(items)} items from image")
             return items

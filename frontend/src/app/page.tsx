@@ -10,6 +10,7 @@ import ScanningOverlay from '@/components/ScanningOverlay';
 import ResultsPanel from '@/components/ResultsPanel';
 import ComicDisplay from '@/components/ComicDisplay';
 import ToothMascot from '@/components/ToothMascot';
+import HowToUse from '@/components/HowToUse';
 import { usePreferences } from '@/hooks/usePreferences';
 
 type AppState = 'idle' | 'uploading' | 'scanning' | 'results' | 'comic';
@@ -263,6 +264,7 @@ export default function Home() {
 
         {/* Main Content Card */}
         <div className="bg-white/95 backdrop-blur rounded-3xl p-6 md:p-10 relative overflow-hidden transition-all duration-300 shadow-2xl border-4 border-gray-800">
+          <HowToUse />
           <AnimatePresence mode="wait">
             {(state === 'idle' || state === 'uploading') && (
               <motion.div
@@ -351,7 +353,7 @@ export default function Home() {
             <img
               src="/images/poppykids_logo.png"
               alt="Poppy Kids Pediatric Dentistry"
-              className="h-12 w-auto"
+              className="h-24 w-auto"
             />
           </a>
         </footer>

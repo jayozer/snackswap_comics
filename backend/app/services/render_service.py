@@ -404,13 +404,15 @@ class RenderService:
 
     def _dialogue_entries_for_bubbles(self, dialogue: list) -> list[dict]:
         """
-        Normalize dialogue into per-bubble entries.
+        Normalize dialogue into per-speaker bubble entries.
 
-        Returns ONE bubble per dialogue line (no grouping). Supports both:
+        Combines multiple lines from the same speaker into a single bubble.
+        Supports both:
         - New object format: {speaker, text, position, emotion}
         - Legacy string format: treated as Dr. Hawley on the right
         """
-        entries: list[dict] = []
+        # First pass: normalize all entries
+        raw_entries: list[dict] = []
 
         for d in dialogue:
             if isinstance(d, dict):
@@ -435,7 +437,7 @@ class RenderService:
             if emotion not in ("speech", "thought", "exclaim", "angry", "whisper"):
                 emotion = "speech"
 
-            entries.append(
+            raw_entries.append(
                 {
                     "speaker": speaker,
                     "text": text,
@@ -444,7 +446,17 @@ class RenderService:
                 }
             )
 
-        return entries
+        # Second pass: combine consecutive lines from same speaker into single bubble
+        grouped: list[dict] = []
+        for entry in raw_entries:
+            if grouped and grouped[-1]["speaker"] == entry["speaker"]:
+                # Same speaker - combine text into single bubble
+                grouped[-1]["text"] += " " + entry["text"]
+            else:
+                # New speaker - create new bubble
+                grouped.append(entry.copy())
+
+        return grouped
 
     def _darken_color(self, hex_color: str) -> str:
         """Darken a hex color by 20%."""

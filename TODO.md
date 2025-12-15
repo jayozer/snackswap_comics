@@ -240,6 +240,18 @@
 - [x] Update API documentation (1-5 items, grouped)
 - [x] **File References**: `gemini_service.py:43-199`, `api.py`
 
+#### 5.2.8 Fruit/Veggie Plate Detection Fallback (COMPLETED 2025-12-14)
+- [x] Enhanced vision prompt with explicit 3+ fruit/veggie rules:
+  - [x] "CRITICAL: If 3+ distinct FRUIT types visible → 'Fresh Fruit Plate'"
+  - [x] "CRITICAL: If 3+ distinct VEGETABLE types visible → 'Fresh Veggie Tray'"
+  - [x] Anti-confusion rule: fresh fruits should NEVER be classified as crackers/chips/candy
+- [x] Added `_consolidate_produce_items()` post-processing fallback:
+  - [x] Counts items by category (fruit/vegetables)
+  - [x] If 3+ fruits detected → consolidates to single "Fresh Fruit Plate"
+  - [x] If 3+ veggies detected → consolidates to single "Fresh Veggie Tray"
+  - [x] Logs consolidation for debugging
+- [x] **File References**: `gemini_service.py:120-169` (new method), `gemini_service.py:193-207` (prompt)
+
 ### 5.3 User Preferences (COMPLETED - MODIFIED ✓)
 *"Roast My Snack" Pivot: localStorage preferences instead of signup flow*
 
@@ -322,6 +334,33 @@
 
 - [ ] **Comic Style Picker**: Let users pick different comic styles (e.g., superhero, manga, vaporwave) to better suit individual tastes
 - [ ] **Multi-language support**: Localization for broader accessibility
+
+### 5.9 Allergen Warnings on Detected Snacks
+
+**Priority**: Medium
+**Status**: Planned
+
+#### Current Behavior
+- Allergens filter swap recommendations only (working correctly)
+- Detected snacks are NOT checked against user allergens
+
+#### Proposed Enhancement
+Flag detected snacks that contain user's allergens as a safety feature.
+
+**Example**: If user selected "dairy" allergen and "Cheese Crackers" is detected, show a warning badge like "Contains dairy" in the results.
+
+#### Implementation Notes
+- Snacks already have `allergy_tags` in Qdrant payloads
+- Need to pass user allergens to score response
+- Add allergen match check in `ScoredItem` response
+- Frontend: Display warning badge on matching items
+
+#### Files to Modify
+- [ ] `backend/app/api/score.py` - Add allergen matching logic
+- [ ] `backend/app/models/api.py` - Add `contains_user_allergens` field to `ScoredItem`
+- [ ] `frontend/src/components/ResultsPanel.tsx` - Display allergen warning badge
+
+---
 
 ### 5.8 Design Enhancements
 

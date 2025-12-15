@@ -6,6 +6,12 @@
 
 > **Making dental health about the glow-up, one roast at a time.**
 
+<p align="center">
+  <a href="https://www.loom.com/share/b1568b443acb4c1db7f3a2af903e2d14">
+    <img src="https://img.shields.io/badge/🎬_Watch_Demo-Loom-blueviolet?style=for-the-badge" alt="Watch Demo on Loom" />
+  </a>
+</p>
+
 Roast My Snack is an AI-powered app that transforms photos of snacks into 4-panel comics where **DR. HAWLEY** — a molar tooth with Gen-Z energy — roasts your snack's "aesthetic threat level" to your smile. We reframe dental health as **vanity**, not lectures, because teens care more about yellow teeth than cavities.
 
 <p align="center">
@@ -66,6 +72,8 @@ Roast My Snack is an AI-powered app that transforms photos of snacks into 4-pane
 | **🛡️ Kid-Safe Guardrails** | 50+ blocked terms, teen slang allowlist, daily audit logs |
 | **📱 Social-Ready Export** | Portrait (1080×1350) and Reel (1080×1920) formats |
 | **💬 5 Bubble Styles** | speech, thought, exclaim, angry, whisper — emotion-driven |
+| **🍎 Smart Plate Detection** | 3+ fruits → "Fresh Fruit Plate", 3+ veggies → "Fresh Veggie Tray" |
+| **⚠️ Allergen Filtering** | 8 FDA allergens filter swap recommendations (dairy, nuts, etc.) |
 
 ---
 
@@ -347,12 +355,15 @@ roast-my-snack/
 - AuditService with daily compliance logs
 - 5 emotion-based speech bubble styles
 - Next.js frontend with localStorage persistence
+- Smart fruit/veggie plate detection (3+ items → consolidated plate)
+- Allergen filtering for swap recommendations (8 FDA allergens)
 
 ### 🚧 In Progress
 - Production deployment (Cloud Run / Vercel)
 - Analytics integration
 
 ### 📅 Planned (v1.1)
+- Allergen warnings on detected snacks (flag items containing user's allergens)
 - Animated comic shorts (≤15s video)
 - User accounts with comic history
 - Rate limiting
